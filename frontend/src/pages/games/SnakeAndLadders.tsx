@@ -40,6 +40,7 @@ export default function SnakeAndLadders() {
   
   const [turnId, setTurnId] = useState<string>(starterId);
   const [diceValue, setDiceValue] = useState<number>(1);
+  const [diceRotation, setDiceRotation] = useState({ rotateX: 0, rotateY: 0 });
   const [isRolling, setIsRolling] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [gameStarted] = useState(Date.now());
@@ -73,9 +74,20 @@ export default function SnakeAndLadders() {
     socket.on('gameMove', (data: any) => {
       if (data.type === 'roll') {
         setIsRolling(true);
-        setTimeout(() => {
-          setDiceValue(data.roll);
-        }, 100); // sync dice value quickly
+        setDiceValue(data.roll);
+        
+        setDiceRotation(prev => {
+          const targetFace = diceRotations[data.roll] || { rotateX: 0, rotateY: 0 };
+          const extraSpinsX = (Math.floor(Math.random() * 10) + 10) * 360;
+          const extraSpinsY = (Math.floor(Math.random() * 10) + 10) * 360;
+          const currentModX = prev.rotateX % 360;
+          const currentModY = prev.rotateY % 360;
+          
+          return {
+            rotateX: prev.rotateX - currentModX + extraSpinsX + targetFace.rotateX,
+            rotateY: prev.rotateY - currentModY + extraSpinsY + targetFace.rotateY
+          };
+        });
         
         setTimeout(() => {
           setIsRolling(false);
@@ -128,10 +140,20 @@ export default function SnakeAndLadders() {
 
     setIsRolling(true);
     const roll = Math.floor(Math.random() * 6) + 1;
+    setDiceValue(roll);
 
-    setTimeout(() => {
-      setDiceValue(roll);
-    }, 100);
+    setDiceRotation(prev => {
+      const targetFace = diceRotations[roll] || { rotateX: 0, rotateY: 0 };
+      const extraSpinsX = (Math.floor(Math.random() * 10) + 10) * 360;
+      const extraSpinsY = (Math.floor(Math.random() * 10) + 10) * 360;
+      const currentModX = prev.rotateX % 360;
+      const currentModY = prev.rotateY % 360;
+      
+      return {
+        rotateX: prev.rotateX - currentModX + extraSpinsX + targetFace.rotateX,
+        rotateY: prev.rotateY - currentModY + extraSpinsY + targetFace.rotateY
+      };
+    });
 
     let currentPos = positions[user._id];
     let newPosition = currentPos + roll;
@@ -171,11 +193,6 @@ export default function SnakeAndLadders() {
     5: { rotateX: -90, rotateY: 0 },
     6: { rotateX: 180, rotateY: 0 }
   };
-
-  const currentRotation = diceRotations[diceValue] || { rotateX: 0, rotateY: 0 };
-  const animatedRotation = isRolling 
-    ? { rotateX: 3600 + Math.random() * 720, rotateY: 3600 + Math.random() * 720 }
-    : currentRotation;
 
   // Render a 3D Dice Face
   const renderDiceFace = (num: number, transform: string) => {
@@ -252,13 +269,11 @@ export default function SnakeAndLadders() {
               >
                 <motion.div
                   className="w-full h-full relative"
-                  animate={animatedRotation}
+                  animate={diceRotation}
                   transition={{ 
-                    duration: isRolling ? 7.0 : 0.5, 
-                    type: isRolling ? "tween" : "spring",
-                    ease: isRolling ? "easeOut" : undefined,
-                    stiffness: 100,
-                    damping: 10
+                    duration: 7.0, 
+                    type: "tween",
+                    ease: "easeOut",
                   }}
                   style={{ transformStyle: 'preserve-3d' }}
                 >
