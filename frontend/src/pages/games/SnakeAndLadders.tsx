@@ -82,7 +82,7 @@ export default function SnakeAndLadders() {
           setPositions(prev => ({ ...prev, [opponentId]: data.newPosition }));
           setTurnId(user._id);
           checkSpecialEvents(data.newPosition, opponentId, data.roll);
-        }, 2500);
+        }, 7000);
       }
     });
 
@@ -157,7 +157,7 @@ export default function SnakeAndLadders() {
       setTurnId(opponentId);
       
       checkSpecialEvents(newPosition, user._id, roll);
-    }, 2500);
+    }, 7000);
   };
 
   const isMyTurn = turnId === user._id;
@@ -174,7 +174,7 @@ export default function SnakeAndLadders() {
 
   const currentRotation = diceRotations[diceValue] || { rotateX: 0, rotateY: 0 };
   const animatedRotation = isRolling 
-    ? { rotateX: 720 + Math.random() * 360, rotateY: 720 + Math.random() * 360 }
+    ? { rotateX: 3600 + Math.random() * 720, rotateY: 3600 + Math.random() * 720 }
     : currentRotation;
 
   // Render a 3D Dice Face
@@ -254,9 +254,9 @@ export default function SnakeAndLadders() {
                   className="w-full h-full relative"
                   animate={animatedRotation}
                   transition={{ 
-                    duration: isRolling ? 2.5 : 0.5, 
+                    duration: isRolling ? 7.0 : 0.5, 
                     type: isRolling ? "tween" : "spring",
-                    ease: isRolling ? "linear" : undefined,
+                    ease: isRolling ? "easeOut" : undefined,
                     stiffness: 100,
                     damping: 10
                   }}
