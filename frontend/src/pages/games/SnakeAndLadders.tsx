@@ -39,7 +39,6 @@ export default function SnakeAndLadders() {
   });
   
   const [turnId, setTurnId] = useState<string>(starterId);
-  const [diceValue, setDiceValue] = useState<number>(1);
   const [diceRotation, setDiceRotation] = useState({ rotateX: 0, rotateY: 0 });
   const [isRolling, setIsRolling] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
@@ -74,7 +73,6 @@ export default function SnakeAndLadders() {
     socket.on('gameMove', (data: any) => {
       if (data.type === 'roll') {
         setIsRolling(true);
-        setDiceValue(data.roll);
         
         setDiceRotation(prev => {
           const targetFace = diceRotations[data.roll] || { rotateX: 0, rotateY: 0 };
@@ -140,7 +138,6 @@ export default function SnakeAndLadders() {
 
     setIsRolling(true);
     const roll = Math.floor(Math.random() * 6) + 1;
-    setDiceValue(roll);
 
     setDiceRotation(prev => {
       const targetFace = diceRotations[roll] || { rotateX: 0, rotateY: 0 };
