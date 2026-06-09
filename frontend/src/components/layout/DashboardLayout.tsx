@@ -8,7 +8,6 @@ import {
   CheckCircle, 
   Settings, 
   Menu,
-  X,
   Bell,
   LogOut,
   Clock,

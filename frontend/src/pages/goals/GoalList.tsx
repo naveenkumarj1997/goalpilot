@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import goalService from '../../services/goalService';
 import type { Goal } from '../../types/goal';
 import { calculateGoalTargets } from '../../utils/goalCalculator';
-import { Plus, Edit2, Trash2, Calendar, Clock, Target as TargetIcon, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Target as TargetIcon, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function GoalList() {

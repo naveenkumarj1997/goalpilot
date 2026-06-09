@@ -59,7 +59,7 @@ export default function Battleship() {
 
     socket.emit('joinRoom', { roomId });
 
-    socket.on('bshipPlayerReady', ({ userId }) => {
+    socket.on('bshipPlayerReady', () => {
       // Just for logging or showing opponent is ready
     });
 
@@ -72,7 +72,7 @@ export default function Battleship() {
       handleIncomingAttack(r, c);
     });
 
-    socket.on('bshipAttackResultReceived', ({ r, c, result, shipName, isGameOver }) => {
+    socket.on('bshipAttackResultReceived', ({ r, c, result, isGameOver }) => {
       setOpBoardState(prev => ({ ...prev, [`${r},${c}`]: result }));
       
       if (result === 'sunk') {
@@ -189,7 +189,7 @@ export default function Battleship() {
   };
 
   const handleIncomingAttack = (r: number, c: number) => {
-    let hitShip = null;
+    let hitShip: PlacedShip | null = null;
     let newHits = [...myBoardHits];
     let newMisses = [...myBoardMisses];
     
@@ -213,10 +213,11 @@ export default function Battleship() {
       return ship;
     });
 
-    if (hitShip) {
+    const hShip = hitShip as PlacedShip | null;
+    if (hShip) {
       newHits.push(`${r},${c}`);
-      result = (hitShip as any).hits === SHIPS[(hitShip as any).type] ? 'sunk' : 'hit';
-      shipName = (hitShip as any).type;
+      result = hShip.hits === SHIPS[hShip.type] ? 'sunk' : 'hit';
+      shipName = hShip.type;
       
       const totalHits = newShips.reduce((acc, s) => acc + s.hits, 0);
       if (totalHits === 17) isGameOver = true;

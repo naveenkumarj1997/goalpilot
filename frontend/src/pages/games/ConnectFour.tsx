@@ -42,7 +42,7 @@ export default function ConnectFour() {
       setBoard(prev => {
         const newBoard = prev.map(r => [...r]);
         newBoard[row][col] = color;
-        checkGameEnd(newBoard, row, col, color, false);
+        checkGameEnd(newBoard, row, col, color);
         return newBoard;
       });
       setIsMyTurn(true);
@@ -69,7 +69,7 @@ export default function ConnectFour() {
     };
   }, [socket, roomId]);
 
-  const checkGameEnd = (currentBoard: PlayerColor[][], r: number, c: number, color: PlayerColor, didIMove: boolean) => {
+  const checkGameEnd = (currentBoard: PlayerColor[][], r: number, c: number, color: PlayerColor) => {
     // Check directions: Horizontal, Vertical, Diagonal 1, Diagonal 2
     const directions = [
       [[0, 1], [0, -1]],   // Horizontal
@@ -149,7 +149,7 @@ export default function ConnectFour() {
 
     socket.emit('gameMove', { roomId, moveData: { row: rowIndex, col: colIndex, color: myColor } });
     
-    checkGameEnd(newBoard, rowIndex, colIndex, myColor, true);
+    checkGameEnd(newBoard, rowIndex, colIndex, myColor);
   };
 
   const requestRematch = () => {

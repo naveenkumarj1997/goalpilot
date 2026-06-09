@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Trophy, ArrowLeft, Info } from 'lucide-react';
 
 const SNAKES: Record<number, number> = { 98: 78, 95: 56, 87: 24, 64: 36, 48: 12 };
@@ -255,7 +255,8 @@ export default function SnakeAndLadders() {
                   animate={animatedRotation}
                   transition={{ 
                     duration: isRolling ? 1.5 : 0.5, 
-                    ease: isRolling ? "linear" : "spring",
+                    type: isRolling ? "tween" : "spring",
+                    ease: isRolling ? "linear" : undefined,
                     stiffness: 100,
                     damping: 10
                   }}
@@ -395,8 +396,8 @@ export default function SnakeAndLadders() {
 
              {/* DYNAMIC LADDERS */}
              {Object.entries(LADDERS).map(([startStr, endStr], i) => {
-               const startNum = parseInt(startStr);
-               const endNum = parseInt(endStr);
+               const startNum = Number(startStr);
+               const endNum = endStr as unknown as number;
                
                const startRow = Math.floor((startNum - 1) / 10);
                const startColRaw = (startNum - 1) % 10;
@@ -422,8 +423,8 @@ export default function SnakeAndLadders() {
 
              {/* DYNAMIC SNAKES */}
              {Object.entries(SNAKES).map(([headStr, tailStr], i) => {
-               const headNum = parseInt(headStr);
-               const tailNum = parseInt(tailStr);
+               const headNum = Number(headStr);
+               const tailNum = tailStr as unknown as number;
                
                const headRow = Math.floor((headNum - 1) / 10);
                const headColRaw = (headNum - 1) % 10;

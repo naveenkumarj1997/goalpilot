@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { Goal } from '../../types/goal';
 import { generateGoalMatrix } from '../../utils/matrixCalculator';
-import type { MatrixCell } from '../../utils/matrixCalculator';
 import { CheckCircle, XCircle, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 

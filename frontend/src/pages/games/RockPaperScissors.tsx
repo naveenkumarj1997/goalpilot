@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
-import { RefreshCw, ArrowLeft, Trophy, AlertCircle } from 'lucide-react';
+import { RefreshCw, ArrowLeft, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Choice = 'rock' | 'paper' | 'scissors' | null;

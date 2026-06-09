@@ -37,7 +37,7 @@ export default function TicTacToe() {
       setBoard(prev => {
         const newBoard = [...prev];
         newBoard[index] = symbol;
-        checkGameEnd(newBoard, false); // false means I didn't make this move
+        checkGameEnd(newBoard); // false means I didn't make this move
         return newBoard;
       });
       setIsMyTurn(true);
@@ -66,7 +66,7 @@ export default function TicTacToe() {
     };
   }, [socket, roomId]);
 
-  const checkGameEnd = (currentBoard: PlayerSymbol[], didIMove: boolean) => {
+  const checkGameEnd = (currentBoard: PlayerSymbol[]) => {
     const lines = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
       [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
@@ -121,7 +121,7 @@ export default function TicTacToe() {
 
     socket.emit('gameMove', { roomId, moveData: { index, symbol: mySymbol } });
     
-    checkGameEnd(newBoard, true);
+    checkGameEnd(newBoard);
   };
 
   const requestRematch = () => {

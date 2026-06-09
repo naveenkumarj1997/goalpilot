@@ -4,12 +4,12 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
+  trend?: string;
   trendDirection?: 'up' | 'down' | 'neutral';
   color?: 'brand' | 'green' | 'gold' | 'violet';
 }
 
-export default function StatCard({ title, value, icon: Icon, trend, trendDirection, color = 'brand' }: StatCardProps) {
-  const borderColorClass = color === 'brand' ? 'border-brand/20 hover:border-brand/60' : ''; // Just fallback, border color is overridden by neon-border anyway
+export default function StatCard({ title, value, icon: Icon, color = 'brand' }: StatCardProps) {
   const neonBorderClass = `neon-border-${color}`;
   const neonTextClass = `neon-text-${color}`;
   const textIconClass = color === 'brand' ? 'text-brand' : color === 'green' ? 'text-emerald-500' : color === 'gold' ? 'text-amber-500' : 'text-purple-500';

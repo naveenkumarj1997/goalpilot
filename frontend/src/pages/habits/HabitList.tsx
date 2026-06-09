@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import habitService from '../../services/habitService';
 import type { Habit } from '../../types/habit';
-import { Plus, Trash2, Activity, Check } from 'lucide-react';
+import { Plus, Trash2, Activity, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HabitList() {

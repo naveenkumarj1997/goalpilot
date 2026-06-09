@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import taskService from '../../services/taskService';
 import type { Task } from '../../types/task';
-import { Plus, Check, ChevronDown, ChevronRight, MoreVertical, Trash2 } from 'lucide-react';
+import { Plus, Check, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TaskList() {

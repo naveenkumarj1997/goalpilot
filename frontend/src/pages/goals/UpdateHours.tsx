@@ -108,7 +108,7 @@ export default function UpdateHours() {
     });
     
     // Sort so most recent is first
-    return todaysLogs.sort((a, b) => {
+    return todaysLogs.sort(() => {
       // time string is like "5:15 PM". Best to sort by actual date parsing, but since it's today, we can just sort by original date in the goals if we had them.
       // Since we don't, we can just reverse it as an approximation or extract original log date. 
       // Actually let's just return todaysLogs.reverse() since they are fetched in order.
