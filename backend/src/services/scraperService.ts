@@ -47,7 +47,7 @@ export const runScrapers = async () => {
         
         for (let i = 0; i < 3; i++) {
           const template = DUMMY_JOBS[Math.floor(Math.random() * DUMMY_JOBS.length)];
-          const link = `${source.careerUrl}/job/${Math.random().toString(36).substring(7)}`;
+          const link = `${source.careerUrl}?q=${encodeURIComponent(template.title)}`;
           const hash = generateHash(source.name, template.title, link);
           
           // Check if exists
