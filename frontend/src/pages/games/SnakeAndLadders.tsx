@@ -82,7 +82,7 @@ export default function SnakeAndLadders() {
           setPositions(prev => ({ ...prev, [opponentId]: data.newPosition }));
           setTurnId(user._id);
           checkSpecialEvents(data.newPosition, opponentId, data.roll);
-        }, 1500);
+        }, 2500);
       }
     });
 
@@ -157,7 +157,7 @@ export default function SnakeAndLadders() {
       setTurnId(opponentId);
       
       checkSpecialEvents(newPosition, user._id, roll);
-    }, 1500);
+    }, 2500);
   };
 
   const isMyTurn = turnId === user._id;
@@ -254,7 +254,7 @@ export default function SnakeAndLadders() {
                   className="w-full h-full relative"
                   animate={animatedRotation}
                   transition={{ 
-                    duration: isRolling ? 1.5 : 0.5, 
+                    duration: isRolling ? 2.5 : 0.5, 
                     type: isRolling ? "tween" : "spring",
                     ease: isRolling ? "linear" : undefined,
                     stiffness: 100,
