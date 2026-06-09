@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import { getResumeById, scanATS } from '../../services/resumeService';
 import { ArrowLeft, Download, Loader2, Target, CheckCircle2, AlertTriangle } from 'lucide-react';
 import ModernTemplate from './templates/ModernTemplate';
+import CreativeTemplate from './templates/CreativeTemplate';
+import ExecutiveTemplate from './templates/ExecutiveTemplate';
+import MinimalistTemplate from './templates/MinimalistTemplate';
+import TechTemplate from './templates/TechTemplate';
+import { updateResume } from '../../services/resumeService';
+
+const TEMPLATES = [
+  { id: 'modern', name: 'Modern ATS', component: ModernTemplate },
+  { id: 'creative', name: 'Creative Pro', component: CreativeTemplate },
+  { id: 'executive', name: 'Executive', component: ExecutiveTemplate },
+  { id: 'minimalist', name: 'Minimalist', component: MinimalistTemplate },
+  { id: 'tech', name: 'Tech / Developer', component: TechTemplate },
+];
 
 export default function ResumePreview() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +24,45 @@ export default function ResumePreview() {
   const [resume, setResume] = useState<any>(null);
   const [atsResult, setAtsResult] = useState<any>(null);
   const [scanning, setScanning] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    
+    const generatePdf = async () => {
+      if (!resume) return;
+      try {
+        setPdfLoading(true);
+        setPdfError(null);
+        
+        // Ensure Template renders fully before creating blob
+        const TemplateCmp = TEMPLATES.find(t => t.id === (resume.templateId || 'modern'))?.component || ModernTemplate;
+        const doc = <TemplateCmp data={resume} />;
+        const blob = await pdf(doc).toBlob();
+        
+        if (active) {
+          const url = URL.createObjectURL(blob);
+          setPdfUrl(url);
+          setPdfLoading(false);
+        }
+      } catch (err: any) {
+        console.error("PDF Generation Error:", err);
+        if (active) {
+          setPdfError(err.message || "Failed to generate PDF preview.");
+          setPdfLoading(false);
+        }
+      }
+    };
+
+    generatePdf();
+
+    return () => {
+      active = false;
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [resume]);
 
   useEffect(() => {
     if (id) {
@@ -34,6 +86,18 @@ export default function ResumePreview() {
     }
   };
 
+  const handleTemplateChange = async (templateId: string) => {
+    try {
+      setResume({ ...resume, templateId });
+      if (id) {
+        await updateResume(id, { templateId });
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save template selection.');
+    }
+  };
+
   if (!resume) {
     return <div className="p-8 text-white flex justify-center"><Loader2 className="animate-spin w-8 h-8" /></div>;
   }
@@ -52,18 +116,23 @@ export default function ResumePreview() {
         </div>
         
         <div className="flex gap-3">
-          <PDFDownloadLink
-            document={<ModernTemplate data={resume} />}
-            fileName={fileName}
-            className="flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold transition-colors shadow-[0_0_15px_rgba(59,130,246,0.4)]"
-          >
-            {({ loading }) => (
-              <>
-                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-                {loading ? 'Preparing PDF...' : 'Download PDF'}
-              </>
-            )}
-          </PDFDownloadLink>
+          {(() => {
+            const TemplateCmp = TEMPLATES.find(t => t.id === (resume.templateId || 'modern'))?.component || ModernTemplate;
+            return (
+              <PDFDownloadLink
+                document={<TemplateCmp data={resume} />}
+                fileName={fileName}
+                className="flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold transition-colors shadow-[0_0_15px_rgba(59,130,246,0.4)]"
+              >
+                {({ loading }) => (
+                  <>
+                    {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                    {loading ? 'Preparing PDF...' : 'Download PDF'}
+                  </>
+                )}
+              </PDFDownloadLink>
+            );
+          })()}
         </div>
       </div>
 
@@ -132,25 +201,50 @@ export default function ResumePreview() {
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-white mb-4">Templates</h2>
             <div className="space-y-3">
-              <button className="w-full text-left px-4 py-3 bg-purple-600/20 border border-purple-500 rounded-lg text-purple-300 flex justify-between items-center">
-                Modern ATS
-                <CheckCircle2 className="w-4 h-4" />
-              </button>
-              <button disabled className="w-full text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-500 opacity-50">
-                Creative Pro (Coming Soon)
-              </button>
-              <button disabled className="w-full text-left px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-500 opacity-50">
-                Executive (Coming Soon)
-              </button>
+              {TEMPLATES.map(t => {
+                const isActive = (resume.templateId || 'modern') === t.id;
+                return (
+                  <button 
+                    key={t.id}
+                    onClick={() => handleTemplateChange(t.id)}
+                    className={`w-full text-left px-4 py-3 rounded-lg flex justify-between items-center transition-colors ${
+                      isActive 
+                        ? 'bg-purple-600/20 border border-purple-500 text-purple-300' 
+                        : 'bg-slate-900 border border-slate-700 text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    {t.name}
+                    {isActive && <CheckCircle2 className="w-4 h-4" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Right Side: Live PDF Preview */}
-        <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-4 h-[800px] overflow-hidden">
-          <PDFViewer width="100%" height="100%" className="rounded-xl border-none">
-            <ModernTemplate data={resume} />
-          </PDFViewer>
+        <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-4 h-[800px] flex flex-col overflow-hidden">
+          {pdfLoading ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+              <Loader2 className="w-10 h-10 animate-spin mb-4 text-purple-500" />
+              <p>Generating PDF Preview...</p>
+            </div>
+          ) : pdfError ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-red-400 text-center px-4">
+              <AlertTriangle className="w-10 h-10 mb-4" />
+              <p>Error generating preview: {pdfError}</p>
+            </div>
+          ) : pdfUrl ? (
+            <iframe 
+              src={pdfUrl} 
+              className="w-full h-full rounded-xl border-none bg-white" 
+              title="Resume Preview"
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-slate-400">
+              <p>No preview available.</p>
+            </div>
+          )}
         </div>
 
       </div>

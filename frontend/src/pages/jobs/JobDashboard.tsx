@@ -81,8 +81,8 @@ export default function JobDashboard() {
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Sidebar Filters */}
-        <div className={`lg:w-1/4 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
-          <div className="bg-slate-800 rounded-xl p-6 sticky top-8 border border-slate-700 shadow-xl lg:shadow-none">
+        <div className={`lg:w-1/4 ${showMobileFilters ? 'block mb-6 lg:mb-0' : 'hidden lg:block'}`}>
+          <div className="bg-slate-800 rounded-xl p-6 lg:sticky lg:top-8 border border-slate-700 shadow-xl lg:shadow-none">
             <h3 className="font-bold text-lg mb-4 text-white flex items-center"><Filter className="w-5 h-5 mr-2 text-blue-400"/> Search & Sort</h3>
             <div className="space-y-4">
               {/* Sort Options */}

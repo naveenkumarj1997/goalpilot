@@ -6,6 +6,7 @@ import PersonalInfoStep from './steps/PersonalInfoStep';
 import EducationStep from './steps/EducationStep';
 import ExperienceStep from './steps/ExperienceStep';
 import ProjectsStep from './steps/ProjectsStep';
+import CertificationsStep from './steps/CertificationsStep';
 import SkillsStep from './steps/SkillsStep';
 import SummaryStep from './steps/SummaryStep';
 
@@ -14,6 +15,7 @@ const STEPS = [
   'Education',
   'Experience',
   'Projects',
+  'Certifications',
   'Skills',
   'Summary'
 ];
@@ -53,8 +55,9 @@ export default function ResumeBuilder() {
       case 1: return <EducationStep data={resume.education} onChange={(data) => setResume({...resume, education: data})} />;
       case 2: return <ExperienceStep data={resume.experience} targetRole={resume.targetRole} onChange={(data) => setResume({...resume, experience: data})} />;
       case 3: return <ProjectsStep data={resume.projects} targetRole={resume.targetRole} onChange={(data) => setResume({...resume, projects: data})} />;
-      case 4: return <SkillsStep data={resume.skills} onChange={(data) => setResume({...resume, skills: data})} />;
-      case 5: return <SummaryStep data={resume} onChange={(data) => setResume({...resume, personalInfo: {...resume.personalInfo, summary: data}})} />;
+      case 4: return <CertificationsStep data={resume} updateData={(data: any) => setResume({...resume, ...data})} />;
+      case 5: return <SkillsStep data={resume.skills} onChange={(data) => setResume({...resume, skills: data})} />;
+      case 6: return <SummaryStep data={resume} onChange={(data) => setResume({...resume, personalInfo: {...resume.personalInfo, summary: data}})} />;
       default: return null;
     }
   };

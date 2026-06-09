@@ -1,62 +1,52 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
-
-// Register fonts
-Font.register({
-  family: 'Open Sans',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/npm/open-sans-all@0.1.3/fonts/open-sans-regular.ttf' },
-    { src: 'https://cdn.jsdelivr.net/npm/open-sans-all@0.1.3/fonts/open-sans-600.ttf', fontWeight: 600 },
-    { src: 'https://cdn.jsdelivr.net/npm/open-sans-all@0.1.3/fonts/open-sans-700.ttf', fontWeight: 700 }
-  ]
-});
+import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: 'Open Sans',
+    fontFamily: 'Courier',
     fontSize: 10,
     color: '#333333',
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
   header: {
-    flexDirection: 'column',
+    backgroundColor: '#1e293b',
+    padding: 20,
     marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: '#2563eb',
-    paddingBottom: 10,
+    borderRadius: 4,
   },
   name: {
     fontSize: 24,
-    fontWeight: 700,
-    color: '#1e3a8a',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    lineHeight: 1.2,
+    fontFamily: 'Courier-Bold',
+    color: '#10b981', // Emerald green
+    marginBottom: 15,
   },
   contactInfo: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    color: '#94a3b8',
     fontSize: 9,
-    color: '#4b5563',
   },
   contactItem: {
-    marginRight: 10,
-    marginBottom: 2,
+    marginRight: 15,
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: 700,
-    color: '#1e3a8a',
+    fontFamily: 'Courier-Bold',
+    color: '#1e293b',
+    backgroundColor: '#f1f5f9',
+    padding: 4,
+    paddingLeft: 8,
+    marginBottom: 10,
     marginTop: 15,
-    marginBottom: 5,
-    textTransform: 'uppercase',
+    borderLeftWidth: 4,
+    borderLeftColor: '#10b981',
   },
   summary: {
     marginBottom: 10,
   },
   experienceItem: {
-    marginBottom: 10,
+    marginBottom: 12,
   },
   expHeader: {
     flexDirection: 'row',
@@ -64,76 +54,83 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   company: {
-    fontWeight: 700,
+    fontFamily: 'Courier-Bold',
     fontSize: 11,
+    color: '#1e293b',
     flex: 1,
     paddingRight: 10,
   },
   role: {
-    fontWeight: 600,
-    color: '#4b5563',
+    color: '#475569',
     flex: 1,
     paddingRight: 10,
   },
   date: {
     fontSize: 9,
-    color: '#6b7280',
+    color: '#64748b',
   },
   bullet: {
     flexDirection: 'row',
-    marginBottom: 2,
+    marginTop: 2,
   },
   bulletPoint: {
-    width: 10,
-    fontSize: 10,
+    width: 15,
+    color: '#10b981',
+    fontFamily: 'Courier-Bold',
   },
   bulletText: {
     flex: 1,
   },
   skillsGroup: {
-    marginBottom: 5,
+    marginBottom: 4,
   },
   skillCategory: {
-    fontWeight: 700,
-    marginRight: 5,
-  },
-  skillList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    fontFamily: 'Courier-Bold',
+    color: '#1e293b',
   }
 });
 
-export default function ModernTemplate({ data }: { data: any }) {
+export default function TechTemplate({ data }: { data: any }) {
   const { personalInfo, education, experience, projects, skills } = data;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.name}>{personalInfo?.fullName || 'Untitled Resume'}</Text>
+          <Text style={styles.name}>{personalInfo?.fullName || 'Untitled'}</Text>
           <View style={styles.contactInfo}>
-            {personalInfo?.email && <Text style={styles.contactItem}>{personalInfo.email}</Text>}
-            {personalInfo?.phone && <Text style={styles.contactItem}>• {personalInfo.phone}</Text>}
-            {personalInfo?.location && <Text style={styles.contactItem}>• {personalInfo.location}</Text>}
-            {personalInfo?.linkedin && <Text style={styles.contactItem}>• {personalInfo.linkedin}</Text>}
-            {personalInfo?.github && <Text style={styles.contactItem}>• {personalInfo.github}</Text>}
+            {personalInfo?.email && <Text style={styles.contactItem}>[email: {personalInfo.email}]</Text>}
+            {personalInfo?.phone && <Text style={styles.contactItem}>[tel: {personalInfo.phone}]</Text>}
+            {personalInfo?.github && <Text style={styles.contactItem}>[git: {personalInfo.github}]</Text>}
+            {personalInfo?.linkedin && <Text style={styles.contactItem}>[in: {personalInfo.linkedin}]</Text>}
           </View>
         </View>
 
-        {/* Professional Summary */}
         {personalInfo?.summary && (
           <View>
-            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            <Text style={styles.sectionTitle}>~/summary</Text>
             <Text style={styles.summary}>{personalInfo.summary}</Text>
           </View>
         )}
 
-        {/* Experience */}
+        {skills && skills.length > 0 && (
+          <View>
+            <Text style={styles.sectionTitle}>~/skills</Text>
+            {skills.map((skillGroup: any, i: number) => (
+              <View key={i} style={styles.skillsGroup}>
+                <Text>
+                  <Text style={styles.skillCategory}>{skillGroup.category}: </Text>
+                  <Text>{skillGroup.items.join(', ')}</Text>
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {experience && experience.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Experience</Text>
+            <Text style={styles.sectionTitle}>~/experience</Text>
             {experience.map((exp: any, i: number) => (
               <View key={i} style={styles.experienceItem}>
                 <View style={styles.expHeader}>
@@ -146,7 +143,7 @@ export default function ModernTemplate({ data }: { data: any }) {
                 </View>
                 {exp.description && (
                   <View style={styles.bullet}>
-                    <Text style={styles.bulletPoint}>•</Text>
+                    <Text style={styles.bulletPoint}>{'>'}</Text>
                     <Text style={styles.bulletText}>{exp.description}</Text>
                   </View>
                 )}
@@ -155,10 +152,9 @@ export default function ModernTemplate({ data }: { data: any }) {
           </View>
         )}
 
-        {/* Projects */}
         {projects && projects.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Projects</Text>
+            <Text style={styles.sectionTitle}>~/projects</Text>
             {projects.map((proj: any, i: number) => (
               <View key={i} style={styles.experienceItem}>
                 <View style={styles.expHeader}>
@@ -166,7 +162,7 @@ export default function ModernTemplate({ data }: { data: any }) {
                 </View>
                 {proj.description && (
                   <View style={styles.bullet}>
-                    <Text style={styles.bulletPoint}>•</Text>
+                    <Text style={styles.bulletPoint}>{'>'}</Text>
                     <Text style={styles.bulletText}>{proj.description}</Text>
                   </View>
                 )}
@@ -175,10 +171,9 @@ export default function ModernTemplate({ data }: { data: any }) {
           </View>
         )}
 
-        {/* Certifications */}
         {data.certifications && data.certifications.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Certifications</Text>
+            <Text style={styles.sectionTitle}>~/certifications</Text>
             {data.certifications.map((cert: any, i: number) => (
               <View key={i} style={styles.experienceItem}>
                 <View style={styles.expHeader}>
@@ -193,10 +188,9 @@ export default function ModernTemplate({ data }: { data: any }) {
           </View>
         )}
 
-        {/* Education */}
         {education && education.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Education</Text>
+            <Text style={styles.sectionTitle}>~/education</Text>
             {education.map((edu: any, i: number) => (
               <View key={i} style={styles.experienceItem}>
                 <View style={styles.expHeader}>
@@ -204,24 +198,8 @@ export default function ModernTemplate({ data }: { data: any }) {
                   <Text style={styles.date}>{edu.startDate} - {edu.endDate}</Text>
                 </View>
                 <View style={styles.expHeader}>
-                  <Text style={styles.role}>{edu.degree}</Text>
-                  {edu.cgpa && <Text style={styles.date}>CGPA: {edu.cgpa}</Text>}
+                  <Text style={styles.role}>{edu.degree} {edu.cgpa ? `| CGPA: ${edu.cgpa}` : ''}</Text>
                 </View>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Skills */}
-        {skills && skills.length > 0 && (
-          <View>
-            <Text style={styles.sectionTitle}>Skills</Text>
-            {skills.map((skillGroup: any, i: number) => (
-              <View key={i} style={styles.skillsGroup}>
-                <Text>
-                  <Text style={styles.skillCategory}>{skillGroup.category}: </Text>
-                  <Text>{skillGroup.items.join(', ')}</Text>
-                </Text>
               </View>
             ))}
           </View>

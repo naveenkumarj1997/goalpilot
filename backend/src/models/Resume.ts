@@ -41,6 +41,13 @@ export interface IResume extends Document {
     github?: string;
     description: string;
   }[];
+  certifications: {
+    _id?: string;
+    name: string;
+    issuer: string;
+    date: string;
+    link?: string;
+  }[];
   skills: {
     category: string;
     items: string[];
@@ -92,6 +99,14 @@ const ResumeSchema: Schema = new Schema(
         link: { type: String, default: '' },
         github: { type: String, default: '' },
         description: { type: String, default: '' }
+      }
+    ],
+    certifications: [
+      {
+        name: { type: String, default: '' },
+        issuer: { type: String, default: '' },
+        date: { type: String, default: '' },
+        link: { type: String, default: '' }
       }
     ],
     skills: [

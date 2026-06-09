@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 import Resume from '../models/Resume';
 import * as geminiService from '../services/geminiService';
 
-export const getResumes = async (req: Request, res: Response): Promise<void> => {
+interface AuthRequest extends Request {
+  user?: any;
+}
+
+export const getResumes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const resumes = await Resume.find({ userId: req.user?._id }).sort({ updatedAt: -1 });
     res.json(resumes);
@@ -11,7 +15,7 @@ export const getResumes = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-export const getResumeById = async (req: Request, res: Response): Promise<void> => {
+export const getResumeById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const resume = await Resume.findOne({ _id: req.params.id, userId: req.user?._id });
     if (!resume) {
@@ -24,7 +28,7 @@ export const getResumeById = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export const createResume = async (req: Request, res: Response): Promise<void> => {
+export const createResume = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const newResume = new Resume({
       ...req.body,
@@ -37,7 +41,7 @@ export const createResume = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const updateResume = async (req: Request, res: Response): Promise<void> => {
+export const updateResume = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const updatedResume = await Resume.findOneAndUpdate(
       { _id: req.params.id, userId: req.user?._id },
@@ -54,7 +58,7 @@ export const updateResume = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const deleteResume = async (req: Request, res: Response): Promise<void> => {
+export const deleteResume = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const deletedResume = await Resume.findOneAndDelete({ _id: req.params.id, userId: req.user?._id });
     if (!deletedResume) {
@@ -67,7 +71,7 @@ export const deleteResume = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const duplicateResume = async (req: Request, res: Response): Promise<void> => {
+export const duplicateResume = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const originalResume = await Resume.findOne({ _id: req.params.id, userId: req.user?._id });
     if (!originalResume) {
@@ -76,9 +80,9 @@ export const duplicateResume = async (req: Request, res: Response): Promise<void
     }
 
     const resumeObject = originalResume.toObject();
-    delete resumeObject._id;
-    delete resumeObject.createdAt;
-    delete resumeObject.updatedAt;
+    delete (resumeObject as any)._id;
+    delete (resumeObject as any).createdAt;
+    delete (resumeObject as any).updatedAt;
     resumeObject.title = `${resumeObject.title} (Copy)`;
 
     const duplicatedResume = new Resume(resumeObject);
@@ -97,6 +101,7 @@ export const generateSummary = async (req: Request, res: Response): Promise<void
     const summary = await geminiService.generateProfessionalSummary(experience, projects, skills, targetRole);
     res.json({ summary });
   } catch (error: any) {
+    console.error("AI Error in generateSummary:", error);
     res.status(500).json({ message: error.message || 'Failed to generate summary' });
   }
 };
@@ -107,6 +112,7 @@ export const enhanceBullet = async (req: Request, res: Response): Promise<void> 
     const enhancedBullet = await geminiService.enhanceBulletPoint(bullet, targetRole);
     res.json({ bullet: enhancedBullet });
   } catch (error: any) {
+    console.error("AI Error in enhanceBullet:", error);
     res.status(500).json({ message: error.message || 'Failed to enhance bullet' });
   }
 };
@@ -117,11 +123,12 @@ export const categorizeSkills = async (req: Request, res: Response): Promise<voi
     const categorized = await geminiService.categorizeSkills(rawSkills);
     res.json({ skills: categorized });
   } catch (error: any) {
+    console.error("AI Error in categorizeSkills:", error);
     res.status(500).json({ message: error.message || 'Failed to categorize skills' });
   }
 };
 
-export const scanATS = async (req: Request, res: Response): Promise<void> => {
+export const scanATS = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { resumeData } = req.body;
     const result = await geminiService.calculateATSScore(resumeData);

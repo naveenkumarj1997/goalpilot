@@ -1,10 +1,25 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Helper to retry on 503 Service Unavailable
+const generateWithRetry = async (model: any, prompt: string, retries = 3, delay = 2000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (error: any) {
+      if (error.message && error.message.includes('503') && i < retries - 1) {
+        console.warn(`503 High Demand Error. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
+        await new Promise(res => setTimeout(res, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+};
 
 export const generateProfessionalSummary = async (experience: any[], projects: any[], skills: any[], targetRole: string) => {
   if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
     You are an expert resume writer. Generate a powerful, ATS-friendly professional summary for a ${targetRole || 'Software Professional'}.
@@ -21,13 +36,14 @@ export const generateProfessionalSummary = async (experience: any[], projects: a
     - Return ONLY the summary text, nothing else.
   `;
 
-  const result = await model.generateContent(prompt);
+  const result = await generateWithRetry(model, prompt);
   return result.response.text().trim();
 };
 
 export const enhanceBulletPoint = async (bullet: string, role: string) => {
   if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
     You are an expert resume writer. Enhance the following resume bullet point for a ${role || 'Software'} role.
@@ -42,13 +58,14 @@ export const enhanceBulletPoint = async (bullet: string, role: string) => {
     - Return ONLY the enhanced text.
   `;
 
-  const result = await model.generateContent(prompt);
+  const result = await generateWithRetry(model, prompt);
   return result.response.text().replace(/^[-*•]\s*/, '').trim();
 };
 
 export const categorizeSkills = async (rawSkills: string) => {
   if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
     Categorize the following comma-separated skills into distinct groups like Frontend, Backend, Database, Cloud, Tools, Soft Skills, etc.
@@ -63,7 +80,7 @@ export const categorizeSkills = async (rawSkills: string) => {
     ]
   `;
 
-  const result = await model.generateContent(prompt);
+  const result = await generateWithRetry(model, prompt);
   let text = result.response.text().trim();
   // Remove markdown formatting if the model still returns it
   text = text.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
@@ -78,7 +95,8 @@ export const categorizeSkills = async (rawSkills: string) => {
 
 export const calculateATSScore = async (resumeData: any) => {
   if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
     You are an ATS (Applicant Tracking System) parser. Analyze this resume for a ${resumeData.targetRole || 'Software'} role.
@@ -101,7 +119,7 @@ export const calculateATSScore = async (resumeData: any) => {
     }
   `;
 
-  const result = await model.generateContent(prompt);
+  const result = await generateWithRetry(model, prompt);
   let text = result.response.text().trim();
   text = text.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
   
