@@ -39,7 +39,7 @@ export default function GoalMatrixCard({ goal }: GoalMatrixCardProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 mt-4">
+      <div className="flex gap-1.5 mt-4 overflow-x-auto pb-3 custom-scrollbar">
         {matrix.map((cell, idx) => {
           let bgColor = 'bg-gray-100 border-gray-200';
           let icon = null;

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Send, UserPlus, Check, X as CloseIcon, MessageCircle } from 'lucide-react';
+import { Send, UserPlus, Check, X as CloseIcon, MessageCircle, ArrowLeft } from 'lucide-react';
 
 export default function ChatDashboard() {
   const { user } = useAuth();
@@ -149,9 +149,9 @@ export default function ChatDashboard() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-6 animate-slide-up-fade">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-6 animate-slide-up-fade">
       {/* Sidebar / List area */}
-      <div className="w-[30%] flex flex-col gap-6">
+      <div className={`w-full md:w-[30%] flex-col gap-6 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
         
         {/* Friends List - WhatsApp Style Sidebar */}
         <div className="glass p-4 rounded-2xl flex-1 flex flex-col overflow-hidden neon-border-brand transition-all">
@@ -256,11 +256,17 @@ export default function ChatDashboard() {
       </div>
 
       {/* Active Chat Area - WhatsApp Style Right Pane */}
-      <div className="flex-1 glass rounded-2xl flex flex-col overflow-hidden relative neon-border-brand">
+      <div className={`flex-1 glass rounded-2xl flex-col overflow-hidden relative neon-border-brand ${!activeChat ? 'hidden md:flex' : 'flex'} w-full`}>
         {activeChat ? (
           <>
             {/* Chat Header */}
-            <div className="h-20 border-b border-brand/20 flex items-center px-6 bg-black/40 backdrop-blur-md z-10 shrink-0">
+            <div className="h-20 border-b border-brand/20 flex items-center px-4 md:px-6 bg-black/40 backdrop-blur-md z-10 shrink-0">
+               <button 
+                 onClick={() => setActiveChat(null)}
+                 className="mr-3 md:hidden p-2 -ml-2 text-text-secondary hover:text-white rounded-full transition-colors"
+               >
+                 <ArrowLeft className="w-5 h-5" />
+               </button>
                <div className="relative">
                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-[0_0_15px_rgba(0,112,209,0.4)]">
                    {activeChat.name.charAt(0).toUpperCase()}

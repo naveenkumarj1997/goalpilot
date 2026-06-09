@@ -260,7 +260,7 @@ export default function Battleship() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto min-h-[900px] flex flex-col text-slate-100 bg-slate-900 p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative overflow-hidden">
+    <div className="max-w-6xl mx-auto min-h-screen md:min-h-[900px] flex flex-col text-slate-100 bg-slate-900 p-4 md:p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative overflow-hidden">
       
       {/* Background Ambience */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-900 rounded-full mix-blend-screen filter blur-[150px] opacity-20" />
@@ -281,9 +281,9 @@ export default function Battleship() {
         <div className="flex flex-col items-center z-10">
           <h2 className="text-2xl font-bold mb-6 text-slate-300">Deploy Your Fleet</h2>
           
-          <div className="flex gap-12">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-full overflow-hidden items-center lg:items-start">
             {/* My Grid */}
-            <div className="bg-blue-950 p-4 rounded-xl border-4 border-blue-900 shadow-2xl">
+            <div className="bg-blue-950 p-2 sm:p-4 rounded-xl border-4 border-blue-900 shadow-2xl max-w-full overflow-x-auto custom-scrollbar">
               <div className="grid grid-cols-10 gap-1 bg-blue-900 p-1 rounded-lg">
                 {Array.from({ length: 10 }).map((_, r) => 
                   Array.from({ length: 10 }).map((_, c) => {
@@ -292,7 +292,7 @@ export default function Battleship() {
                       <div 
                         key={`${r}-${c}`}
                         onClick={() => handleCellClickPlacement(r, c)}
-                        className={`w-10 h-10 sm:w-12 sm:h-12 border rounded-sm transition-colors cursor-pointer
+                        className={`w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 border rounded-sm transition-colors cursor-pointer
                           ${hasShip ? 'bg-green-400 border-green-200 shadow-[0_0_15px_rgba(74,222,128,1)] z-10 relative' : 'border-blue-800/50 bg-blue-500/10 hover:bg-blue-400/30'}
                         `}
                       >
@@ -370,7 +370,7 @@ export default function Battleship() {
       )}
 
       {(phase === 'battle' || phase === 'game_over') && (
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-12 z-10 w-full px-4">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 z-10 w-full px-2 sm:px-4">
           
           {/* Opponent Board (Attack here) */}
           <div className="flex flex-col items-center">
@@ -391,7 +391,7 @@ export default function Battleship() {
                       <div 
                         key={`op-${r}-${c}`}
                         onClick={() => handleAttack(r, c)}
-                        className={`relative w-10 h-10 sm:w-12 sm:h-12 border border-red-800/30 rounded-sm transition-all flex items-center justify-center overflow-hidden
+                        className={`relative w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 border border-red-800/30 rounded-sm transition-all flex items-center justify-center overflow-hidden
                           ${!state && isMyTurn ? 'cursor-pointer hover:bg-red-500/40 bg-red-500/10' : 'bg-red-900/40'}
                           ${state === 'miss' ? 'bg-blue-600/40' : ''}
                           ${state === 'hit' || state === 'sunk' ? 'bg-orange-600/80 shadow-[0_0_15px_rgba(249,115,22,0.8)]' : ''}
@@ -446,7 +446,7 @@ export default function Battleship() {
                     return (
                       <div 
                         key={`my-${r}-${c}`}
-                        className={`relative w-10 h-10 sm:w-12 sm:h-12 border rounded-sm flex items-center justify-center overflow-hidden
+                        className={`relative w-7 h-7 sm:w-10 sm:h-10 lg:w-12 lg:h-12 border rounded-sm flex items-center justify-center overflow-hidden
                           ${hasShip && !isHit ? 'bg-green-400 border-green-200 shadow-[0_0_15px_rgba(74,222,128,1)] z-10' : !hasShip ? 'border-blue-800/50 bg-blue-900/50' : 'border-blue-800/50'}
                           ${isMiss ? 'bg-blue-600/40' : ''}
                           ${isHit ? 'bg-red-600/80' : ''}

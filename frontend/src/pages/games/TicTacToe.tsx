@@ -133,7 +133,7 @@ export default function TicTacToe() {
   if (!state) return null;
 
   return (
-    <div className="max-w-4xl mx-auto h-[800px] flex flex-col text-slate-100 bg-slate-900 p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative">
+    <div className="max-w-4xl mx-auto min-h-[600px] md:h-[800px] flex flex-col text-slate-100 bg-slate-900 p-4 sm:p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative">
       <div className="absolute top-4 left-4">
         <button onClick={() => navigate('/games')} className="flex items-center text-slate-400 hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" /> Leave Match
@@ -145,7 +145,7 @@ export default function TicTacToe() {
       </div>
 
       {/* Players Header */}
-      <div className="flex justify-between items-center mb-12 px-10">
+      <div className="flex justify-between items-center mb-8 sm:mb-12 px-2 sm:px-10">
         <div className={`flex flex-col items-center ${isMyTurn && !winner ? 'scale-110 opacity-100' : 'opacity-50'} transition-all`}>
           <div className="text-4xl font-black text-blue-400 mb-2 drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">{mySymbol}</div>
           <span className="font-bold">{user?.name} (You)</span>
@@ -169,7 +169,7 @@ export default function TicTacToe() {
                 key={idx}
                 disabled={!!cell || !!winner || !isMyTurn}
                 onClick={() => handleCellClick(idx)}
-                className={`w-28 h-28 sm:w-32 sm:h-32 bg-slate-800 rounded-xl text-6xl font-black flex items-center justify-center transition-all
+                className={`w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-slate-800 rounded-xl text-4xl sm:text-6xl font-black flex items-center justify-center transition-all
                   ${!cell && isMyTurn && !winner ? 'hover:bg-slate-600 cursor-pointer' : 'cursor-default'}
                   ${isWinningCell ? 'bg-green-500/20 border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]' : ''}
                 `}

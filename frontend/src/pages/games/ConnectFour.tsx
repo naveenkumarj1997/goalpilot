@@ -159,7 +159,7 @@ export default function ConnectFour() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[800px] flex flex-col text-slate-100 bg-slate-900 p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative">
+    <div className="max-w-4xl mx-auto min-h-[600px] md:h-[800px] flex flex-col text-slate-100 bg-slate-900 p-4 sm:p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative">
       <div className="absolute top-4 left-4">
         <button onClick={() => navigate('/games')} className="flex items-center text-slate-400 hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" /> Leave Match
@@ -187,7 +187,7 @@ export default function ConnectFour() {
 
       {/* Game Board */}
       <div className="flex-1 flex justify-center items-center">
-        <div className="bg-blue-600 p-3 pb-4 rounded-xl shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-b-8 border-blue-800">
+        <div className="bg-blue-600 p-1 sm:p-3 pb-2 sm:pb-4 rounded-xl shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-b-4 sm:border-b-8 border-blue-800">
           <div className="flex gap-2">
             {Array.from({ length: COLS }).map((_, colIndex) => (
               <div 
@@ -202,12 +202,12 @@ export default function ConnectFour() {
                   return (
                     <div 
                       key={rowIndex} 
-                      className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-[3px] border-blue-700 bg-slate-900 transition-all flex items-center justify-center
+                      className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-full border-[3px] border-blue-700 bg-slate-900 transition-all flex items-center justify-center
                         ${isWinningCell ? 'ring-4 ring-white ring-offset-2 ring-offset-blue-600 animate-pulse' : ''}
                       `}
                     >
                       {cell && (
-                        <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full shadow-inner ${cell === 'RED' ? 'bg-red-500 shadow-red-700' : 'bg-yellow-400 shadow-yellow-600'}`} />
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-full shadow-inner ${cell === 'RED' ? 'bg-red-500 shadow-red-700' : 'bg-yellow-400 shadow-yellow-600'}`} />
                       )}
                     </div>
                   );

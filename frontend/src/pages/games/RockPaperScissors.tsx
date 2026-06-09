@@ -185,7 +185,7 @@ export default function RockPaperScissors() {
   if (!state) return null;
 
   return (
-    <div className="max-w-5xl mx-auto h-[800px] flex flex-col text-slate-100 bg-slate-900 p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative overflow-hidden">
+    <div className="max-w-5xl mx-auto min-h-[600px] md:h-[800px] flex flex-col text-slate-100 bg-slate-900 p-4 sm:p-8 rounded-3xl border border-blue-500/20 shadow-2xl relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-screen filter blur-[150px] opacity-10 animate-pulse" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[150px] opacity-10 animate-pulse" />
@@ -206,7 +206,7 @@ export default function RockPaperScissors() {
       </div>
 
       {/* Scoreboard */}
-      <div className="flex justify-center items-center gap-12 mb-16 relative z-10">
+      <div className="flex justify-center items-center gap-4 sm:gap-12 mb-8 sm:mb-16 relative z-10">
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold text-slate-300">{user?.name}</span>
           <div className="text-6xl font-black text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]">{myScore}</div>
@@ -230,7 +230,7 @@ export default function RockPaperScissors() {
         {/* Opponent Side */}
         <div className="mb-12 flex flex-col items-center">
           <span className="text-slate-500 font-bold mb-4 uppercase tracking-widest">Opponent</span>
-          <div className="w-32 h-32 rounded-3xl bg-slate-800 border-2 border-slate-700 shadow-xl flex items-center justify-center relative">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-slate-800 border-2 border-slate-700 shadow-xl flex items-center justify-center relative">
             <AnimatePresence mode="wait">
               {roundStatus === 'selecting' && !opLocked && (
                 <motion.div key="thinking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-4xl animate-pulse">🤔</motion.div>
@@ -294,7 +294,7 @@ export default function RockPaperScissors() {
                   key={choice}
                   disabled={roundStatus !== 'selecting' || myChoice !== null}
                   onClick={() => handleChoice(choice)}
-                  className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl flex flex-col items-center justify-center transition-all duration-300
+                  className={`relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center transition-all duration-300
                     ${isSelected 
                       ? 'bg-blue-600 border-2 border-blue-400 shadow-[0_0_25px_rgba(59,130,246,0.6)] scale-110 z-10' 
                       : 'bg-slate-800 border-2 border-slate-700'
@@ -303,8 +303,8 @@ export default function RockPaperScissors() {
                     ${roundStatus === 'selecting' && !myChoice ? 'hover:bg-slate-700 hover:scale-105 cursor-pointer' : 'cursor-default'}
                   `}
                 >
-                  <span className="text-5xl mb-2 drop-shadow-xl">{MOVES[choice].emoji}</span>
-                  <span className={`text-xs font-bold uppercase ${isSelected ? 'text-white' : 'text-slate-400'}`}>{MOVES[choice].label}</span>
+                  <span className="text-4xl sm:text-5xl mb-1 sm:mb-2 drop-shadow-xl">{MOVES[choice].emoji}</span>
+                  <span className={`text-[10px] sm:text-xs font-bold uppercase ${isSelected ? 'text-white' : 'text-slate-400'}`}>{MOVES[choice].label}</span>
                 </button>
               );
             })}
