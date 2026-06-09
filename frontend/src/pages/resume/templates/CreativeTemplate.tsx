@@ -1,4 +1,3 @@
-import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
 
 // Register fonts
@@ -167,7 +166,7 @@ export default function CreativeTemplate({ data }: { data: any }) {
           
           {personalInfo?.summary && (
             <View>
-              <Text style={styles.sectionTitleRight} style={[styles.sectionTitleRight, { marginTop: 0 }]}>Profile</Text>
+              <Text style={[styles.sectionTitleRight, { marginTop: 0 }]}>Profile</Text>
               <Text style={styles.summary}>{personalInfo.summary}</Text>
             </View>
           )}
