@@ -23,6 +23,9 @@ import JobAnalytics from './pages/jobs/JobAnalytics';
 import AdminCompanySources from './pages/jobs/AdminCompanySources';
 import Settings from './pages/settings/Settings';
 import ChatDashboard from './pages/chat/ChatDashboard';
+import ResumeDashboard from './pages/resume/ResumeDashboard';
+import ResumeBuilder from './pages/resume/ResumeBuilder';
+import ResumePreview from './pages/resume/ResumePreview';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -63,6 +66,11 @@ function App() {
               <Route path="/jobs/admin" element={<AdminCompanySources />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/chat" element={<ChatDashboard />} />
+              
+              {/* Resume Builder */}
+              <Route path="/resume" element={<ResumeDashboard />} />
+              <Route path="/resume/:id/edit" element={<ResumeBuilder />} />
+              <Route path="/resume/:id/preview" element={<ResumePreview />} />
             </Route>
           </Route>
           </Routes>
