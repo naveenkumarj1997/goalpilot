@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { trackCurve, TRACK_WIDTH } from './trackCurve';
 
 interface TrackLoaderProps {
   trackId: number;
@@ -7,62 +8,66 @@ interface TrackLoaderProps {
 
 const getTrackTheme = (id: number) => {
   switch(id) {
-    case 0: return { ground: '#fef08a', wall: '#16a34a', sky: '#38bdf8', road: '#334155' }; // Tropical
-    case 1: return { ground: '#451a03', wall: '#dc2626', sky: '#7f1d1d', road: '#1e293b' }; // Volcano
-    case 2: return { ground: '#e0f2fe', wall: '#3b82f6', sky: '#bae6fd', road: '#94a3b8' }; // Snow
-    case 3: return { ground: '#d97706', wall: '#b45309', sky: '#fcd34d', road: '#475569' }; // Desert
-    case 4: return { ground: '#064e3b', wall: '#14532d', sky: '#6ee7b7', road: '#1e293b' }; // Jungle
-    default: return { ground: '#333333', wall: '#666666', sky: '#87CEEB', road: '#333333' };
+    case 0: return { ground: '#fef08a', wall: '#16a34a', sky: '#38bdf8' }; // Tropical
+    case 1: return { ground: '#451a03', wall: '#dc2626', sky: '#7f1d1d' }; // Volcano
+    case 2: return { ground: '#e0f2fe', wall: '#3b82f6', sky: '#bae6fd' }; // Snow
+    case 3: return { ground: '#d97706', wall: '#b45309', sky: '#fcd34d' }; // Desert
+    case 4: return { ground: '#064e3b', wall: '#14532d', sky: '#6ee7b7' }; // Jungle
+    default: return { ground: '#333333', wall: '#666666', sky: '#87CEEB' };
   }
 };
 
 export default function TrackLoader({ trackId }: TrackLoaderProps) {
   const theme = getTrackTheme(trackId);
 
-  // Generate a procedural racing track curve (Figure-8 like)
-  const curve = useMemo(() => {
-    return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0, 0, 80),
-      new THREE.Vector3(50, 0, 150),
-      new THREE.Vector3(120, 0, 150),
-      new THREE.Vector3(180, 0, 80),
-      new THREE.Vector3(180, 0, -80),
-      new THREE.Vector3(120, 0, -150),
-      new THREE.Vector3(50, 0, -150),
-      new THREE.Vector3(0, 0, -80),
-    ], true); // true = closed loop
-  }, []);
-
-  // Generate road geometry by extruding a flat shape along the curve
+  // Generate road geometry
   const roadGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    // Flat road cross-section (width: 30)
-    shape.moveTo(-15, 0.1);
-    shape.lineTo(15, 0.1);
+    // Flat road cross-section based on TRACK_WIDTH
+    shape.moveTo(-TRACK_WIDTH, 0.1);
+    shape.lineTo(TRACK_WIDTH, 0.1);
     
     return new THREE.ExtrudeGeometry(shape, {
-      extrudePath: curve,
+      extrudePath: trackCurve,
       steps: 200,
       bevelEnabled: false,
     });
-  }, [curve]);
+  }, []);
+
+  // Generate guardrail geometries (inner and outer)
+  const [leftRailGeo, rightRailGeo] = useMemo(() => {
+    const leftShape = new THREE.Shape();
+    leftShape.moveTo(-TRACK_WIDTH - 0.5, 0.1);
+    leftShape.lineTo(-TRACK_WIDTH - 0.5, 2);
+    leftShape.lineTo(-TRACK_WIDTH - 1, 2);
+    leftShape.lineTo(-TRACK_WIDTH - 1, 0.1);
+
+    const rightShape = new THREE.Shape();
+    rightShape.moveTo(TRACK_WIDTH + 0.5, 0.1);
+    rightShape.lineTo(TRACK_WIDTH + 0.5, 2);
+    rightShape.lineTo(TRACK_WIDTH + 1, 2);
+    rightShape.lineTo(TRACK_WIDTH + 1, 0.1);
+
+    return [
+      new THREE.ExtrudeGeometry(leftShape, { extrudePath: trackCurve, steps: 200, bevelEnabled: false }),
+      new THREE.ExtrudeGeometry(rightShape, { extrudePath: trackCurve, steps: 200, bevelEnabled: false })
+    ];
+  }, []);
 
   // Generate side decorations
   const decorations = useMemo(() => {
     const decs = [];
-    // Spawn 100 random trees/rocks around the map
-    for(let i=0; i<150; i++) {
-      const x = (Math.random() - 0.5) * 400;
-      const z = (Math.random() - 0.5) * 400;
+    // Spawn 300 random trees/rocks around the map
+    for(let i=0; i<300; i++) {
+      const x = (Math.random() - 0.5) * 450;
+      const z = (Math.random() - 0.5) * 450;
       
       // Don't spawn ON the road. Check distance to curve.
-      // We do a simple bounding box check here to avoid complex math in render loop
       let tooClose = false;
       const point = new THREE.Vector3(x, 0, z);
-      const points = curve.getPoints(50);
+      const points = trackCurve.getPoints(100);
       for(let p of points) {
-        if (p.distanceTo(point) < 25) {
+        if (p.distanceTo(point) < TRACK_WIDTH + 5) {
           tooClose = true;
           break;
         }
@@ -71,13 +76,13 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
       if (!tooClose) {
         decs.push({
           position: [x, 0, z] as [number, number, number],
-          scale: Math.random() * 2 + 1,
+          scale: Math.random() * 2 + 1.5,
           type: Math.random() > 0.5 ? 'tree' : 'rock'
         });
       }
     }
     return decs;
-  }, [curve]);
+  }, []);
 
   return (
     <group>
@@ -91,28 +96,36 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
         <meshStandardMaterial color={theme.ground} roughness={1} />
       </mesh>
 
-      {/* The Drivable Road */}
+      {/* The Drivable Road - BLACK ASPHALT */}
       <mesh geometry={roadGeometry} receiveShadow>
-        <meshStandardMaterial color={theme.road} roughness={0.9} />
+        <meshStandardMaterial color="#111827" roughness={0.9} />
+      </mesh>
+
+      {/* Guardrails */}
+      <mesh geometry={leftRailGeo} castShadow receiveShadow>
+        <meshStandardMaterial color="#ef4444" roughness={0.5} />
+      </mesh>
+      <mesh geometry={rightRailGeo} castShadow receiveShadow>
+        <meshStandardMaterial color="#ffffff" roughness={0.5} />
       </mesh>
 
       {/* Starting Line */}
       <mesh position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[30, 4]} />
+        <planeGeometry args={[TRACK_WIDTH * 2, 4]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
       
       {/* Starting Arch */}
-      <mesh position={[-15, 10, 0]} castShadow>
+      <mesh position={[-TRACK_WIDTH, 10, 0]} castShadow>
         <cylinderGeometry args={[0.5, 0.5, 20]} />
         <meshStandardMaterial color="#ef4444" />
       </mesh>
-      <mesh position={[15, 10, 0]} castShadow>
+      <mesh position={[TRACK_WIDTH, 10, 0]} castShadow>
         <cylinderGeometry args={[0.5, 0.5, 20]} />
         <meshStandardMaterial color="#ef4444" />
       </mesh>
       <mesh position={[0, 20, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-        <cylinderGeometry args={[1, 1, 30]} />
+        <cylinderGeometry args={[1, 1, TRACK_WIDTH * 2]} />
         <meshStandardMaterial color="#ef4444" />
       </mesh>
 

@@ -1,22 +1,9 @@
 import { useRef, useEffect } from 'react';
 import { useKartStore } from './store';
-import * as THREE from 'three';
+import { trackCurve } from './trackCurve';
 
 export default function Minimap() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  // The exact same curve used in TrackLoader.tsx
-  const trackCurve = useRef(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, 80),
-    new THREE.Vector3(50, 0, 150),
-    new THREE.Vector3(120, 0, 150),
-    new THREE.Vector3(180, 0, 80),
-    new THREE.Vector3(180, 0, -80),
-    new THREE.Vector3(120, 0, -150),
-    new THREE.Vector3(50, 0, -150),
-    new THREE.Vector3(0, 0, -80),
-  ], true));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,7 +36,7 @@ export default function Minimap() {
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
       
-      const points = trackCurve.current.getPoints(50);
+      const points = trackCurve.getPoints(50);
       ctx.beginPath();
       points.forEach((p, i) => {
         const drawX = p.x * scale + offsetX;

@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useKartStore } from './store';
 import ProceduralKart from './ProceduralKart';
 import { Socket } from 'socket.io-client';
+import { trackCurve, TRACK_WIDTH } from './trackCurve';
 
 interface PlayerKartProps {
   character: string;
@@ -86,7 +87,35 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
       // Movement
       const moveVec = new THREE.Vector3(0, 0, 1).applyEuler(group.current.rotation);
-      group.current.position.addScaledVector(moveVec, velocity.current * delta);
+      const nextPos = group.current.position.clone().addScaledVector(moveVec, velocity.current * delta);
+
+      // Track Boundary Constraint
+      // Find nearest point on the track curve
+      // For performance in useFrame, we can sample the curve or use a simplified distance check
+      // However, CatmullRomCurve3 has a built-in method or we can just iterate.
+      // We will sample 100 points and find the closest distance
+      const points = trackCurve.getPoints(100);
+      let minDistance = Infinity;
+      let closestPoint = points[0];
+      
+      for(let i=0; i<points.length; i++) {
+        const dist = nextPos.distanceTo(points[i]);
+        if(dist < minDistance) {
+          minDistance = dist;
+          closestPoint = points[i];
+        }
+      }
+
+      // If we are about to go off the road (beyond TRACK_WIDTH)
+      if (minDistance > TRACK_WIDTH) {
+        // Hard bounce / stop
+        velocity.current *= -0.5; // Bounce back
+        // Push slightly back towards the closest valid point
+        const pushDir = closestPoint.clone().sub(nextPos).normalize();
+        nextPos.addScaledVector(pushDir, minDistance - TRACK_WIDTH + 1);
+      }
+
+      group.current.position.copy(nextPos);
     }
 
     // Camera follow (chase cam)

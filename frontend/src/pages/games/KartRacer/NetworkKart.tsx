@@ -38,7 +38,7 @@ export default function NetworkKart({ character, kart }: NetworkKartProps) {
 
   return (
     <group ref={group}>
-      <ProceduralKart character={character} kart={kart} />
+      <ProceduralKart character={character} kart={kart} isOpponent={true} />
       {/* Optional: Opponent Name Tag floating above */}
     </group>
   );
