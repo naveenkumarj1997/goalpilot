@@ -58,20 +58,25 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
   const friction = 5;
   const turnSpeed = 2.0; // Slightly reduced turn speed to match lower speed
 
+  // Crash State
+  const crashTimer = useRef(0);
+  const initialZRotation = useRef(0);
+
   // Network sync throttle
   const lastSync = useRef(0);
 
-  // Initialize position on mount or when store updates initially
+  // Initialize position immediately on mount
   const isInitialized = useRef(false);
-
-  useFrame((_state, delta) => {
-    if (!group.current) return;
-
-    if (!isInitialized.current && gameState !== 'loading') {
+  useEffect(() => {
+    if (group.current) {
       group.current.position.copy(useKartStore.getState().position);
       group.current.rotation.copy(useKartStore.getState().rotation);
       isInitialized.current = true;
     }
+  }, []);
+
+  useFrame((_state, delta) => {
+    if (!group.current) return;
 
     // Merge physical keyboard and mobile on-screen controls inside the frame loop
     // so we always get the latest state without relying on React renders
@@ -86,57 +91,74 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
     };
 
     if (gameState === 'racing') {
-      // Acceleration
-      if (activeKeys.forward) velocity.current += acceleration * delta;
-      else if (activeKeys.backward) velocity.current -= acceleration * delta;
-      else {
-        // Friction
-        if (velocity.current > 0) velocity.current = Math.max(0, velocity.current - friction * delta);
-        if (velocity.current < 0) velocity.current = Math.min(0, velocity.current + friction * delta);
-      }
-
-      // Cap speed
-      velocity.current = THREE.MathUtils.clamp(velocity.current, -maxSpeed / 2, maxSpeed);
-
-      // Steering
-      // Only steer if moving
-      if (Math.abs(velocity.current) > 1) {
-        const turnDir = velocity.current > 0 ? 1 : -1;
-        if (activeKeys.left) group.current.rotation.y += turnSpeed * delta * turnDir;
-        if (activeKeys.right) group.current.rotation.y -= turnSpeed * delta * turnDir;
-      }
-
-      // Movement
-      const moveVec = new THREE.Vector3(0, 0, 1).applyEuler(group.current.rotation);
-      const nextPos = group.current.position.clone().addScaledVector(moveVec, velocity.current * delta);
-
-      // Track Boundary Constraint
-      // Find nearest point on the track curve
-      // For performance in useFrame, we can sample the curve or use a simplified distance check
-      // However, CatmullRomCurve3 has a built-in method or we can just iterate.
-      // We will sample 100 points and find the closest distance
-      const points = trackCurve.getPoints(100);
-      let minDistance = Infinity;
-      let closestPoint = points[0];
-      
-      for(let i=0; i<points.length; i++) {
-        const dist = nextPos.distanceTo(points[i]);
-        if(dist < minDistance) {
-          minDistance = dist;
-          closestPoint = points[i];
+      if (crashTimer.current > 0) {
+        // Crash Animation (Flip in place)
+        crashTimer.current -= delta;
+        velocity.current = 0;
+        group.current.rotation.z += 15 * delta;
+        
+        // When flip is over, reset rotation
+        if (crashTimer.current <= 0) {
+          group.current.rotation.z = initialZRotation.current;
         }
-      }
+      } else {
+        // Collision Detection with Opponent
+        const oppPos = useKartStore.getState().opponentPosition;
+        if (oppPos.lengthSq() > 0 && group.current.position.distanceTo(oppPos) < 1.8) {
+          crashTimer.current = 1.0; // 1 second crash duration
+          initialZRotation.current = group.current.rotation.z;
+          velocity.current = 0; // Stop immediately
+        }
 
-      // If we are about to go off the road (beyond TRACK_WIDTH)
-      if (minDistance > TRACK_WIDTH) {
-        // Hard bounce / stop
-        velocity.current *= -0.5; // Bounce back
-        // Push slightly back towards the closest valid point
-        const pushDir = closestPoint.clone().sub(nextPos).normalize();
-        nextPos.addScaledVector(pushDir, minDistance - TRACK_WIDTH + 1);
-      }
+        // Acceleration
+        if (activeKeys.forward) velocity.current += acceleration * delta;
+        else if (activeKeys.backward) velocity.current -= acceleration * delta;
+        else {
+          // Friction
+          if (velocity.current > 0) velocity.current = Math.max(0, velocity.current - friction * delta);
+          if (velocity.current < 0) velocity.current = Math.min(0, velocity.current + friction * delta);
+        }
 
-      group.current.position.copy(nextPos);
+        // Cap speed
+        velocity.current = THREE.MathUtils.clamp(velocity.current, -maxSpeed / 2, maxSpeed);
+
+        // Steering
+        // Only steer if moving
+        if (Math.abs(velocity.current) > 1) {
+          const turnDir = velocity.current > 0 ? 1 : -1;
+          if (activeKeys.left) group.current.rotation.y += turnSpeed * delta * turnDir;
+          if (activeKeys.right) group.current.rotation.y -= turnSpeed * delta * turnDir;
+        }
+
+        // Movement
+        const moveVec = new THREE.Vector3(0, 0, 1).applyEuler(group.current.rotation);
+        const nextPos = group.current.position.clone().addScaledVector(moveVec, velocity.current * delta);
+
+        // Track Boundary Constraint
+        // Find nearest point on the track curve
+        const points = trackCurve.getPoints(100);
+        let minDistance = Infinity;
+        let closestPoint = points[0];
+        
+        for(let i=0; i<points.length; i++) {
+          const dist = nextPos.distanceTo(points[i]);
+          if(dist < minDistance) {
+            minDistance = dist;
+            closestPoint = points[i];
+          }
+        }
+
+        // If we are about to go off the road (beyond TRACK_WIDTH)
+        if (minDistance > TRACK_WIDTH) {
+          // Hard bounce / stop
+          velocity.current *= -0.5; // Bounce back
+          // Push slightly back towards the closest valid point
+          const pushDir = closestPoint.clone().sub(nextPos).normalize();
+          nextPos.addScaledVector(pushDir, minDistance - TRACK_WIDTH + 1);
+        }
+
+        group.current.position.copy(nextPos);
+      }
     }
 
     // Camera follow (chase cam)
@@ -148,12 +170,14 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
     camera.position.lerp(idealOffset, 5 * delta);
     camera.lookAt(group.current.position.clone().add(new THREE.Vector3(0, 1, 0)));
 
-    // Update Zustand
-    setLocalState({
-      position: group.current.position.clone(),
-      rotation: group.current.rotation.clone(),
-      speed: velocity.current,
-    });
+    // Update Zustand only if racing or countdown to avoid overwriting initial positions
+    if (gameState === 'racing' || gameState === 'countdown') {
+      setLocalState({
+        position: group.current.position.clone(),
+        rotation: group.current.rotation.clone(),
+        speed: velocity.current,
+      });
+    }
 
     // Network Sync (20Hz)
     const now = performance.now();

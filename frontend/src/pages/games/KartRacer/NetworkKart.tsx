@@ -15,6 +15,13 @@ export default function NetworkKart({ character, kart }: NetworkKartProps) {
   const targetRotation = useRef(new THREE.Euler());
 
   useEffect(() => {
+    targetPosition.current.copy(useKartStore.getState().opponentPosition);
+    targetRotation.current.copy(useKartStore.getState().opponentRotation);
+    if (group.current) {
+      group.current.position.copy(targetPosition.current);
+      group.current.rotation.copy(targetRotation.current);
+    }
+
     // Subscribe to Zustand store changes directly for high-perf updates without re-renders
     const unsub = useKartStore.subscribe((state) => {
       targetPosition.current.copy(state.opponentPosition);

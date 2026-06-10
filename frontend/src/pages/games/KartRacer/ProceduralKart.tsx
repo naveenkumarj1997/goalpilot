@@ -47,6 +47,8 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
   
   const leftHeadlight = useRef<THREE.MeshStandardMaterial>(null);
   const rightHeadlight = useRef<THREE.MeshStandardMaterial>(null);
+  const frontLed = useRef<THREE.MeshStandardMaterial>(null);
+  const backLed = useRef<THREE.MeshStandardMaterial>(null);
 
   // Exhaust particles
   const particlesCount = 10;
@@ -73,12 +75,18 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
     const bob = Math.sin(state.clock.elapsedTime * 20) * (speed / 100) * 0.05;
     chassis.current.position.y = bob;
 
-    // Headlights
-    const isMoving = speed > 1;
+    // Headlights & LEDs
+    const isMoving = Math.abs(speed) > 1;
     if (leftHeadlight.current && rightHeadlight.current) {
       const targetIntensity = isMoving ? 4 : 0.5;
       leftHeadlight.current.emissiveIntensity = THREE.MathUtils.lerp(leftHeadlight.current.emissiveIntensity, targetIntensity, 10 * delta);
       rightHeadlight.current.emissiveIntensity = THREE.MathUtils.lerp(rightHeadlight.current.emissiveIntensity, targetIntensity, 10 * delta);
+    }
+    if (frontLed.current && backLed.current) {
+      // Blink rapidly when moving
+      const blink = isMoving ? (Math.sin(state.clock.elapsedTime * 15) > 0 ? 5 : 0) : 0;
+      frontLed.current.emissiveIntensity = blink;
+      backLed.current.emissiveIntensity = blink;
     }
 
     // Exhaust Smoke Animation
@@ -179,6 +187,16 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
             <meshStandardMaterial color="#94a3b8" transparent opacity={0.8} depthWrite={false} />
           </mesh>
         ))}
+
+        {/* Blinking Red LEDs */}
+        <mesh position={[0, 0.45, 1.05]}>
+          <boxGeometry args={[0.3, 0.05, 0.05]} />
+          <meshStandardMaterial ref={frontLed} color="#7f1d1d" emissive="#ef4444" emissiveIntensity={0} />
+        </mesh>
+        <mesh position={[0, 0.7, -1.05]}>
+          <boxGeometry args={[0.6, 0.05, 0.05]} />
+          <meshStandardMaterial ref={backLed} color="#7f1d1d" emissive="#ef4444" emissiveIntensity={0} />
+        </mesh>
 
         {/* DRIVER (Procedural Voxel-ish) */}
         <group position={[0, 0.6, -0.2]}>
