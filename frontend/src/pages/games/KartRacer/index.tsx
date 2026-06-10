@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import KartSelection from './KartSelection';
 import TrackSelection from './TrackSelection';
 import Engine from './Engine';
+import { useKartStore } from './store';
 
 export default function KartRacer() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -51,6 +52,10 @@ export default function KartRacer() {
       if (data.type === 'kart:track_select') {
         setSelectedTrack(data.track);
         setPhase('racing');
+      }
+
+      if (data.type === 'kart:hit_opponent') {
+        useKartStore.getState().setLocalState({ isCrashed: true });
       }
     });
 
