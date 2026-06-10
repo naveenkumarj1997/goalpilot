@@ -14,7 +14,7 @@ const matchSchema = new Schema<IMatch>(
     gameType: {
       type: String,
       required: true,
-      enum: ['TicTacToe', 'ConnectFour', 'RockPaperScissors', 'Battleship'],
+      enum: ['TicTacToe', 'ConnectFour', 'RockPaperScissors', 'Battleship', 'KartRacer'],
     },
     winner: {
       type: Schema.Types.ObjectId,
