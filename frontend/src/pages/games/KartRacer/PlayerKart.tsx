@@ -61,8 +61,17 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
   // Network sync throttle
   const lastSync = useRef(0);
 
+  // Initialize position on mount or when store updates initially
+  const isInitialized = useRef(false);
+
   useFrame((_state, delta) => {
     if (!group.current) return;
+
+    if (!isInitialized.current && gameState !== 'loading') {
+      group.current.position.copy(useKartStore.getState().position);
+      group.current.rotation.copy(useKartStore.getState().rotation);
+      isInitialized.current = true;
+    }
 
     // Merge physical keyboard and mobile on-screen controls inside the frame loop
     // so we always get the latest state without relying on React renders

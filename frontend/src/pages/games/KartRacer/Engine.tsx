@@ -54,7 +54,7 @@ export default function Engine({
   useEffect(() => {
     // Initial Setup - Set to loading initially
     setLocalState({
-      position: new THREE.Vector3(isHost ? -5 : 5, 0.5, 0),
+      position: new THREE.Vector3(isHost ? -5 : 5, 0.0, 0),
       rotation: new THREE.Euler(0, 0, 0),
       gameState: 'loading',
       countdown: 3,

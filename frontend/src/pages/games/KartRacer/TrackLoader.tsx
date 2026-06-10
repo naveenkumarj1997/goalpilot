@@ -81,7 +81,7 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
       </mesh>
 
       {/* The Drivable Road - BLACK ASPHALT */}
-      <mesh geometry={roadGeometry} receiveShadow scale={[1, 0.01, 1]}>
+      <mesh geometry={roadGeometry} receiveShadow scale={[1, 0.001, 1]}>
         <meshStandardMaterial color="#111827" roughness={0.9} />
       </mesh>
 
