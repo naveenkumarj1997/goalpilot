@@ -4,6 +4,7 @@ import ConnectFour from './ConnectFour';
 import RockPaperScissors from './RockPaperScissors';
 import Battleship from './Battleship';
 import SnakeAndLadders from './SnakeAndLadders';
+import KartRacer from './KartRacer';
 
 export default function GamePlay() {
   const location = useLocation();
@@ -31,6 +32,10 @@ export default function GamePlay() {
 
   if (state.gameType === 'SnakeAndLadders') {
     return <SnakeAndLadders />;
+  }
+
+  if (state.gameType === 'KartRacer') {
+    return <KartRacer />;
   }
 
   return <Navigate to="/games" replace />;

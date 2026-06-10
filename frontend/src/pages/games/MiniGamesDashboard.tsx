@@ -203,7 +203,7 @@ export default function MiniGamesDashboard() {
           >
             <h3 className="text-xl font-bold text-white mb-4">Challenge {isInviting.name}</h3>
             <div className="space-y-3 mb-6">
-              {['TicTacToe', 'ConnectFour', 'RockPaperScissors', 'Battleship', 'SnakeAndLadders'].map(game => (
+              {['TicTacToe', 'ConnectFour', 'RockPaperScissors', 'Battleship', 'SnakeAndLadders', 'KartRacer'].map(game => (
                 <button
                   key={game}
                   onClick={() => setSelectedGame(game)}
@@ -214,7 +214,7 @@ export default function MiniGamesDashboard() {
                   }`}
                 >
                   <div className="font-bold">
-                    {game === 'TicTacToe' ? 'Tic-Tac-Toe' : game === 'ConnectFour' ? 'Connect Four' : game === 'RockPaperScissors' ? 'Rock Paper Scissors' : game === 'Battleship' ? 'Battleship' : 'Snakes & Ladders'}
+                    {game === 'TicTacToe' ? 'Tic-Tac-Toe' : game === 'ConnectFour' ? 'Connect Four' : game === 'RockPaperScissors' ? 'Rock Paper Scissors' : game === 'Battleship' ? 'Battleship' : game === 'KartRacer' ? 'Kart Racing 3D' : 'Snakes & Ladders'}
                   </div>
                 </button>
               ))}

@@ -118,7 +118,7 @@ export default function GameLobby() {
           <div className="bg-slate-800 p-4 rounded-xl w-full mb-8 flex flex-col items-center justify-center gap-1">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-blue-400" />
-              <span className="font-medium text-slate-300">Game: <span className="text-white font-bold">{state.gameType === 'TicTacToe' ? 'Tic-Tac-Toe' : state.gameType === 'ConnectFour' ? 'Connect Four' : state.gameType === 'Battleship' ? 'Battleship' : state.gameType === 'SnakeAndLadders' ? 'Snakes & Ladders' : 'Rock Paper Scissors'}</span></span>
+              <span className="font-medium text-slate-300">Game: <span className="text-white font-bold">{state.gameType === 'TicTacToe' ? 'Tic-Tac-Toe' : state.gameType === 'ConnectFour' ? 'Connect Four' : state.gameType === 'Battleship' ? 'Battleship' : state.gameType === 'SnakeAndLadders' ? 'Snakes & Ladders' : state.gameType === 'KartRacer' ? 'Kart Racing 3D' : 'Rock Paper Scissors'}</span></span>
             </div>
             {state.gameType === 'RockPaperScissors' && state.format && (
               <span className="text-xs font-bold text-purple-400 uppercase tracking-widest mt-1">

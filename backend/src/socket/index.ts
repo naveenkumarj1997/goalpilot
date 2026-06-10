@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import GameStat from '../models/GameStat';
+import KartStats from '../models/KartStats';
 import Match from '../models/Match';
 import Message from '../models/Message';
 import { Server as HttpServer } from 'http';
@@ -286,6 +287,25 @@ export const setupSocket = (httpServer: HttpServer) => {
           s2.draws += 1;
           s2.gamesPlayed += 1;
           await s2.save();
+        }
+
+        // --- KART RACING SPECIFIC STATS ---
+        if (gameType === 'KartRacer') {
+            if (!isDraw && winnerId && loserId) {
+                // Update Winner Kart Stats
+                let wkStat = await KartStats.findOne({ userId: winnerId });
+                if (!wkStat) wkStat = new KartStats({ userId: winnerId });
+                wkStat.wins += 1;
+                wkStat.totalRaces += 1;
+                await wkStat.save();
+
+                // Update Loser Kart Stats
+                let lkStat = await KartStats.findOne({ userId: loserId });
+                if (!lkStat) lkStat = new KartStats({ userId: loserId });
+                lkStat.losses += 1;
+                lkStat.totalRaces += 1;
+                await lkStat.save();
+            }
         }
         
         io.to(roomId).emit('statsUpdated');
