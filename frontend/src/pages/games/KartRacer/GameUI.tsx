@@ -1,4 +1,76 @@
 import { useKartStore } from './store';
+import { useState, useRef, useEffect } from 'react';
+
+function Joystick({ onMove, onStop }: { onMove: (x: number, y: number) => void, onStop: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleMove = (e: React.PointerEvent | PointerEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const maxRadius = rect.width / 2;
+
+    let deltaX = e.clientX - centerX;
+    let deltaY = e.clientY - centerY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    if (distance > maxRadius) {
+      deltaX = (deltaX / distance) * maxRadius;
+      deltaY = (deltaY / distance) * maxRadius;
+    }
+
+    setPosition({ x: deltaX, y: deltaY });
+    onMove(deltaX / maxRadius, deltaY / maxRadius);
+  };
+
+  const handleUp = () => {
+    setIsDragging(false);
+    setPosition({ x: 0, y: 0 });
+    onStop();
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('pointermove', handleMove);
+      window.addEventListener('pointerup', handleUp);
+      return () => {
+        window.removeEventListener('pointermove', handleMove);
+        window.removeEventListener('pointerup', handleUp);
+      };
+    }
+  }, [isDragging]);
+
+  return (
+    <div 
+      ref={containerRef}
+      className="w-32 h-32 bg-white/10 rounded-full border-2 border-white/30 backdrop-blur-md relative touch-none"
+      onPointerDown={(e) => {
+        setIsDragging(true);
+        const rect = e.currentTarget.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const maxRadius = rect.width / 2;
+        let deltaX = e.clientX - centerX;
+        let deltaY = e.clientY - centerY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        if (distance > maxRadius) {
+          deltaX = (deltaX / distance) * maxRadius;
+          deltaY = (deltaY / distance) * maxRadius;
+        }
+        setPosition({ x: deltaX, y: deltaY });
+        onMove(deltaX / maxRadius, deltaY / maxRadius);
+      }}
+    >
+      <div 
+        className="w-12 h-12 bg-white/50 rounded-full absolute top-1/2 left-1/2 shadow-lg pointer-events-none transition-transform duration-75"
+        style={{ transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))` }}
+      />
+    </div>
+  );
+}
 import { Shield, Rocket, Asterisk, Zap, LogOut } from 'lucide-react';
 import Minimap from './Minimap';
 import { useNavigate } from 'react-router-dom';
@@ -83,64 +155,38 @@ export default function GameUI() {
 
         {/* Mobile Controls (Visible only on small screens) */}
         <div className="absolute bottom-6 inset-x-6 sm:hidden pointer-events-auto flex justify-between items-end opacity-70 touch-none select-none">
-          {/* Steering D-Pad */}
-          <div className="flex gap-2">
-            <button 
-              className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/50 active:bg-white/40 flex items-center justify-center text-white"
-              onTouchStart={() => { useKartStore.getState().setMobileControls({ left: true }); }}
-              onTouchEnd={() => { useKartStore.getState().setMobileControls({ left: false }); }}
-              onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: true }); }}
-              onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
-              onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
-            >
-              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-r-[15px] border-r-white pointer-events-none" />
-            </button>
-            <button 
-              className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/50 active:bg-white/40 flex items-center justify-center text-white"
-              onTouchStart={() => { useKartStore.getState().setMobileControls({ right: true }); }}
-              onTouchEnd={() => { useKartStore.getState().setMobileControls({ right: false }); }}
-              onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: true }); }}
-              onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
-              onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
-            >
-              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-l-[15px] border-l-white pointer-events-none" />
-            </button>
-          </div>
+          {/* Analog Joystick */}
+          <Joystick 
+            onMove={(x, y) => {
+              useKartStore.getState().setMobileControls({
+                forward: y < -0.2,
+                backward: y > 0.2,
+                left: x < -0.2,
+                right: x > 0.2,
+              });
+            }}
+            onStop={() => {
+              useKartStore.getState().setMobileControls({
+                forward: false,
+                backward: false,
+                left: false,
+                right: false,
+              });
+            }}
+          />
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2">
             <button 
-              className="w-16 h-16 bg-green-500/50 backdrop-blur-md rounded-full border border-green-300 active:bg-green-500 flex items-center justify-center text-white font-black"
-              onTouchStart={() => { useKartStore.getState().setMobileControls({ forward: true }); }}
-              onTouchEnd={() => { useKartStore.getState().setMobileControls({ forward: false }); }}
-              onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: true }); }}
-              onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
-              onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
+              className="w-20 h-20 bg-blue-500/50 backdrop-blur-md rounded-full border border-blue-300 active:bg-blue-500 flex items-center justify-center text-white text-lg font-bold touch-none select-none"
+              onTouchStart={() => { useKartStore.getState().setMobileControls({ useItem: true }); }}
+              onTouchEnd={() => { useKartStore.getState().setMobileControls({ useItem: false }); }}
+              onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: true }); }}
+              onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
+              onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
             >
-              <span className="pointer-events-none">GAS</span>
+              <span className="pointer-events-none">ITEM</span>
             </button>
-            <div className="flex gap-2">
-              <button 
-                className="w-14 h-14 bg-red-500/50 backdrop-blur-md rounded-full border border-red-300 active:bg-red-500 flex items-center justify-center text-white text-xs font-bold"
-                onTouchStart={() => { useKartStore.getState().setMobileControls({ backward: true }); }}
-                onTouchEnd={() => { useKartStore.getState().setMobileControls({ backward: false }); }}
-                onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: true }); }}
-                onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
-                onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
-              >
-                <span className="pointer-events-none">BRK</span>
-              </button>
-              <button 
-                className="w-14 h-14 bg-blue-500/50 backdrop-blur-md rounded-full border border-blue-300 active:bg-blue-500 flex items-center justify-center text-white text-xs font-bold"
-                onTouchStart={() => { useKartStore.getState().setMobileControls({ useItem: true }); }}
-                onTouchEnd={() => { useKartStore.getState().setMobileControls({ useItem: false }); }}
-                onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: true }); }}
-                onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
-                onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
-              >
-                <span className="pointer-events-none">ITEM</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -68,21 +68,29 @@ export default function Engine({
     });
   }, [isHost]);
 
+  const [localReady, setLocalReady] = useState(false);
+  const [remoteReady, setRemoteReady] = useState(false);
+
   const handleSceneReady = useCallback(() => {
-    if (useKartStore.getState().gameState !== 'loading') return;
-    
-    // The scene is ready, let's start the countdown!
-    setLocalState({ gameState: 'countdown' });
-    let count = 3;
-    const interval = setInterval(() => {
-      count--;
-      setLocalState({ countdown: count });
-      if (count <= 0) {
-        clearInterval(interval);
-        setLocalState({ gameState: 'racing' });
-      }
-    }, 1000);
-  }, [setLocalState]);
+    if (useKartStore.getState().gameState !== 'loading' || localReady) return;
+    setLocalReady(true);
+    socket?.emit('gameMove', { roomId, moveData: { type: 'kart:scene_ready' } });
+  }, [socket, roomId, localReady]);
+
+  useEffect(() => {
+    if (localReady && remoteReady && useKartStore.getState().gameState === 'loading') {
+      setLocalState({ gameState: 'countdown' });
+      let count = 3;
+      const interval = setInterval(() => {
+        count--;
+        setLocalState({ countdown: count });
+        if (count <= 0) {
+          clearInterval(interval);
+          setLocalState({ gameState: 'racing' });
+        }
+      }, 1000);
+    }
+  }, [localReady, remoteReady, setLocalState]);
 
   // Race Timer
   useEffect(() => {
@@ -112,6 +120,10 @@ export default function Engine({
       if (data.type === 'kart:finish') {
         winnerRef.current = data.winnerId;
         setLocalState({ gameState: 'finished' });
+      }
+
+      if (data.type === 'kart:scene_ready') {
+        setRemoteReady(true);
       }
     });
 
