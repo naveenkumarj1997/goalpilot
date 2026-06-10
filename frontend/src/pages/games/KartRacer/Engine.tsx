@@ -106,17 +106,25 @@ export default function Engine({
     };
   }, [socket]);
 
-  // Realistic Lap Logic (Check crossing the starting line)
+  // Realistic Lap Logic (Check crossing the starting line + checkpoint)
+  const checkpointPassed = useRef(false);
+
   useEffect(() => {
     const checkLap = setInterval(() => {
       const { position, lap, gameState, raceTime } = useKartStore.getState();
       
+      // Checkpoint is on the far right side of the figure-8 track (x > 150)
+      if (gameState === 'racing' && position.x > 150) {
+        checkpointPassed.current = true;
+      }
+
       // The start line is at position [0, 0, 0] with the track going towards +Z initially.
       // So if Z crosses from negative to positive while X is roughly between -15 and 15, we completed a lap.
-      // This is a naive trigger, in a full game we need multiple checkpoints to prevent driving backwards.
-      if (gameState === 'racing' && position.z > 0 && position.z < 10 && position.x > -20 && position.x < 20) {
+      // We only allow a lap if the player has passed the halfway checkpoint.
+      if (gameState === 'racing' && checkpointPassed.current && position.z > 0 && position.z < 10 && position.x > -20 && position.x < 20) {
         if (lap < 3) {
           setLocalState({ lap: lap + 1, position: new THREE.Vector3(position.x, position.y, 15) }); // Teleport slightly to prevent double trigger
+          checkpointPassed.current = false; // Reset checkpoint for the next lap
         } else {
           // Finished
           setLocalState({ gameState: 'finished' });
