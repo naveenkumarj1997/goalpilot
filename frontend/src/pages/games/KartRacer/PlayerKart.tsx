@@ -51,6 +51,16 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
   const setLocalState = useKartStore(state => state.setLocalState);
   const gameState = useKartStore(state => state.gameState);
 
+  // Merge physical keyboard and mobile on-screen controls
+  const activeKeys = {
+    forward: keys.forward || useKartStore.getState().mobileControls.forward,
+    backward: keys.backward || useKartStore.getState().mobileControls.backward,
+    left: keys.left || useKartStore.getState().mobileControls.left,
+    right: keys.right || useKartStore.getState().mobileControls.right,
+    drift: keys.drift || useKartStore.getState().mobileControls.drift,
+    useItem: keys.useItem || useKartStore.getState().mobileControls.useItem,
+  };
+
   // Physics state
   const velocity = useRef(0);
   const maxSpeed = 100;
@@ -66,8 +76,8 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
     if (gameState === 'racing') {
       // Acceleration
-      if (keys.forward) velocity.current += acceleration * delta;
-      else if (keys.backward) velocity.current -= acceleration * delta;
+      if (activeKeys.forward) velocity.current += acceleration * delta;
+      else if (activeKeys.backward) velocity.current -= acceleration * delta;
       else {
         // Friction
         if (velocity.current > 0) velocity.current = Math.max(0, velocity.current - friction * delta);
@@ -81,8 +91,8 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
       // Only steer if moving
       if (Math.abs(velocity.current) > 1) {
         const turnDir = velocity.current > 0 ? 1 : -1;
-        if (keys.left) group.current.rotation.y += turnSpeed * delta * turnDir;
-        if (keys.right) group.current.rotation.y -= turnSpeed * delta * turnDir;
+        if (activeKeys.left) group.current.rotation.y += turnSpeed * delta * turnDir;
+        if (activeKeys.right) group.current.rotation.y -= turnSpeed * delta * turnDir;
       }
 
       // Movement

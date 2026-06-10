@@ -28,6 +28,10 @@ interface KartState {
   // Actions
   setLocalState: (partial: Partial<KartState>) => void;
   setOpponentState: (partial: Partial<KartState>) => void;
+  
+  // Mobile Controls
+  mobileControls: { forward: boolean; backward: boolean; left: boolean; right: boolean; drift: boolean; useItem: boolean };
+  setMobileControls: (controls: Partial<KartState['mobileControls']>) => void;
 }
 
 export const useKartStore = create<KartState>((set) => ({
@@ -53,4 +57,7 @@ export const useKartStore = create<KartState>((set) => ({
 
   setLocalState: (partial) => set((state) => ({ ...state, ...partial })),
   setOpponentState: (partial) => set((state) => ({ ...state, ...partial })),
+
+  mobileControls: { forward: false, backward: false, left: false, right: false, drift: false, useItem: false },
+  setMobileControls: (controls) => set((state) => ({ mobileControls: { ...state.mobileControls, ...controls } })),
 }));

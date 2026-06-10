@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -68,7 +68,9 @@ export default function Engine({
     });
   }, [isHost]);
 
-  const handleSceneReady = () => {
+  const handleSceneReady = useCallback(() => {
+    if (useKartStore.getState().gameState !== 'loading') return;
+    
     // The scene is ready, let's start the countdown!
     setLocalState({ gameState: 'countdown' });
     let count = 3;
@@ -80,7 +82,7 @@ export default function Engine({
         setLocalState({ gameState: 'racing' });
       }
     }, 1000);
-  };
+  }, [setLocalState]);
 
   // Race Timer
   useEffect(() => {
@@ -171,7 +173,7 @@ export default function Engine({
         </div>
       )}
 
-      <Canvas shadows camera={{ fov: 60 }}>
+      <Canvas shadows camera={{ fov: 60, position: [0, 4, -10] }}>
         <SceneReadyNotifier onReady={handleSceneReady} />
         
         <Environment preset="sunset" />
