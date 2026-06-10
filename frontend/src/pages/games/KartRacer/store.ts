@@ -13,6 +13,7 @@ interface KartState {
   isDrifting: boolean;
   boostAmount: number;
   isCrashed: boolean;
+  crashDuration: number;
   
   // Opponent (Interpolated)
   opponentPosition: THREE.Vector3;
@@ -46,6 +47,7 @@ export const useKartStore = create<KartState>((set) => ({
   isDrifting: false,
   boostAmount: 0,
   isCrashed: false,
+  crashDuration: 4.0,
 
   opponentPosition: new THREE.Vector3(0, 0, 0),
   opponentRotation: new THREE.Euler(0, 0, 0),

@@ -11,6 +11,7 @@ import TrackLoader from './TrackLoader';
 import MysteryBox from './MysteryBox';
 import GameUI from './GameUI';
 import MatchResults from './MatchResults';
+import WeaponManager from './WeaponManager';
 import TrafficLight from './TrafficLight';
 
 // Component that fires once the 3D scene is mounted
@@ -208,6 +209,7 @@ export default function Engine({
 
         <PlayerKart character={myCharacter} kart={myKart} socket={socket} roomId={roomId} />
         <NetworkKart character={opponentCharacter} kart={opponentKart} />
+        <WeaponManager socket={socket} roomId={roomId} myId={myId} />
 
         {/* Spread some mystery boxes around the new track */}
         <MysteryBox id="box1" position={[85, 1, 150]} socket={socket} roomId={roomId} />

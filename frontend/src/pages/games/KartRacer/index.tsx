@@ -55,7 +55,11 @@ export default function KartRacer() {
       }
 
       if (data.type === 'kart:hit_opponent') {
-        useKartStore.getState().setLocalState({ isCrashed: true });
+        useKartStore.getState().setLocalState({ isCrashed: true, crashDuration: 4.0 });
+      }
+
+      if (data.type === 'kart:weapon_hit') {
+        useKartStore.getState().setLocalState({ isCrashed: true, crashDuration: 10.0 });
       }
     });
 

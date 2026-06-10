@@ -5,6 +5,7 @@ import { useKartStore } from './store';
 import ProceduralKart from './ProceduralKart';
 import { Socket } from 'socket.io-client';
 import { trackCurve, TRACK_WIDTH } from './trackCurve';
+import { localWeapons } from './WeaponManager';
 
 interface PlayerKartProps {
   character: string;
@@ -53,16 +54,19 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
   // Physics state
   const velocity = useRef(0);
-  const maxSpeed = 10; // Significantly reduced per user request
-  const acceleration = 5; // Reduced proportional to max speed
-  const friction = 5;
-  const turnSpeed = 2.0; // Slightly reduced turn speed to match lower speed
+  const maxSpeed = 20; 
+  const acceleration = 10; 
+  const friction = 8;
+  const turnSpeed = 1.2; 
 
   // Crash State
   const crashTimer = useRef(0);
   const initialXRotation = useRef(0);
   const initialZRotation = useRef(0);
   const postCrashInvuln = useRef(0);
+
+  // Weapon State
+  const weaponCooldown = useRef(0);
 
   // Network sync throttle
   const lastSync = useRef(0);
@@ -99,7 +103,7 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
       // Handle external crash event (e.g., from network)
       if (useKartStore.getState().isCrashed && crashTimer.current <= 0 && postCrashInvuln.current <= 0) {
-        crashTimer.current = 4.0; // 4 seconds flip down
+        crashTimer.current = useKartStore.getState().crashDuration; // 4s for hit, 10s for weapon
         initialXRotation.current = group.current.rotation.x;
         initialZRotation.current = group.current.rotation.z;
         velocity.current = 0;
@@ -135,6 +139,24 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
             // Add invuln so we don't spam hits every frame
             postCrashInvuln.current = 2.0;
           }
+        }
+
+        // Weapons
+        if (weaponCooldown.current > 0) weaponCooldown.current -= delta;
+        if (activeKeys.useItem && weaponCooldown.current <= 0) {
+          const charName = character;
+          let weaponType = 'Laser';
+          if (charName === 'Tiger') weaponType = 'Sword';
+          else if (charName === 'Panda') weaponType = 'Bomb';
+          else if (charName === 'Fox') weaponType = 'Laser';
+          else if (charName === 'Eagle') weaponType = 'Tornado';
+          else if (charName === 'Monkey') weaponType = 'Banana';
+          else if (charName === 'Wolf') weaponType = 'Dash';
+          else if (charName === 'Rabbit') weaponType = 'Carrot';
+          else if (charName === 'Bear') weaponType = 'Slam';
+
+          localWeapons.fire(weaponType, group.current.position, group.current.rotation, socket?.id || 'local', socket, roomId);
+          weaponCooldown.current = 1.5; // 1.5 seconds cooldown
         }
 
         // Acceleration
