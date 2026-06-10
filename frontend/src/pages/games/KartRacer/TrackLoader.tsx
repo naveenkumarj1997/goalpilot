@@ -27,16 +27,7 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
     return new THREE.TubeGeometry(trackCurve, 200, TRACK_WIDTH, 8, true);
   }, []);
 
-  // Generate guardrail geometries
-  const [leftRailGeo, rightRailGeo] = useMemo(() => {
-    // Since the road is a scaled tube, the guardrails can also be tubes offset along the normal
-    // But for simplicity, we can just render two more TubeGeometries and offset their scales/positions
-    // Actually, TubeGeometry centers exactly on the curve. 
-    return [
-      new THREE.TubeGeometry(trackCurve, 200, TRACK_WIDTH + 1, 8, true),
-      new THREE.TubeGeometry(trackCurve, 200, TRACK_WIDTH + 1.5, 8, true)
-    ];
-  }, []);
+  // Guardrails removed because they obscured the track using TubeGeometry
 
   // Generate side decorations
   const decorations = useMemo(() => {
@@ -83,14 +74,6 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
       {/* The Drivable Road - BLACK ASPHALT */}
       <mesh geometry={roadGeometry} receiveShadow scale={[1, 0.001, 1]}>
         <meshStandardMaterial color="#111827" roughness={0.9} />
-      </mesh>
-
-      {/* Guardrails */}
-      <mesh geometry={leftRailGeo} castShadow receiveShadow scale={[1, 0.05, 1]}>
-        <meshStandardMaterial color="#ef4444" roughness={0.5} />
-      </mesh>
-      <mesh geometry={rightRailGeo} castShadow receiveShadow scale={[1, 0.05, 1]}>
-        <meshStandardMaterial color="#ffffff" roughness={0.5} />
       </mesh>
 
       {/* Starting Line */}
