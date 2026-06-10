@@ -51,16 +51,6 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
   const setLocalState = useKartStore(state => state.setLocalState);
   const gameState = useKartStore(state => state.gameState);
 
-  // Merge physical keyboard and mobile on-screen controls
-  const activeKeys = {
-    forward: keys.forward || useKartStore.getState().mobileControls.forward,
-    backward: keys.backward || useKartStore.getState().mobileControls.backward,
-    left: keys.left || useKartStore.getState().mobileControls.left,
-    right: keys.right || useKartStore.getState().mobileControls.right,
-    drift: keys.drift || useKartStore.getState().mobileControls.drift,
-    useItem: keys.useItem || useKartStore.getState().mobileControls.useItem,
-  };
-
   // Physics state
   const velocity = useRef(0);
   const maxSpeed = 10; // Significantly reduced per user request
@@ -73,6 +63,18 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
   useFrame((_state, delta) => {
     if (!group.current) return;
+
+    // Merge physical keyboard and mobile on-screen controls inside the frame loop
+    // so we always get the latest state without relying on React renders
+    const mobileControls = useKartStore.getState().mobileControls;
+    const activeKeys = {
+      forward: keys.forward || mobileControls.forward,
+      backward: keys.backward || mobileControls.backward,
+      left: keys.left || mobileControls.left,
+      right: keys.right || mobileControls.right,
+      drift: keys.drift || mobileControls.drift,
+      useItem: keys.useItem || mobileControls.useItem,
+    };
 
     if (gameState === 'racing') {
       // Acceleration
