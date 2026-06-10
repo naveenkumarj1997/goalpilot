@@ -82,24 +82,28 @@ export default function GameUI() {
         </div>
 
         {/* Mobile Controls (Visible only on small screens) */}
-        <div className="absolute bottom-6 inset-x-6 sm:hidden pointer-events-auto flex justify-between items-end opacity-70">
+        <div className="absolute bottom-6 inset-x-6 sm:hidden pointer-events-auto flex justify-between items-end opacity-70 touch-none select-none">
           {/* Steering D-Pad */}
           <div className="flex gap-2">
             <button 
               className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/50 active:bg-white/40 flex items-center justify-center text-white"
+              onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: true }); }}
+              onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
               onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: true }); }}
               onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
               onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
             >
-              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-r-[15px] border-r-white" />
+              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-r-[15px] border-r-white pointer-events-none" />
             </button>
             <button 
               className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/50 active:bg-white/40 flex items-center justify-center text-white"
+              onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: true }); }}
+              onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
               onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: true }); }}
               onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
               onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
             >
-              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-l-[15px] border-l-white" />
+              <div className="w-0 h-0 border-y-[10px] border-y-transparent border-l-[15px] border-l-white pointer-events-none" />
             </button>
           </div>
 
@@ -107,28 +111,34 @@ export default function GameUI() {
           <div className="flex flex-col gap-2">
             <button 
               className="w-16 h-16 bg-green-500/50 backdrop-blur-md rounded-full border border-green-300 active:bg-green-500 flex items-center justify-center text-white font-black"
+              onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: true }); }}
+              onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
               onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: true }); }}
               onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
               onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
             >
-              GAS
+              <span className="pointer-events-none">GAS</span>
             </button>
             <div className="flex gap-2">
               <button 
                 className="w-14 h-14 bg-red-500/50 backdrop-blur-md rounded-full border border-red-300 active:bg-red-500 flex items-center justify-center text-white text-xs font-bold"
+                onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: true }); }}
+                onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
                 onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: true }); }}
                 onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
                 onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
               >
-                BRK
+                <span className="pointer-events-none">BRK</span>
               </button>
               <button 
                 className="w-14 h-14 bg-blue-500/50 backdrop-blur-md rounded-full border border-blue-300 active:bg-blue-500 flex items-center justify-center text-white text-xs font-bold"
+                onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: true }); }}
+                onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
                 onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: true }); }}
                 onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
                 onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
               >
-                ITEM
+                <span className="pointer-events-none">ITEM</span>
               </button>
             </div>
           </div>

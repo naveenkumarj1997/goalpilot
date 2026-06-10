@@ -95,6 +95,32 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
           <meshStandardMaterial color={body} />
         </mesh>
 
+        {/* Engine Block */}
+        <mesh castShadow position={[0, 0.55, -0.6]}>
+          <boxGeometry args={[0.6, 0.3, 0.4]} />
+          <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.2} />
+        </mesh>
+
+        {/* Exhaust Pipes */}
+        <mesh castShadow position={[-0.2, 0.4, -1.05]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.3, 8]} />
+          <meshStandardMaterial color="#94a3b8" metalness={1} roughness={0.1} />
+        </mesh>
+        <mesh castShadow position={[0.2, 0.4, -1.05]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.3, 8]} />
+          <meshStandardMaterial color="#94a3b8" metalness={1} roughness={0.1} />
+        </mesh>
+
+        {/* Headlights */}
+        <mesh position={[-0.4, 0.4, 1.01]}>
+          <circleGeometry args={[0.12, 16]} />
+          <meshStandardMaterial color="#fef08a" emissive="#facc15" emissiveIntensity={2} />
+        </mesh>
+        <mesh position={[0.4, 0.4, 1.01]}>
+          <circleGeometry args={[0.12, 16]} />
+          <meshStandardMaterial color="#fef08a" emissive="#facc15" emissiveIntensity={2} />
+        </mesh>
+
         {/* DRIVER (Procedural Voxel-ish) */}
         <group position={[0, 0.6, -0.2]}>
           {/* Body */}
