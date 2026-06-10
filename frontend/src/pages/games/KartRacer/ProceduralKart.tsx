@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
+import { Billboard } from '@react-three/drei';
+import { useState, useEffect } from 'react';
 import { useKartStore } from './store';
 
 interface ProceduralKartProps {
@@ -38,6 +40,17 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
   const charColor = getCharacterColor(character);
   const { body, detail } = getKartColors(kart);
   const group = useRef<THREE.Group>(null);
+  
+  const [charTex, setCharTex] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    const path = `/assets/kartracer/char_${character.toLowerCase()}.png`;
+    loader.load(path, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      setCharTex(tex);
+    });
+  }, [character]);
   
   const flWheel = useRef<THREE.Mesh>(null);
   const frWheel = useRef<THREE.Mesh>(null);
@@ -198,23 +211,34 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
           <meshStandardMaterial ref={backLed} color="#7f1d1d" emissive="#ef4444" emissiveIntensity={0} />
         </mesh>
 
-        {/* DRIVER (Procedural Voxel-ish) */}
+        {/* DRIVER (Sprite or Procedural Voxel-ish) */}
         <group position={[0, 0.6, -0.2]}>
-          {/* Body */}
-          <mesh castShadow position={[0, 0.3, 0]}>
-            <boxGeometry args={[0.6, 0.6, 0.5]} />
-            <meshStandardMaterial color={charColor} />
-          </mesh>
-          {/* Head */}
-          <mesh castShadow position={[0, 0.8, 0]}>
-            <boxGeometry args={[0.5, 0.5, 0.5]} />
-            <meshStandardMaterial color={charColor} />
-          </mesh>
-          {/* Eyes (Goggles) */}
-          <mesh position={[0, 0.85, 0.26]}>
-            <boxGeometry args={[0.4, 0.15, 0.05]} />
-            <meshStandardMaterial color="#22d3ee" metalness={0.8} roughness={0.2} />
-          </mesh>
+          {charTex ? (
+            <Billboard position={[0, 0.6, 0]} follow lockX={false} lockY={false} lockZ={false}>
+              <mesh>
+                <planeGeometry args={[1.5, 1.5]} />
+                <meshBasicMaterial map={charTex} transparent side={THREE.DoubleSide} alphaTest={0.5} />
+              </mesh>
+            </Billboard>
+          ) : (
+            <group>
+              {/* Body */}
+              <mesh castShadow position={[0, 0.3, 0]}>
+                <boxGeometry args={[0.6, 0.6, 0.5]} />
+                <meshStandardMaterial color={charColor} />
+              </mesh>
+              {/* Head */}
+              <mesh castShadow position={[0, 0.8, 0]}>
+                <boxGeometry args={[0.5, 0.5, 0.5]} />
+                <meshStandardMaterial color={charColor} />
+              </mesh>
+              {/* Eyes (Goggles) */}
+              <mesh position={[0, 0.85, 0.26]}>
+                <boxGeometry args={[0.4, 0.15, 0.05]} />
+                <meshStandardMaterial color="#22d3ee" metalness={0.8} roughness={0.2} />
+              </mesh>
+            </group>
+          )}
           {/* Steering Wheel */}
           <mesh position={[0, 0.4, 0.4]} rotation={[-Math.PI / 6, 0, 0]}>
             <torusGeometry args={[0.25, 0.05, 8, 24]} />

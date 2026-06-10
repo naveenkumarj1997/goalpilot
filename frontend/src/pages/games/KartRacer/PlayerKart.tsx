@@ -60,7 +60,9 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
   // Crash State
   const crashTimer = useRef(0);
+  const initialXRotation = useRef(0);
   const initialZRotation = useRef(0);
+  const postCrashInvuln = useRef(0);
 
   // Network sync throttle
   const lastSync = useRef(0);
@@ -91,23 +93,48 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
     };
 
     if (gameState === 'racing') {
+      if (postCrashInvuln.current > 0) {
+        postCrashInvuln.current -= delta;
+      }
+
+      // Handle external crash event (e.g., from network)
+      if (useKartStore.getState().isCrashed && crashTimer.current <= 0 && postCrashInvuln.current <= 0) {
+        crashTimer.current = 4.0; // 4 seconds flip down
+        initialXRotation.current = group.current.rotation.x;
+        initialZRotation.current = group.current.rotation.z;
+        velocity.current = 0;
+      }
+
       if (crashTimer.current > 0) {
-        // Crash Animation (Flip in place)
+        // Crash Animation (Flip upside down)
         crashTimer.current -= delta;
         velocity.current = 0;
-        group.current.rotation.z += 15 * delta;
+        group.current.rotation.x = Math.PI; // Flip upside down!
         
         // When flip is over, reset rotation
         if (crashTimer.current <= 0) {
+          group.current.rotation.x = initialXRotation.current;
           group.current.rotation.z = initialZRotation.current;
+          useKartStore.getState().setLocalState({ isCrashed: false });
+          postCrashInvuln.current = 2.0; // 2 seconds where we can't crash again
         }
       } else {
         // Collision Detection with Opponent
         const oppPos = useKartStore.getState().opponentPosition;
-        if (oppPos.lengthSq() > 0 && group.current.position.distanceTo(oppPos) < 1.8) {
-          crashTimer.current = 1.0; // 1 second crash duration
-          initialZRotation.current = group.current.rotation.z;
-          velocity.current = 0; // Stop immediately
+        if (oppPos.lengthSq() > 0 && group.current.position.distanceTo(oppPos) < 1.8 && postCrashInvuln.current <= 0) {
+          const oppSpeed = useKartStore.getState().opponentSpeed;
+          // We only trigger if WE hit THEM (we are moving faster than them)
+          if (Math.abs(velocity.current) > Math.abs(oppSpeed) && Math.abs(velocity.current) > 2) {
+            // We hit them! Send event.
+            if (socket) {
+               socket.emit('gameMove', {
+                  roomId,
+                  moveData: { type: 'kart:hit_opponent' }
+               });
+            }
+            // Add invuln so we don't spam hits every frame
+            postCrashInvuln.current = 2.0;
+          }
         }
 
         // Acceleration
