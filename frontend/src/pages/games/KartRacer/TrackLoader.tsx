@@ -94,7 +94,7 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
       </mesh>
 
       {/* Starting Line */}
-      <mesh position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[TRACK_WIDTH * 2, 4]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>

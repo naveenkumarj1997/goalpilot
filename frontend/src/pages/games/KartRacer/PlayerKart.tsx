@@ -140,7 +140,8 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
     }
 
     // Camera follow (chase cam)
-    const idealOffset = new THREE.Vector3(0, 3, -8);
+    const isMobile = window.innerWidth < 768;
+    const idealOffset = isMobile ? new THREE.Vector3(0, 7, -16) : new THREE.Vector3(0, 3, -8);
     idealOffset.applyEuler(group.current.rotation);
     idealOffset.add(group.current.position);
     
