@@ -1,9 +1,11 @@
 import { useKartStore } from './store';
-import { Shield, Rocket, Asterisk, Zap } from 'lucide-react';
+import { Shield, Rocket, Asterisk, Zap, LogOut } from 'lucide-react';
 import Minimap from './Minimap';
+import { useNavigate } from 'react-router-dom';
 
 export default function GameUI() {
   const { speed, lap, powerup, gameState, countdown, raceTime } = useKartStore();
+  const navigate = useNavigate();
 
   const getPowerupIcon = () => {
     switch(powerup) {
@@ -23,10 +25,22 @@ export default function GameUI() {
 
       {/* Top Bar: Lap & Race Time */}
       <div className="flex justify-between items-start">
-        {/* Lap Counter */}
-        <div className="bg-black/50 backdrop-blur-md p-4 rounded-xl border border-white/10 flex flex-col items-center">
-          <span className="text-white/70 text-xs font-bold uppercase tracking-widest">Lap</span>
-          <span className="text-4xl font-black italic text-white drop-shadow-md">{lap} <span className="text-xl text-white/50">/ 3</span></span>
+        
+        {/* Left Side: Leave Button & Lap Counter */}
+        <div className="flex flex-col gap-4">
+          <button 
+            onClick={() => navigate('/games')}
+            className="pointer-events-auto bg-red-500/80 hover:bg-red-500 backdrop-blur-md p-3 rounded-xl border border-white/10 flex items-center justify-center text-white transition-all shadow-lg w-14 h-14"
+            title="Leave Race"
+          >
+            <LogOut className="w-6 h-6" />
+          </button>
+
+          {/* Lap Counter */}
+          <div className="bg-black/50 backdrop-blur-md p-4 rounded-xl border border-white/10 flex flex-col items-center">
+            <span className="text-white/70 text-xs font-bold uppercase tracking-widest">Lap</span>
+            <span className="text-4xl font-black italic text-white drop-shadow-md">{lap} <span className="text-xl text-white/50">/ 3</span></span>
+          </div>
         </div>
 
         {/* Race Time */}
