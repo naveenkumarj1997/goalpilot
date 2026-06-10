@@ -9,22 +9,22 @@ interface KartSelectionProps {
 }
 
 const CHARACTERS = [
-  { name: 'Tiger', speedMod: 1.1, handlingMod: 0.9, accelMod: 1.0 },
-  { name: 'Fox', speedMod: 0.9, handlingMod: 1.1, accelMod: 1.2 },
-  { name: 'Panda', speedMod: 0.8, handlingMod: 1.2, accelMod: 0.9 },
-  { name: 'Monkey', speedMod: 0.9, handlingMod: 1.3, accelMod: 1.1 },
-  { name: 'Wolf', speedMod: 1.2, handlingMod: 0.8, accelMod: 1.0 },
-  { name: 'Rabbit', speedMod: 0.8, handlingMod: 1.0, accelMod: 1.3 },
-  { name: 'Bear', speedMod: 1.3, handlingMod: 0.7, accelMod: 0.8 },
-  { name: 'Eagle', speedMod: 1.1, handlingMod: 1.1, accelMod: 0.8 },
+  { name: 'Tiger', image: '/assets/kartracer/char_tiger.png', speedMod: 1.1, handlingMod: 0.9, accelMod: 1.0 },
+  { name: 'Fox', image: '/assets/kartracer/char_fox.png', speedMod: 0.9, handlingMod: 1.1, accelMod: 1.2 },
+  { name: 'Panda', image: '/assets/kartracer/char_panda.png', speedMod: 0.8, handlingMod: 1.2, accelMod: 0.9 },
+  { name: 'Monkey', image: '/assets/kartracer/char_monkey.png', speedMod: 0.9, handlingMod: 1.3, accelMod: 1.1 },
+  { name: 'Wolf', image: '/assets/kartracer/char_wolf.png', speedMod: 1.2, handlingMod: 0.8, accelMod: 1.0 },
+  { name: 'Rabbit', image: '/assets/kartracer/char_rabbit.png', speedMod: 0.8, handlingMod: 1.0, accelMod: 1.3 },
+  { name: 'Bear', image: '/assets/kartracer/char_bear.png', speedMod: 1.3, handlingMod: 0.7, accelMod: 0.8 },
+  { name: 'Eagle', image: '/assets/kartracer/char_eagle.png', speedMod: 1.1, handlingMod: 1.1, accelMod: 0.8 },
 ];
 
 const KARTS = [
-  { name: 'Classic Kart', speed: 50, handling: 50, accel: 50 },
-  { name: 'Speed Kart', speed: 80, handling: 30, accel: 40 },
-  { name: 'Heavy Kart', speed: 70, handling: 20, accel: 20 },
-  { name: 'Offroad Kart', speed: 40, handling: 80, accel: 50 },
-  { name: 'Turbo Kart', speed: 60, handling: 40, accel: 80 },
+  { name: 'Classic Kart', image: '/assets/kartracer/kart_classic.png', speed: 50, handling: 50, accel: 50 },
+  { name: 'Speed Kart', image: '/assets/kartracer/kart_speed.png', speed: 80, handling: 30, accel: 40 },
+  { name: 'Heavy Kart', image: '/assets/kartracer/kart_heavy.png', speed: 70, handling: 20, accel: 20 },
+  { name: 'Offroad Kart', image: '/assets/kartracer/kart_offroad.png', speed: 40, handling: 80, accel: 50 },
+  { name: 'Turbo Kart', image: '/assets/kartracer/kart_turbo.png', speed: 60, handling: 40, accel: 80 },
 ];
 
 export default function KartSelection({ onLockIn, isReady, opponentReady, opponentName }: KartSelectionProps) {
@@ -49,16 +49,17 @@ export default function KartSelection({ onLockIn, isReady, opponentReady, oppone
               <div 
                 key={c.name}
                 onClick={() => !isReady && setSelChar(c.name)}
-                className={`cursor-pointer rounded-xl p-4 flex flex-col items-center justify-center transition-all ${
+                className={`cursor-pointer rounded-2xl p-2 flex flex-col items-center justify-center transition-all ${
                   selChar === c.name 
-                    ? 'bg-cyan-500/20 border-2 border-cyan-400 scale-105 shadow-[0_0_15px_rgba(34,211,238,0.4)]' 
-                    : 'bg-slate-800 border-2 border-transparent hover:bg-slate-700 opacity-70'
+                    ? 'bg-cyan-500/20 border-2 border-cyan-400 scale-[1.05] shadow-[0_0_20px_rgba(34,211,238,0.5)] z-10 relative' 
+                    : 'bg-slate-800 border-2 border-transparent hover:bg-slate-700 opacity-60 hover:opacity-100'
                 } ${isReady ? 'pointer-events-none' : ''}`}
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 rounded-full mb-3 flex items-center justify-center border border-slate-600">
-                  <span className="text-3xl">🥽</span>
+                <div className="w-full aspect-square rounded-xl overflow-hidden mb-2 relative group">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
+                  <img src={c.image} alt={c.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 </div>
-                <span className="font-bold">{c.name}</span>
+                <span className="font-bold text-sm tracking-wider uppercase">{c.name}</span>
               </div>
             ))}
           </div>
@@ -72,13 +73,18 @@ export default function KartSelection({ onLockIn, isReady, opponentReady, oppone
               <div 
                 key={k.name}
                 onClick={() => !isReady && setSelKart(k.name)}
-                className={`cursor-pointer rounded-xl p-4 flex items-center justify-between transition-all ${
+                className={`cursor-pointer rounded-2xl p-3 flex items-center justify-between transition-all ${
                   selKart === k.name 
-                    ? 'bg-purple-500/20 border-2 border-purple-400 scale-[1.02] shadow-[0_0_15px_rgba(192,132,252,0.4)]' 
-                    : 'bg-slate-800 border-2 border-transparent hover:bg-slate-700 opacity-70'
+                    ? 'bg-purple-500/20 border-2 border-purple-400 scale-[1.03] shadow-[0_0_20px_rgba(192,132,252,0.5)] z-10 relative' 
+                    : 'bg-slate-800 border-2 border-transparent hover:bg-slate-700 opacity-60 hover:opacity-100'
                 } ${isReady ? 'pointer-events-none' : ''}`}
               >
-                <span className="font-bold text-lg">{k.name}</span>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden shadow-lg border border-slate-600">
+                    <img src={k.image} alt={k.name} className="w-full h-full object-cover" />
+                  </div>
+                  <span className="font-bold text-lg">{k.name}</span>
+                </div>
                 <div className="flex gap-4 text-xs">
                   <div className="flex flex-col items-center"><span className="text-slate-400">SPD</span><div className="w-12 h-2 bg-slate-700 rounded-full mt-1"><div className="h-full bg-blue-400 rounded-full" style={{ width: `${k.speed}%` }}/></div></div>
                   <div className="flex flex-col items-center"><span className="text-slate-400">ACC</span><div className="w-12 h-2 bg-slate-700 rounded-full mt-1"><div className="h-full bg-green-400 rounded-full" style={{ width: `${k.accel}%` }}/></div></div>

@@ -1,5 +1,6 @@
 import { useKartStore } from './store';
 import { Shield, Rocket, Asterisk, Zap } from 'lucide-react';
+import Minimap from './Minimap';
 
 export default function GameUI() {
   const { speed, lap, powerup, gameState, countdown, raceTime } = useKartStore();
@@ -15,9 +16,12 @@ export default function GameUI() {
   };
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
+    <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6">
       
-      {/* Top Bar */}
+      {/* Minimap */}
+      <Minimap />
+
+      {/* Top Bar: Lap & Race Time */}
       <div className="flex justify-between items-start">
         {/* Lap Counter */}
         <div className="bg-black/50 backdrop-blur-md p-4 rounded-xl border border-white/10 flex flex-col items-center">
@@ -48,8 +52,7 @@ export default function GameUI() {
 
       {/* Bottom Bar */}
       <div className="flex justify-between items-end">
-        
-        {/* Speedometer */}
+      {/* Speedometer */}
         <div className="relative w-40 h-40 bg-black/50 backdrop-blur-md rounded-full border-4 border-slate-800 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)]">
           <div className="absolute inset-2 rounded-full border-4 border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent rotate-45 opacity-50" />
           <span className="text-4xl font-black italic text-white">{Math.floor(speed)}</span>

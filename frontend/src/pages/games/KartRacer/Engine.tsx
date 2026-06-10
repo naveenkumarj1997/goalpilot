@@ -106,15 +106,17 @@ export default function Engine({
     };
   }, [socket]);
 
-  // Dummy Lap Logic (Check Z-crossing for now)
+  // Realistic Lap Logic (Check crossing the starting line)
   useEffect(() => {
     const checkLap = setInterval(() => {
       const { position, lap, gameState, raceTime } = useKartStore.getState();
-      if (gameState === 'racing' && position.z > 90 && position.z < 100) {
-        // Simple hack: if z crosses 90 -> 100 range going forward.
-        // In a real game, we'd need checkpoints to prevent turning around.
+      
+      // The start line is at position [0, 0, 0] with the track going towards +Z initially.
+      // So if Z crosses from negative to positive while X is roughly between -15 and 15, we completed a lap.
+      // This is a naive trigger, in a full game we need multiple checkpoints to prevent driving backwards.
+      if (gameState === 'racing' && position.z > 0 && position.z < 10 && position.x > -20 && position.x < 20) {
         if (lap < 3) {
-          setLocalState({ lap: lap + 1, position: new THREE.Vector3(position.x, position.y, 110) }); // Teleport slightly to prevent double trigger
+          setLocalState({ lap: lap + 1, position: new THREE.Vector3(position.x, position.y, 15) }); // Teleport slightly to prevent double trigger
         } else {
           // Finished
           setLocalState({ gameState: 'finished' });
@@ -162,10 +164,10 @@ export default function Engine({
         <PlayerKart character={myCharacter} kart={myKart} socket={socket} roomId={roomId} />
         <NetworkKart character={opponentCharacter} kart={opponentKart} />
 
-        {/* Spread some mystery boxes around */}
-        <MysteryBox id="box1" position={[0, 1, 50]} socket={socket} roomId={roomId} />
-        <MysteryBox id="box2" position={[-20, 1, 100]} socket={socket} roomId={roomId} />
-        <MysteryBox id="box3" position={[20, 1, 100]} socket={socket} roomId={roomId} />
+        {/* Spread some mystery boxes around the new track */}
+        <MysteryBox id="box1" position={[85, 1, 150]} socket={socket} roomId={roomId} />
+        <MysteryBox id="box2" position={[180, 1, 0]} socket={socket} roomId={roomId} />
+        <MysteryBox id="box3" position={[85, 1, -150]} socket={socket} roomId={roomId} />
       </Canvas>
     </div>
   );
