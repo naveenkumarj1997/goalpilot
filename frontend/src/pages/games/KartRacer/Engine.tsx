@@ -11,6 +11,17 @@ import TrackLoader from './TrackLoader';
 import MysteryBox from './MysteryBox';
 import GameUI from './GameUI';
 import MatchResults from './MatchResults';
+import TrafficLight from './TrafficLight';
+
+// Component that fires once the 3D scene is mounted
+function SceneReadyNotifier({ onReady }: { onReady: () => void }) {
+  useEffect(() => {
+    // Small delay to ensure shaders are somewhat compiled before starting countdown
+    const t = setTimeout(onReady, 1000);
+    return () => clearTimeout(t);
+  }, [onReady]);
+  return null;
+}
 
 interface EngineProps {
   roomId: string;
@@ -41,11 +52,11 @@ export default function Engine({
   const winnerRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Initial Setup
+    // Initial Setup - Set to loading initially
     setLocalState({
       position: new THREE.Vector3(isHost ? -5 : 5, 0.5, 0),
       rotation: new THREE.Euler(0, 0, 0),
-      gameState: 'countdown',
+      gameState: 'loading',
       countdown: 3,
       raceTime: 0,
       lap: 1
@@ -55,8 +66,11 @@ export default function Engine({
       opponentPosition: new THREE.Vector3(isHost ? 5 : -5, 0.5, 0),
       opponentRotation: new THREE.Euler(0, 0, 0)
     });
+  }, [isHost]);
 
-    // Countdown Timer
+  const handleSceneReady = () => {
+    // The scene is ready, let's start the countdown!
+    setLocalState({ gameState: 'countdown' });
     let count = 3;
     const interval = setInterval(() => {
       count--;
@@ -66,9 +80,7 @@ export default function Engine({
         setLocalState({ gameState: 'racing' });
       }
     }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  };
 
   // Race Timer
   useEffect(() => {
@@ -151,7 +163,17 @@ export default function Engine({
       
       <GameUI />
 
+      {gameState === 'loading' && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="text-white text-3xl font-black italic animate-pulse tracking-widest">
+            LOADING TRACK...
+          </div>
+        </div>
+      )}
+
       <Canvas shadows camera={{ fov: 60 }}>
+        <SceneReadyNotifier onReady={handleSceneReady} />
+        
         <Environment preset="sunset" />
         <ambientLight intensity={0.5} />
         <directionalLight 
@@ -168,6 +190,7 @@ export default function Engine({
         />
 
         <TrackLoader trackId={trackId} />
+        <TrafficLight />
 
         <PlayerKart character={myCharacter} kart={myKart} socket={socket} roomId={roomId} />
         <NetworkKart character={opponentCharacter} kart={opponentKart} />

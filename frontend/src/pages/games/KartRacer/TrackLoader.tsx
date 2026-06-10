@@ -20,37 +20,21 @@ const getTrackTheme = (id: number) => {
 export default function TrackLoader({ trackId }: TrackLoaderProps) {
   const theme = getTrackTheme(trackId);
 
-  // Generate road geometry
+  // Generate road geometry using TubeGeometry for robust orientation
   const roadGeometry = useMemo(() => {
-    const shape = new THREE.Shape();
-    // Flat road cross-section based on TRACK_WIDTH
-    shape.moveTo(-TRACK_WIDTH, 0.1);
-    shape.lineTo(TRACK_WIDTH, 0.1);
-    
-    return new THREE.ExtrudeGeometry(shape, {
-      extrudePath: trackCurve,
-      steps: 200,
-      bevelEnabled: false,
-    });
+    // We create a tube of radius TRACK_WIDTH, but we will scale it on the Y axis by 0.01 
+    // to flatten it into a perfect road without normal twisting issues.
+    return new THREE.TubeGeometry(trackCurve, 200, TRACK_WIDTH, 8, true);
   }, []);
 
-  // Generate guardrail geometries (inner and outer)
+  // Generate guardrail geometries
   const [leftRailGeo, rightRailGeo] = useMemo(() => {
-    const leftShape = new THREE.Shape();
-    leftShape.moveTo(-TRACK_WIDTH - 0.5, 0.1);
-    leftShape.lineTo(-TRACK_WIDTH - 0.5, 2);
-    leftShape.lineTo(-TRACK_WIDTH - 1, 2);
-    leftShape.lineTo(-TRACK_WIDTH - 1, 0.1);
-
-    const rightShape = new THREE.Shape();
-    rightShape.moveTo(TRACK_WIDTH + 0.5, 0.1);
-    rightShape.lineTo(TRACK_WIDTH + 0.5, 2);
-    rightShape.lineTo(TRACK_WIDTH + 1, 2);
-    rightShape.lineTo(TRACK_WIDTH + 1, 0.1);
-
+    // Since the road is a scaled tube, the guardrails can also be tubes offset along the normal
+    // But for simplicity, we can just render two more TubeGeometries and offset their scales/positions
+    // Actually, TubeGeometry centers exactly on the curve. 
     return [
-      new THREE.ExtrudeGeometry(leftShape, { extrudePath: trackCurve, steps: 200, bevelEnabled: false }),
-      new THREE.ExtrudeGeometry(rightShape, { extrudePath: trackCurve, steps: 200, bevelEnabled: false })
+      new THREE.TubeGeometry(trackCurve, 200, TRACK_WIDTH + 1, 8, true),
+      new THREE.TubeGeometry(trackCurve, 200, TRACK_WIDTH + 1.5, 8, true)
     ];
   }, []);
 
@@ -97,15 +81,15 @@ export default function TrackLoader({ trackId }: TrackLoaderProps) {
       </mesh>
 
       {/* The Drivable Road - BLACK ASPHALT */}
-      <mesh geometry={roadGeometry} receiveShadow>
+      <mesh geometry={roadGeometry} receiveShadow scale={[1, 0.01, 1]}>
         <meshStandardMaterial color="#111827" roughness={0.9} />
       </mesh>
 
       {/* Guardrails */}
-      <mesh geometry={leftRailGeo} castShadow receiveShadow>
+      <mesh geometry={leftRailGeo} castShadow receiveShadow scale={[1, 0.05, 1]}>
         <meshStandardMaterial color="#ef4444" roughness={0.5} />
       </mesh>
-      <mesh geometry={rightRailGeo} castShadow receiveShadow>
+      <mesh geometry={rightRailGeo} castShadow receiveShadow scale={[1, 0.05, 1]}>
         <meshStandardMaterial color="#ffffff" roughness={0.5} />
       </mesh>
 

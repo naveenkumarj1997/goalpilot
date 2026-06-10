@@ -21,7 +21,7 @@ interface KartState {
   opponentPowerup: string | null;
 
   // Game Match State
-  gameState: 'lobby' | 'countdown' | 'racing' | 'finished';
+  gameState: 'loading' | 'lobby' | 'countdown' | 'racing' | 'finished';
   countdown: number;
   raceTime: number;
 
@@ -47,7 +47,7 @@ export const useKartStore = create<KartState>((set) => ({
   opponentLap: 1,
   opponentPowerup: null,
 
-  gameState: 'lobby',
+  gameState: 'loading',
   countdown: 3,
   raceTime: 0,
 
