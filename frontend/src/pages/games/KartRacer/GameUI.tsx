@@ -87,8 +87,8 @@ export default function GameUI() {
           <div className="flex gap-2">
             <button 
               className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/50 active:bg-white/40 flex items-center justify-center text-white"
-              onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: true }); }}
-              onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
+              onTouchStart={() => { useKartStore.getState().setMobileControls({ left: true }); }}
+              onTouchEnd={() => { useKartStore.getState().setMobileControls({ left: false }); }}
               onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: true }); }}
               onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
               onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ left: false }); }}
@@ -97,8 +97,8 @@ export default function GameUI() {
             </button>
             <button 
               className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/50 active:bg-white/40 flex items-center justify-center text-white"
-              onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: true }); }}
-              onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
+              onTouchStart={() => { useKartStore.getState().setMobileControls({ right: true }); }}
+              onTouchEnd={() => { useKartStore.getState().setMobileControls({ right: false }); }}
               onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: true }); }}
               onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
               onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ right: false }); }}
@@ -111,8 +111,8 @@ export default function GameUI() {
           <div className="flex flex-col gap-2">
             <button 
               className="w-16 h-16 bg-green-500/50 backdrop-blur-md rounded-full border border-green-300 active:bg-green-500 flex items-center justify-center text-white font-black"
-              onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: true }); }}
-              onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
+              onTouchStart={() => { useKartStore.getState().setMobileControls({ forward: true }); }}
+              onTouchEnd={() => { useKartStore.getState().setMobileControls({ forward: false }); }}
               onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: true }); }}
               onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
               onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ forward: false }); }}
@@ -122,8 +122,8 @@ export default function GameUI() {
             <div className="flex gap-2">
               <button 
                 className="w-14 h-14 bg-red-500/50 backdrop-blur-md rounded-full border border-red-300 active:bg-red-500 flex items-center justify-center text-white text-xs font-bold"
-                onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: true }); }}
-                onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
+                onTouchStart={() => { useKartStore.getState().setMobileControls({ backward: true }); }}
+                onTouchEnd={() => { useKartStore.getState().setMobileControls({ backward: false }); }}
                 onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: true }); }}
                 onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
                 onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ backward: false }); }}
@@ -132,8 +132,8 @@ export default function GameUI() {
               </button>
               <button 
                 className="w-14 h-14 bg-blue-500/50 backdrop-blur-md rounded-full border border-blue-300 active:bg-blue-500 flex items-center justify-center text-white text-xs font-bold"
-                onTouchStart={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: true }); }}
-                onTouchEnd={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
+                onTouchStart={() => { useKartStore.getState().setMobileControls({ useItem: true }); }}
+                onTouchEnd={() => { useKartStore.getState().setMobileControls({ useItem: false }); }}
                 onPointerDown={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: true }); }}
                 onPointerUp={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
                 onPointerCancel={(e) => { e.preventDefault(); useKartStore.getState().setMobileControls({ useItem: false }); }}
