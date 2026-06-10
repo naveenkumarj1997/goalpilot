@@ -92,10 +92,27 @@ export default function GameUI() {
   return (
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6">
       
-      {/* Minimap */}
-      <Minimap />
+      {/* Top Right Container (Minimap + Speed + Item) */}
+      <div className="absolute top-6 right-6 flex flex-col items-end gap-4 pointer-events-none z-40">
+        <Minimap />
+        
+        {/* Powerup Slot */}
+        <div className="bg-black/50 backdrop-blur-md p-2 sm:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-700 shadow-lg pointer-events-auto">
+          <div className="w-12 h-12 sm:w-20 sm:h-20 bg-slate-900 rounded-lg sm:rounded-xl flex items-center justify-center border-2 border-slate-600 shadow-inner scale-75 sm:scale-100 origin-center">
+            {getPowerupIcon()}
+          </div>
+          <div className="text-center mt-1 sm:mt-2 text-[10px] sm:text-xs font-bold text-slate-300">ITEM</div>
+        </div>
 
-      {/* Top Bar: Lap & Race Time */}
+        {/* Speedometer */}
+        <div className="relative w-20 h-20 sm:w-32 sm:h-32 bg-black/50 backdrop-blur-md rounded-full border-2 sm:border-4 border-slate-800 flex flex-col items-center justify-center shadow-lg">
+          <div className="absolute inset-1 sm:inset-2 rounded-full border-2 sm:border-4 border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent rotate-45 opacity-50" />
+          <span className="text-2xl sm:text-4xl font-black italic text-white leading-none">{Math.floor(speed)}</span>
+          <span className="text-[8px] sm:text-xs text-white/50 font-bold tracking-widest mt-1">KM/H</span>
+        </div>
+      </div>
+
+      {/* Top Bar: Lap & Race Time (Left aligned now) */}
       <div className="flex justify-between items-start">
         
         {/* Left Side: Leave Button & Lap Counter */}
@@ -138,20 +155,8 @@ export default function GameUI() {
 
       {/* Bottom Bar */}
       <div className="flex justify-between items-end">
-      {/* Speedometer */}
-        <div className="relative w-40 h-40 bg-black/50 backdrop-blur-md rounded-full border-4 border-slate-800 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-          <div className="absolute inset-2 rounded-full border-4 border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent rotate-45 opacity-50" />
-          <span className="text-4xl font-black italic text-white">{Math.floor(speed)}</span>
-          <span className="text-xs text-white/50 font-bold tracking-widest">KM/H</span>
-        </div>
-
-        {/* Powerup Slot */}
-        <div className="bg-black/50 backdrop-blur-md p-4 rounded-2xl border-4 border-slate-700 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-          <div className="w-20 h-20 bg-slate-900 rounded-xl flex items-center justify-center border-2 border-slate-600 shadow-inner">
-            {getPowerupIcon()}
-          </div>
-          <div className="text-center mt-2 text-xs font-bold text-slate-300">ITEM</div>
-        </div>
+        {/* Bottom bar is now exclusively for mobile controls */}
+        {/* Mobile Controls (Visible only on small screens) */}
 
         {/* Mobile Controls (Visible only on small screens) */}
         <div className="absolute bottom-6 inset-x-6 sm:hidden pointer-events-auto flex justify-between items-end opacity-70 touch-none select-none">

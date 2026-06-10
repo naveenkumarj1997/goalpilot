@@ -104,12 +104,12 @@ export default function Minimap() {
   }, []);
 
   return (
-    <div className="absolute top-6 right-6 border-2 border-slate-600 rounded-2xl overflow-hidden shadow-2xl z-40 backdrop-blur-sm">
+    <div className="border-2 border-slate-600 rounded-xl overflow-hidden shadow-2xl z-40 backdrop-blur-sm pointer-events-auto">
       <canvas 
         ref={canvasRef} 
         width={200} 
         height={200} 
-        className="w-[200px] h-[200px]"
+        className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px]"
       />
     </div>
   );

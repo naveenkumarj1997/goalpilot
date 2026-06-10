@@ -44,6 +44,14 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
   const rlWheel = useRef<THREE.Mesh>(null);
   const rrWheel = useRef<THREE.Mesh>(null);
   const chassis = useRef<THREE.Group>(null);
+  
+  const leftHeadlight = useRef<THREE.MeshStandardMaterial>(null);
+  const rightHeadlight = useRef<THREE.MeshStandardMaterial>(null);
+
+  // Exhaust particles
+  const particlesCount = 10;
+  const particlesRef = useRef<(THREE.Mesh | null)[]>([]);
+  const particleAges = useRef<number[]>(new Array(particlesCount).fill(0));
 
   useFrame((state, delta) => {
     if (!group.current || !chassis.current) return;
@@ -64,6 +72,44 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
     // Instead, let's just add a bobbing animation based on speed
     const bob = Math.sin(state.clock.elapsedTime * 20) * (speed / 100) * 0.05;
     chassis.current.position.y = bob;
+
+    // Headlights
+    const isMoving = speed > 1;
+    if (leftHeadlight.current && rightHeadlight.current) {
+      const targetIntensity = isMoving ? 4 : 0.5;
+      leftHeadlight.current.emissiveIntensity = THREE.MathUtils.lerp(leftHeadlight.current.emissiveIntensity, targetIntensity, 10 * delta);
+      rightHeadlight.current.emissiveIntensity = THREE.MathUtils.lerp(rightHeadlight.current.emissiveIntensity, targetIntensity, 10 * delta);
+    }
+
+    // Exhaust Smoke Animation
+    particlesRef.current.forEach((particle, i) => {
+      if (!particle) return;
+      
+      if (isMoving) {
+        particleAges.current[i] += delta;
+        if (particleAges.current[i] > 0.5) { // Reset particle
+          particleAges.current[i] = -Math.random() * 0.5; // Staggered start
+          particle.position.set((Math.random() - 0.5) * 0.4, 0.4, -1.1);
+          particle.scale.setScalar(0.1);
+          (particle.material as THREE.MeshStandardMaterial).opacity = 0.8;
+        } else if (particleAges.current[i] > 0) {
+          // Move backward and up
+          particle.position.z -= delta * 2;
+          particle.position.y += delta * 1;
+          // Expand
+          const scale = 0.1 + particleAges.current[i] * 2;
+          particle.scale.setScalar(scale);
+          // Fade out
+          (particle.material as THREE.MeshStandardMaterial).opacity = Math.max(0, 0.8 - particleAges.current[i] * 2);
+        } else {
+          // Hide while waiting to spawn
+          particle.scale.setScalar(0);
+        }
+      } else {
+        // Hide if not moving
+        particle.scale.setScalar(0);
+      }
+    });
   });
 
   return (
@@ -114,12 +160,25 @@ export default function ProceduralKart({ character, kart, isOpponent = false }: 
         {/* Headlights */}
         <mesh position={[-0.4, 0.4, 1.01]}>
           <circleGeometry args={[0.12, 16]} />
-          <meshStandardMaterial color="#fef08a" emissive="#facc15" emissiveIntensity={2} />
+          <meshStandardMaterial ref={leftHeadlight} color="#fef08a" emissive="#facc15" emissiveIntensity={0.5} />
         </mesh>
         <mesh position={[0.4, 0.4, 1.01]}>
           <circleGeometry args={[0.12, 16]} />
-          <meshStandardMaterial color="#fef08a" emissive="#facc15" emissiveIntensity={2} />
+          <meshStandardMaterial ref={rightHeadlight} color="#fef08a" emissive="#facc15" emissiveIntensity={0.5} />
         </mesh>
+
+        {/* Exhaust Particles */}
+        {Array.from({ length: particlesCount }).map((_, i) => (
+          <mesh
+            key={`particle-${i}`}
+            ref={(el) => (particlesRef.current[i] = el)}
+            position={[0, 0, 0]}
+            scale={0}
+          >
+            <sphereGeometry args={[0.2, 8, 8]} />
+            <meshStandardMaterial color="#94a3b8" transparent opacity={0.8} depthWrite={false} />
+          </mesh>
+        ))}
 
         {/* DRIVER (Procedural Voxel-ish) */}
         <group position={[0, 0.6, -0.2]}>
