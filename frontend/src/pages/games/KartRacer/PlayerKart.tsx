@@ -63,10 +63,10 @@ export default function PlayerKart({ character, kart, socket, roomId }: PlayerKa
 
   // Physics state
   const velocity = useRef(0);
-  const maxSpeed = 50; // Reduced for a longer track feel
-  const acceleration = 25; // Reduced acceleration
-  const friction = 20;
-  const turnSpeed = 2.5;
+  const maxSpeed = 10; // Significantly reduced per user request
+  const acceleration = 5; // Reduced proportional to max speed
+  const friction = 5;
+  const turnSpeed = 2.0; // Slightly reduced turn speed to match lower speed
 
   // Network sync throttle
   const lastSync = useRef(0);
