@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import GameStat from '../models/GameStat';
 import KartStats from '../models/KartStats';
+import { ludoManager } from './ludoManager';
 import Match from '../models/Match';
 import Message from '../models/Message';
 import { Server as HttpServer } from 'http';
@@ -155,6 +156,10 @@ export const setupSocket = (httpServer: HttpServer) => {
     // --- ROOM SYSTEM ---
     socket.on('joinRoom', ({ roomId }) => {
       socket.join(roomId);
+      const ludoState = ludoManager.getGame(roomId);
+      if (ludoState) {
+        socket.emit('ludoGameState', ludoState);
+      }
     });
 
     socket.on('lobbyMessage', ({ roomId, message }) => {
@@ -173,6 +178,10 @@ export const setupSocket = (httpServer: HttpServer) => {
         io.to(roomId).emit('playerReady', { userId: user.id });
 
         if (room.ready.size === 2) {
+          if (room.gameType === 'Ludo') {
+            const state = ludoManager.initGame(roomId, room.players[0], room.players[1]);
+            io.to(roomId).emit('ludoGameState', state);
+          }
           io.to(roomId).emit('gameStart', { starterId: room.players[0] });
         }
       }
@@ -182,6 +191,42 @@ export const setupSocket = (httpServer: HttpServer) => {
     socket.on('gameMove', ({ roomId, moveData }) => {
       // Broadcast to EVERYONE in room except sender
       socket.to(roomId).emit('gameMove', moveData);
+    });
+
+    // --- LUDO SPECIFIC ---
+    socket.on('ludoRollDice', ({ roomId }) => {
+      const res = ludoManager.rollDice(roomId, user.id);
+      if (res.success) {
+        io.to(roomId).emit('ludoDiceRolled', { diceValue: res.diceValue });
+        if (res.nextTurn) {
+           setTimeout(() => {
+             const state = ludoManager.getGame(roomId);
+             if (state) io.to(roomId).emit('ludoGameState', state);
+           }, 2000); // Wait 2s for dice animation before passing turn
+        } else {
+           const state = ludoManager.getGame(roomId);
+           if (state) io.to(roomId).emit('ludoGameState', state);
+        }
+      } else {
+        socket.emit('ludoError', { error: res.error });
+      }
+    });
+
+    socket.on('ludoMoveToken', ({ roomId, tokenId }) => {
+      const res = ludoManager.moveToken(roomId, user.id, tokenId);
+      if (res.success) {
+        // Emit move event to animate smoothly
+        io.to(roomId).emit('ludoTokenMoved', { tokenId, newState: res.state, capturedIds: res.capturedIds });
+        
+        // Check for winner
+        if (res.state && res.state.winner) {
+          setTimeout(() => {
+            io.to(roomId).emit('gameEnd', { winnerId: res.state!.winner === 'red' ? res.state!.players.red : res.state!.players.blue, reason: 'completed' });
+          }, 3000); // allow animations to finish
+        }
+      } else {
+        socket.emit('ludoError', { error: res.error });
+      }
     });
 
     // --- RPS SPECIFIC ---

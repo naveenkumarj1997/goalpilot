@@ -31,13 +31,12 @@ const gameStatSchema = new Schema<IGameStat>(
 );
 
 // Pre-save hook to calculate win rate
-gameStatSchema.pre('save', function (this: any, next: any) {
+gameStatSchema.pre('save', function (this: any) {
   if (this.gamesPlayed > 0) {
     this.winRate = parseFloat(((this.wins / this.gamesPlayed) * 100).toFixed(2));
   } else {
     this.winRate = 0;
   }
-  next();
 });
 
 export default mongoose.model<IGameStat>('GameStat', gameStatSchema);

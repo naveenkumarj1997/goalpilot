@@ -12,6 +12,11 @@ export default function MiniGamesDashboard() {
   const [myHistory, setMyHistory] = useState<MatchHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination State
+  const [leaderboardPage, setLeaderboardPage] = useState(1);
+  const [historyPage, setHistoryPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
   // Invitation Modal State
   const [isInviting, setIsInviting] = useState<{ targetId: string, name: string } | null>(null);
   const [selectedGame, setSelectedGame] = useState('TicTacToe');
@@ -45,6 +50,12 @@ export default function MiniGamesDashboard() {
       setIsInviting(null);
     }
   };
+
+  const paginatedLeaderboard = leaderboard.slice((leaderboardPage - 1) * ITEMS_PER_PAGE, leaderboardPage * ITEMS_PER_PAGE);
+  const totalLeaderboardPages = Math.ceil(leaderboard.length / ITEMS_PER_PAGE);
+
+  const paginatedHistory = myHistory.slice((historyPage - 1) * ITEMS_PER_PAGE, historyPage * ITEMS_PER_PAGE);
+  const totalHistoryPages = Math.ceil(myHistory.length / ITEMS_PER_PAGE);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 text-slate-100">
@@ -135,9 +146,9 @@ export default function MiniGamesDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {leaderboard.map((stat, i) => (
+                  {paginatedLeaderboard.map((stat, i) => (
                     <tr key={stat._id} className="hover:bg-slate-800/50 transition-colors">
-                      <td className="p-4 font-bold text-slate-500">#{i + 1}</td>
+                      <td className="p-4 font-bold text-slate-500">#{(leaderboardPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
                       <td className="p-4 font-medium text-blue-300">{stat.user.name}</td>
                       <td className="p-4 text-center font-bold text-green-400">{stat.wins}</td>
                       <td className="p-4 text-center font-bold">{stat.winRate}%</td>
@@ -149,6 +160,27 @@ export default function MiniGamesDashboard() {
                   )}
                 </tbody>
               </table>
+              {totalLeaderboardPages > 1 && (
+                <div className="flex justify-between items-center p-4 border-t border-slate-800 bg-slate-900/50">
+                  <button 
+                    onClick={() => setLeaderboardPage(p => Math.max(1, p - 1))}
+                    disabled={leaderboardPage === 1}
+                    className="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded disabled:opacity-50 transition-colors text-sm font-medium cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-slate-400">
+                    Page {leaderboardPage} of {totalLeaderboardPages}
+                  </span>
+                  <button 
+                    onClick={() => setLeaderboardPage(p => Math.min(totalLeaderboardPages, p + 1))}
+                    disabled={leaderboardPage === totalLeaderboardPages}
+                    className="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded disabled:opacity-50 transition-colors text-sm font-medium cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -163,7 +195,7 @@ export default function MiniGamesDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <tbody className="divide-y divide-slate-800">
-                  {myHistory.map(match => (
+                  {paginatedHistory.map(match => (
                     <tr key={match._id} className="hover:bg-slate-800/50 transition-colors text-sm">
                       <td className="p-4 font-bold text-purple-400">{match.gameType}</td>
                       <td className="p-4 text-slate-300">
@@ -187,6 +219,27 @@ export default function MiniGamesDashboard() {
                   )}
                 </tbody>
               </table>
+              {totalHistoryPages > 1 && (
+                <div className="flex justify-between items-center p-4 border-t border-slate-800 bg-slate-900/50">
+                  <button 
+                    onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                    disabled={historyPage === 1}
+                    className="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded disabled:opacity-50 transition-colors text-sm font-medium cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-slate-400">
+                    Page {historyPage} of {totalHistoryPages}
+                  </span>
+                  <button 
+                    onClick={() => setHistoryPage(p => Math.min(totalHistoryPages, p + 1))}
+                    disabled={historyPage === totalHistoryPages}
+                    className="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded disabled:opacity-50 transition-colors text-sm font-medium cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -203,7 +256,7 @@ export default function MiniGamesDashboard() {
           >
             <h3 className="text-xl font-bold text-white mb-4">Challenge {isInviting.name}</h3>
             <div className="space-y-3 mb-6">
-              {['TicTacToe', 'ConnectFour', 'RockPaperScissors', 'Battleship', 'SnakeAndLadders', 'KartRacer'].map(game => (
+              {['TicTacToe', 'ConnectFour', 'RockPaperScissors', 'Battleship', 'SnakeAndLadders', 'KartRacer', 'Ludo'].map(game => (
                 <button
                   key={game}
                   onClick={() => setSelectedGame(game)}
@@ -214,7 +267,7 @@ export default function MiniGamesDashboard() {
                   }`}
                 >
                   <div className="font-bold">
-                    {game === 'TicTacToe' ? 'Tic-Tac-Toe' : game === 'ConnectFour' ? 'Connect Four' : game === 'RockPaperScissors' ? 'Rock Paper Scissors' : game === 'Battleship' ? 'Battleship' : game === 'KartRacer' ? 'Kart Racing 3D' : 'Snakes & Ladders'}
+                    {game === 'TicTacToe' ? 'Tic-Tac-Toe' : game === 'ConnectFour' ? 'Connect Four' : game === 'RockPaperScissors' ? 'Rock Paper Scissors' : game === 'Battleship' ? 'Battleship' : game === 'KartRacer' ? 'Kart Racing 3D' : game === 'Ludo' ? 'Ludo' : 'Snakes & Ladders'}
                   </div>
                 </button>
               ))}
