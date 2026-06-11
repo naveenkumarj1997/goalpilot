@@ -198,15 +198,12 @@ export const setupSocket = (httpServer: HttpServer) => {
       const res = ludoManager.rollDice(roomId, user.id);
       if (res.success) {
         io.to(roomId).emit('ludoDiceRolled', { diceValue: res.diceValue });
-        if (res.nextTurn) {
-           setTimeout(() => {
-             const state = ludoManager.getGame(roomId);
-             if (state) io.to(roomId).emit('ludoGameState', state);
-           }, 2000); // Wait 2s for dice animation before passing turn
-        } else {
-           const state = ludoManager.getGame(roomId);
-           if (state) io.to(roomId).emit('ludoGameState', state);
-        }
+        
+        // Wait 6s for the realistic dice animation to complete before broadcasting state
+        setTimeout(() => {
+          const state = ludoManager.getGame(roomId);
+          if (state) io.to(roomId).emit('ludoGameState', state);
+        }, 6000);
       } else {
         socket.emit('ludoError', { error: res.error });
       }

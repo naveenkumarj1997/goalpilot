@@ -58,7 +58,7 @@ export default function Ludo() {
       setIsRolling(true);
       setTimeout(() => {
         setIsRolling(false);
-        setGameState(prev => prev ? { ...prev, hasRolled: true } : null);
+        // We rely entirely on the server's ludoGameState broadcast to update turn and hasRolled
       }, 6000); // 6s realistic response
     });
 
