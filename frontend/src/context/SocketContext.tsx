@@ -130,7 +130,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
               className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 transition-colors font-medium text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]"
               onClick={() => {
                 socket?.emit('inviteReply', { senderId: invite.senderId, accept: true, gameType: invite.gameType, format: invite.format });
-                // We don't navigate immediately; we wait for the server's 'inviteAccepted' to get the roomId
+                setInvite(null); // Hide popup immediately to feel responsive
               }}
             >
               Accept

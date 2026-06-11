@@ -5,7 +5,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import LudoBoard from './LudoBoard';
 import LudoToken from './LudoToken';
 import Dice from './Dice';
-import ChatBox from './ChatBox';
 import Confetti from 'react-confetti';
 import { useLudoSound } from './useSound';
 
@@ -134,7 +133,6 @@ export default function Ludo() {
             {!isMyTurn && !gameState.winner ? "THEIR TURN" : "WAITING"}
           </div>
         </div>
-        <ChatBox roomId={roomId!} />
       </div>
 
       {/* Center Board */}
