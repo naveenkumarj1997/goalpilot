@@ -7,6 +7,7 @@ import LudoToken from './LudoToken';
 import Dice from './Dice';
 import Confetti from 'react-confetti';
 import { useLudoSound } from './useSound';
+import { ArrowLeft } from 'lucide-react';
 
 interface TokenState {
   id: number;
@@ -123,8 +124,16 @@ export default function Ludo() {
       {gameState.winner && <Confetti width={windowSize.width} height={windowSize.height} />}
       {showCaptureEffect && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={200} colors={['#ef4444', '#3b82f6', '#facc15']} gravity={0.3} initialVelocityY={20} />}
 
-      {/* Opponent UI & Chat */}
+      {/* Opponent UI & Sidebar */}
       <div className="flex flex-col gap-4 w-full md:w-64 h-full max-h-[600px]">
+        <button 
+          onClick={() => navigate('/games')}
+          className="self-start text-sm font-bold text-slate-400 hover:text-white flex items-center transition-colors bg-slate-800/50 hover:bg-slate-800 px-4 py-2 rounded-xl"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Leave Game
+        </button>
+
         <div className="flex flex-col items-center gap-4 p-6 bg-slate-900/50 backdrop-blur-md rounded-2xl border border-white/5 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
           <h3 className="text-xl font-bold mb-2 flex items-center text-slate-200">
             Opponent
