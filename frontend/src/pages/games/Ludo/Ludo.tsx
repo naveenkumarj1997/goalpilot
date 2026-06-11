@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSocket } from '../../../context/SocketContext';
 import { useAuth } from '../../../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -63,7 +63,7 @@ export default function Ludo() {
       }, 6000); // 6s realistic response
     });
 
-    socket.on('ludoTokenMoved', ({ tokenId, newState, capturedIds }) => {
+    socket.on('ludoTokenMoved', ({ newState, capturedIds }) => {
       setGameState(newState);
       
       if (capturedIds && capturedIds.length > 0) {
@@ -79,7 +79,7 @@ export default function Ludo() {
       }
     });
 
-    socket.on('gameEnd', ({ winnerId }) => {
+    socket.on('gameEnd', () => {
       // In Ludo, the server sends winner state inside ludoTokenMoved as well
     });
 
@@ -96,7 +96,6 @@ export default function Ludo() {
   }
 
   const myColor = gameState.players.red === (user?.id || user?._id) ? 'red' : 'blue';
-  const opponentColor = myColor === 'red' ? 'blue' : 'red';
   const isMyTurn = gameState.turn === myColor;
 
   const handleRollDice = () => {

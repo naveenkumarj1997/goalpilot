@@ -1,4 +1,4 @@
-import React from 'react';
+// React import not needed
 import { motion } from 'framer-motion';
 import { LUDO_PATH, RED_HOME_PATH, BLUE_HOME_PATH, SAFE_ZONES } from './ludoLogic';
 

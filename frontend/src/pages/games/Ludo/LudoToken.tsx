@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTokenCoordinates } from './ludoLogic';
 
@@ -11,7 +11,7 @@ interface LudoTokenProps {
   onClick: (id: number) => void;
 }
 
-export default function LudoToken({ id, player, progress, isActiveTurn, isSelectable, onClick }: LudoTokenProps) {
+export default function LudoToken({ id, player, progress, isSelectable, onClick }: LudoTokenProps) {
   const coords = getTokenCoordinates(player, progress, id);
   const [trail, setTrail] = useState<{id: number, left: number, top: number}[]>([]);
   
