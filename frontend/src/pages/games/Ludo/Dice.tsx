@@ -42,22 +42,27 @@ export default function Dice({ value, onRoll, disabled, isRolling }: DiceProps) 
   }, [isRolling, value]);
 
   const renderDiceFace = (num: number, transform: string) => {
-    const dots = Array.from({ length: num }).map((_, i) => (
-      <div key={i} className="w-3 h-3 bg-white rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]" />
-    ));
+    const dots = Array.from({ length: num }).map((_, i) => {
+      // Classic dice often have a large red dot for 1
+      const dotColor = (num === 1) ? 'bg-red-600' : 'bg-slate-800';
+      const dotSize = (num === 1) ? 'w-6 h-6' : 'w-4 h-4';
+      return (
+        <div key={i} className={`${dotSize} ${dotColor} rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]`} />
+      );
+    });
     
     // Layout classes for dots
     let layoutClass = "";
     if (num === 1) layoutClass = "flex items-center justify-center";
-    if (num === 2) layoutClass = "flex flex-col justify-between items-center py-2";
-    if (num === 3) layoutClass = "flex flex-col justify-between items-center py-1";
-    if (num === 4) layoutClass = "grid grid-cols-2 grid-rows-2 gap-2 place-items-center p-2";
-    if (num === 5) layoutClass = "grid grid-cols-2 grid-rows-3 gap-1 place-items-center p-1 [&>*:nth-child(3)]:col-span-2";
-    if (num === 6) layoutClass = "grid grid-cols-2 grid-rows-3 gap-2 place-items-center py-2 px-1";
+    if (num === 2) layoutClass = "flex flex-col justify-between items-center py-3";
+    if (num === 3) layoutClass = "flex flex-col justify-between items-center py-2";
+    if (num === 4) layoutClass = "grid grid-cols-2 grid-rows-2 gap-3 place-items-center p-3";
+    if (num === 5) layoutClass = "grid grid-cols-2 grid-rows-3 gap-2 place-items-center p-2 [&>*:nth-child(3)]:col-span-2";
+    if (num === 6) layoutClass = "grid grid-cols-2 grid-rows-3 gap-2 place-items-center py-3 px-2";
 
     return (
       <div 
-        className={`absolute w-full h-full bg-gradient-to-br from-brand to-purple-600 border-2 border-white/30 rounded-xl shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] backface-hidden ${layoutClass}`}
+        className={`absolute w-full h-full bg-gradient-to-br from-white to-slate-200 border border-slate-300 rounded-2xl shadow-[inset_0_0_20px_rgba(0,0,0,0.15)] backface-hidden ${layoutClass}`}
         style={{ transform, backfaceVisibility: 'hidden' }}
       >
         {dots}
