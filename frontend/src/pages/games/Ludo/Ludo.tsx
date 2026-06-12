@@ -94,6 +94,20 @@ export default function Ludo() {
 
       if (newState.winner) {
         playWin();
+        const winnerId = newState.winner === 'red' ? newState.players.red : newState.players.blue;
+        const loserId = newState.winner === 'red' ? newState.players.blue : newState.players.red;
+        // Emit gameEnd once from the winner to update global leaderboard stats
+        const myId = user.id || (user as any)._id;
+        if (winnerId === myId) {
+          socket.emit('gameEnd', {
+            roomId,
+            gameType: 'Ludo',
+            winnerId,
+            loserId,
+            isDraw: false,
+            duration: Date.now() - (newState.startTime || Date.now())
+          });
+        }
       }
     });
 
