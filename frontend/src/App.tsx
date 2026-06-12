@@ -26,6 +26,12 @@ import ChatDashboard from './pages/chat/ChatDashboard';
 import ResumeDashboard from './pages/resume/ResumeDashboard';
 import ResumeBuilder from './pages/resume/ResumeBuilder';
 import ResumePreview from './pages/resume/ResumePreview';
+import WorkoutDashboard from './pages/workouts/WorkoutDashboard';
+import FitnessProfile from './pages/workouts/FitnessProfile';
+import WorkoutPlanView from './pages/workouts/WorkoutPlanView';
+import ActiveSession from './pages/workouts/ActiveSession';
+import ExerciseLibrary from './pages/workouts/ExerciseLibrary';
+import BodyTracker from './pages/workouts/BodyTracker';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -71,6 +77,14 @@ function App() {
               <Route path="/resume" element={<ResumeDashboard />} />
               <Route path="/resume/:id/edit" element={<ResumeBuilder />} />
               <Route path="/resume/:id/preview" element={<ResumePreview />} />
+
+              {/* Workouts */}
+              <Route path="/workouts" element={<WorkoutDashboard />} />
+              <Route path="/workouts/profile" element={<FitnessProfile />} />
+              <Route path="/workouts/plan" element={<WorkoutPlanView />} />
+              <Route path="/workouts/session" element={<ActiveSession />} />
+              <Route path="/workouts/library" element={<ExerciseLibrary />} />
+              <Route path="/workouts/tracker" element={<BodyTracker />} />
             </Route>
           </Route>
           </Routes>

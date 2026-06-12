@@ -15,6 +15,7 @@ import { setupSocket } from './socket';
 import { initCronJobs } from './services/cronService';
 import jobRoutes from './routes/jobRoutes';
 import resumeRoutes from './routes/resumeRoutes';
+import workoutRoutes from './routes/workoutRoutes';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/resumes', resumeRoutes);
+app.use('/api/workouts', workoutRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

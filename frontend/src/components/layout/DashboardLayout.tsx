@@ -19,7 +19,8 @@ import {
   BarChart3,
   Database,
   MessageCircle,
-  FileText
+  FileText,
+  Dumbbell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -73,6 +74,7 @@ export default function DashboardLayout() {
     { name: 'Gaming Lounge', href: '/games', icon: Gamepad2 },
     { name: 'Chat', href: '/chat', icon: MessageCircle },
     { name: 'Resume Builder', href: '/resume', icon: FileText },
+    { name: 'Home Coach', href: '/workouts', icon: Dumbbell },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
