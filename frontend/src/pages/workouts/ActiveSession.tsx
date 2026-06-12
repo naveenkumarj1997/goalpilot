@@ -17,7 +17,6 @@ export default function ActiveSession() {
   const [startTime] = useState(Date.now());
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [earnedXP, setEarnedXP] = useState(0);
-  const [showVideo, setShowVideo] = useState(false);
 
   const currentExerciseData = day?.exercises[currentExerciseIndex];
 
@@ -29,11 +28,6 @@ export default function ActiveSession() {
   useEffect(() => {
     if (!day) navigate('/workouts/plan');
   }, [day, navigate]);
-
-  // Reset video when exercise changes
-  useEffect(() => {
-    setShowVideo(false);
-  }, [currentExerciseIndex]);
 
   if (!day || !currentExerciseData) return null;
 
@@ -198,36 +192,15 @@ export default function ActiveSession() {
             exit={{ opacity: 0, x: -20 }}
             className="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-3xl p-8 shadow-2xl"
           >
-            <div className="aspect-video bg-slate-800 rounded-2xl mb-8 flex items-center justify-center border border-white/5 overflow-hidden relative group">
-               {showVideo ? (
+            <div className="aspect-video bg-slate-800 rounded-2xl mb-8 flex items-center justify-center border border-white/5 overflow-hidden relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                  <iframe 
                    className="w-full h-full"
-                   src={`https://www.youtube.com/embed/${exerciseDetails?.animationUrl}?autoplay=1&playsinline=1&rel=0`}
+                   src={`https://www.youtube.com/embed/${exerciseDetails?.animationUrl}?playsinline=1&rel=0&modestbranding=1`}
                    title="YouTube video player" 
                    frameBorder="0" 
                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                    allowFullScreen
                  ></iframe>
-               ) : (
-                 <>
-                   <img 
-                     src="/images/exercise-demo.png" 
-                     alt="Exercise Demonstration" 
-                     className="w-full h-full object-cover mix-blend-screen opacity-40 transition-all duration-500 group-hover:opacity-60 group-hover:scale-105"
-                   />
-                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent pointer-events-none" />
-                   <div 
-                     className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer"
-                     onClick={() => setShowVideo(true)}
-                   >
-                     <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.6)] mb-4 group-hover:scale-110 transition-transform duration-300">
-                       <Play className="w-8 h-8 text-white ml-1" />
-                     </div>
-                     <span className="text-white font-bold tracking-wide">Watch Video Tutorial</span>
-                     <span className="text-slate-400 text-sm mt-1">Plays in browser</span>
-                   </div>
-                 </>
-               )}
             </div>
 
             <div className="mb-8">
