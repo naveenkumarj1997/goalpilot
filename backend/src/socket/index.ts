@@ -59,9 +59,11 @@ export const setupSocket = (httpServer: HttpServer) => {
     io.emit('onlineUsers', Array.from(onlineUsers.values()));
 
     socket.on('disconnect', () => {
-      onlineUsers.delete(user.id);
-      io.emit('onlineUsers', Array.from(onlineUsers.values()));
-      // If user was in any rooms, we probably should handle disconnect in-game
+      const activeUser = onlineUsers.get(user.id);
+      if (activeUser && activeUser.socketId === socket.id) {
+        onlineUsers.delete(user.id);
+        io.emit('onlineUsers', Array.from(onlineUsers.values()));
+      }
     });
 
     // --- CHAT & FRIENDS SYSTEM ---
