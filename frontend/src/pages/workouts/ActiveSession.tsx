@@ -202,7 +202,7 @@ export default function ActiveSession() {
                {showVideo ? (
                  <iframe 
                    className="w-full h-full"
-                   src={`https://www.youtube.com/embed/${exerciseDetails?.animationUrl}?autoplay=1`}
+                   src={`https://www.youtube.com/embed/${exerciseDetails?.animationUrl}?autoplay=1&playsinline=1&rel=0`}
                    title="YouTube video player" 
                    frameBorder="0" 
                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
