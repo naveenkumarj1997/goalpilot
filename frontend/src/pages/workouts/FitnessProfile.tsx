@@ -33,9 +33,11 @@ export default function FitnessProfile() {
     setSaving(true);
     try {
       await workoutApi.updateProfile(profile);
+      await workoutApi.generatePlan();
       navigate('/workouts/plan');
     } catch (err) {
       console.error(err);
+      alert('Failed to generate plan. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -220,7 +222,7 @@ export default function FitnessProfile() {
               disabled={saving}
               className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold flex items-center shadow-[0_0_15px_rgba(34,197,94,0.5)] transition-all disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Generate Plan'} <ArrowRight className="w-5 h-5 ml-2" />
+              {saving ? 'Generating Plan...' : 'Generate Plan'} <ArrowRight className="w-5 h-5 ml-2" />
             </button>
           )}
         </div>
