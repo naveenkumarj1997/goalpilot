@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTokenCoordinates } from './ludoLogic';
 
@@ -17,6 +17,25 @@ export default function LudoToken({ id, player, progress, isSelectable, onClick 
   
   let left = coords.x * 6.66 + 1.33;
   let top = coords.y * 6.66 + 1.33;
+
+  const [justCaptured, setJustCaptured] = useState(false);
+  const prevProgress = useRef(progress);
+
+  useEffect(() => {
+    if (prevProgress.current > 0 && progress === 0) {
+      setJustCaptured(true);
+      const timer = setTimeout(() => setJustCaptured(false), 2500);
+      return () => clearTimeout(timer);
+    }
+    prevProgress.current = progress;
+  }, [progress]);
+
+  const getEmoji = () => {
+    if (justCaptured) return '😭';
+    if (progress === 0) return '🥺';
+    if (progress === 57) return '😎';
+    return '😃';
+  };
 
   useEffect(() => {
     if (progress === 0) return; // Don't trail in base initially
@@ -67,7 +86,7 @@ export default function LudoToken({ id, player, progress, isSelectable, onClick 
           scale: isSelectable ? { repeat: Infinity, duration: 0.8, ease: "easeInOut" } : { duration: 0.2 },
           boxShadow: { duration: 0.2 }
         }}
-        className={`absolute w-[4%] aspect-square rounded-full z-20 
+        className={`absolute w-[4%] aspect-square rounded-full z-20 flex items-center justify-center text-[10px] sm:text-xs md:text-sm lg:text-base
           ${isSelectable ? 'cursor-pointer' : 'cursor-default'}
         `}
         style={{
@@ -78,6 +97,7 @@ export default function LudoToken({ id, player, progress, isSelectable, onClick 
         }}
       >
         <div className="absolute top-[10%] left-[10%] w-[35%] h-[35%] bg-white/60 rounded-full blur-[1px]" />
+        <span className="relative z-10 drop-shadow-md select-none">{getEmoji()}</span>
       </motion.div>
     </>
   );
