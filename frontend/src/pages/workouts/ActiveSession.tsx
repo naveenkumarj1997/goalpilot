@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { workoutApi } from '../../api/workoutApi';
 import { useRestTimer } from '../../hooks/useRestTimer';
-import { CheckCircle, Play, Pause, SkipForward, X, Timer, ChevronRight, Dumbbell } from 'lucide-react';
+import { CheckCircle, Play, Pause, SkipForward, X, Timer, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ActiveSession() {
@@ -137,7 +137,6 @@ export default function ActiveSession() {
   }
 
   const exerciseDetails = currentExerciseData.exercise;
-  const isBodyweight = !exerciseDetails?.equipment || exerciseDetails.equipment === 'None';
 
   return (
     <div className="max-w-2xl mx-auto py-8">
