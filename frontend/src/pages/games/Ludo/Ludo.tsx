@@ -74,7 +74,7 @@ export default function Ludo() {
       // Temporarily set value to animate the dice for BOTH players
       setGameState(prev => prev ? { ...prev, diceValue } : null);
       setIsRolling(true);
-      setActionMessage(`Rolling... It's a ${diceValue}!`);
+      setActionMessage('Rolling the dice...');
       setTimeout(() => {
         setIsRolling(false);
       }, 6000); 
