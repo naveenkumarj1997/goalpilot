@@ -31,16 +31,16 @@ export default function GameLobby() {
       socket.emit('joinRoom', { roomId });
     }
 
-    socket.on('lobbyMessage', (msg) => {
+    socket?.on('lobbyMessage', (msg) => {
       setMessages(prev => [...prev, msg].slice(-50)); // Keep last 50
     });
 
-    socket.on('playerReady', ({ userId }) => {
+    socket?.on('playerReady', ({ userId }) => {
       if (userId === user?._id) setAmIReady(true);
       else setOpponentReady(true);
     });
 
-    socket.on('gameStart', ({ starterId }) => {
+    socket?.on('gameStart', ({ starterId }) => {
       // Navigate to actual game component based on gameType
       navigate(`/games/play/${roomId}`, { 
         state: { 
@@ -54,9 +54,9 @@ export default function GameLobby() {
     });
 
     return () => {
-      socket.off('lobbyMessage');
-      socket.off('playerReady');
-      socket.off('gameStart');
+      socket?.off('lobbyMessage');
+      socket?.off('playerReady');
+      socket?.off('gameStart');
     };
   }, [socket, roomId]);
 
