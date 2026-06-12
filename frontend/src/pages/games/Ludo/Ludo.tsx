@@ -196,12 +196,24 @@ export default function Ludo() {
 
           {!gameState.winner && (
             <div className="flex flex-col items-center py-4">
-              <Dice 
-                value={gameState.diceValue}
-                onRoll={handleRollDice}
-                disabled={!isMyTurn || gameState.hasRolled || !!gameState.winner}
-                isRolling={isRolling}
-              />
+              {/* Wooden Dice Tray */}
+              <div className="w-full py-8 mb-4 rounded-xl border-[8px] border-[#4a2e15] shadow-[inset_0_10px_30px_rgba(0,0,0,0.6),0_5px_15px_rgba(0,0,0,0.2)] flex items-center justify-center relative overflow-hidden"
+                   style={{
+                     backgroundColor: '#8B5A2B',
+                     backgroundImage: `repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1) 75%, transparent 75%, transparent)`,
+                     backgroundSize: '30px 30px'
+                   }}>
+                   <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.6)] pointer-events-none" />
+                   
+                   <div className="relative z-10 scale-110">
+                     <Dice 
+                       value={gameState.diceValue}
+                       onRoll={handleRollDice}
+                       disabled={!isMyTurn || gameState.hasRolled || !!gameState.winner}
+                       isRolling={isRolling}
+                     />
+                   </div>
+              </div>
               
               <button
                 onClick={handleRollDice}
