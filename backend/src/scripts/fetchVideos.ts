@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+// @ts-ignore
 import ytSearch from 'yt-search';
 import Exercise from '../models/Exercise';
 
