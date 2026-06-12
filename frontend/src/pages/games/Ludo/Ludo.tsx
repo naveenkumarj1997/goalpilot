@@ -75,6 +75,11 @@ export default function Ludo() {
       setGameState(prev => prev ? { ...prev, diceValue } : null);
       setIsRolling(true);
       setActionMessage('Rolling the dice...');
+      
+      setTimeout(() => {
+        setActionMessage(`Rolled a ${diceValue}!`);
+      }, 4000);
+
       setTimeout(() => {
         setIsRolling(false);
       }, 6000); 
