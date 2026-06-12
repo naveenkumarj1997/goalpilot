@@ -77,8 +77,8 @@ export default function LudoToken({ id, player, progress, isSelectable, onClick 
           top: `${top}%`,
           scale: isSelectable ? [1, 1.15, 1] : 1,
           boxShadow: isSelectable 
-            ? `0 0 25px ${isRed ? '#ff6b6b' : '#4dabf7'}, 0 0 10px white` 
-            : `0 5px 15px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.5)`
+            ? `0 10px 25px ${isRed ? '#ef4444' : '#3b82f6'}, inset 0 -4px 8px rgba(0,0,0,0.5), inset 0 4px 8px rgba(255,255,255,0.8)` 
+            : `0 8px 12px rgba(0,0,0,0.6), inset 0 -4px 8px rgba(0,0,0,0.5), inset 0 4px 8px rgba(255,255,255,0.8)`
         }}
         transition={{
           left: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 },
@@ -87,16 +87,17 @@ export default function LudoToken({ id, player, progress, isSelectable, onClick 
           boxShadow: { duration: 0.2 }
         }}
         className={`absolute w-[4%] aspect-square rounded-full z-20 flex items-center justify-center text-[10px] sm:text-xs md:text-sm lg:text-base
-          ${isSelectable ? 'cursor-pointer' : 'cursor-default'}
+          ${isSelectable ? 'cursor-pointer ring-4 ring-white/50 animate-pulse' : 'cursor-default'}
         `}
         style={{
           background: isRed 
-            ? 'radial-gradient(circle at 30% 30%, #ff8787, #c92a2a)' 
-            : 'radial-gradient(circle at 30% 30%, #74c0fc, #1864ab)',
-          border: `2px solid ${isRed ? '#ffe3e3' : '#d0ebff'}`,
+            ? 'radial-gradient(circle at 30% 30%, #fca5a5 0%, #ef4444 50%, #991b1b 100%)' 
+            : 'radial-gradient(circle at 30% 30%, #93c5fd 0%, #3b82f6 50%, #1e3a8a 100%)',
+          border: `1px solid ${isRed ? '#7f1d1d' : '#1e3a8a'}`,
         }}
       >
-        <div className="absolute top-[10%] left-[10%] w-[35%] h-[35%] bg-white/60 rounded-full blur-[1px]" />
+        {/* Extra glossy highlight */}
+        <div className="absolute top-[5%] left-[10%] w-[40%] h-[30%] bg-gradient-to-b from-white/90 to-transparent rounded-full blur-[0.5px] transform -rotate-12" />
         <span className="relative z-10 drop-shadow-md select-none">{getEmoji()}</span>
       </motion.div>
     </>

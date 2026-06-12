@@ -151,7 +151,7 @@ export default function Ludo() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 p-4 text-slate-100">
+    <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 p-4 text-slate-800 min-h-[90vh]">
       {gameState.winner && <Confetti width={windowSize.width} height={windowSize.height} />}
       {showCaptureEffect && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={200} colors={['#ef4444', '#3b82f6', '#facc15']} gravity={0.3} initialVelocityY={20} />}
 
@@ -159,37 +159,37 @@ export default function Ludo() {
       <div className="lg:w-1/3 flex flex-col gap-6">
         <button 
           onClick={() => navigate('/games')}
-          className="self-start text-sm font-bold text-slate-400 hover:text-white flex items-center transition-colors bg-slate-800 px-4 py-2 rounded-xl"
+          className="self-start text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Leave Game
         </button>
 
-        <div className="glass p-6 rounded-2xl border border-brand/20 shadow-2xl relative overflow-hidden neon-border-brand">
-          <h2 className="text-2xl font-bold mb-6 text-white text-center flex items-center justify-center">
-            <Trophy className="w-6 h-6 mr-3 text-brand" />
+        <div className="bg-white p-6 rounded-2xl border-b-4 border-slate-200 shadow-xl relative overflow-hidden">
+          <h2 className="text-2xl font-black mb-6 text-slate-800 text-center flex items-center justify-center tracking-wide uppercase">
+            <Trophy className="w-6 h-6 mr-3 text-yellow-500" />
             Ludo Match
           </h2>
 
-          <div className="flex justify-between items-center bg-black/40 p-4 rounded-xl mb-4 border border-brand/10">
-            <div className={`flex flex-col items-center p-3 rounded-lg w-[45%] transition-all ${isMyTurn ? 'bg-brand/20 border border-brand/50 shadow-[0_0_15px_rgba(0,112,209,0.3)]' : 'opacity-60'}`}>
-              <div className={`w-10 h-10 rounded-full mb-2 border-2 border-white ${myColor === 'red' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]'}`} />
-              <span className="font-bold text-white">You</span>
-              {isMyTurn && <span className="text-[10px] text-brand-light font-bold mt-1 tracking-widest uppercase">{gameState.hasRolled ? 'Move Token' : 'Your Turn'}</span>}
+          <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl mb-4 border border-slate-200 shadow-inner">
+            <div className={`flex flex-col items-center p-3 rounded-lg w-[45%] transition-all ${isMyTurn ? 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-b-4 border-brand' : 'opacity-60'}`}>
+              <div className={`w-12 h-12 rounded-full mb-2 border-4 border-white shadow-md ${myColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' : 'bg-gradient-to-br from-blue-400 to-blue-600'}`} />
+              <span className="font-bold text-slate-800">You</span>
+              {isMyTurn && <span className="text-[10px] text-brand font-black mt-1 tracking-widest uppercase">{gameState.hasRolled ? 'Move Token' : 'Your Turn'}</span>}
             </div>
             
-            <span className="text-xl font-black text-slate-500">VS</span>
+            <span className="text-xl font-black text-slate-300">VS</span>
             
-            <div className={`flex flex-col items-center p-3 rounded-lg w-[45%] transition-all ${!isMyTurn ? 'bg-purple-500/20 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)]' : 'opacity-60'}`}>
-              <div className={`w-10 h-10 rounded-full mb-2 border-2 border-white ${myColor === 'red' ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]'}`} />
-              <span className="font-bold text-white">{opponentName}</span>
-              {!isMyTurn && <span className="text-[10px] text-purple-300 font-bold mt-1 tracking-widest uppercase">{gameState.hasRolled ? 'Moving...' : 'Their Turn'}</span>}
+            <div className={`flex flex-col items-center p-3 rounded-lg w-[45%] transition-all ${!isMyTurn ? 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.1)] border-b-4 border-purple-500' : 'opacity-60'}`}>
+              <div className={`w-12 h-12 rounded-full mb-2 border-4 border-white shadow-md ${myColor === 'red' ? 'bg-gradient-to-br from-blue-400 to-blue-600' : 'bg-gradient-to-br from-red-400 to-red-600'}`} />
+              <span className="font-bold text-slate-800">{opponentName}</span>
+              {!isMyTurn && <span className="text-[10px] text-purple-500 font-black mt-1 tracking-widest uppercase">{gameState.hasRolled ? 'Moving...' : 'Their Turn'}</span>}
             </div>
           </div>
 
-          <div className="bg-[#0F172A] p-4 rounded-xl border border-slate-700 text-center mb-6 min-h-[80px] flex items-center justify-center">
-            <span className="text-sm font-medium text-slate-300">
-              <Info className="w-4 h-4 inline mr-2 text-brand" />
+          <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-center mb-6 min-h-[80px] flex items-center justify-center shadow-inner">
+            <span className="text-sm font-bold text-amber-900">
+              <Info className="w-5 h-5 inline mr-2 text-amber-500" />
               {actionMessage}
             </span>
           </div>
@@ -206,10 +206,10 @@ export default function Ludo() {
               <button
                 onClick={handleRollDice}
                 disabled={!isMyTurn || gameState.hasRolled || isRolling}
-                className={`w-full py-3 mt-4 rounded-xl font-bold transition-all uppercase tracking-widest ${
+                className={`w-full py-4 mt-6 rounded-xl font-black text-lg transition-all uppercase tracking-widest ${
                   isMyTurn && !gameState.hasRolled && !isRolling
-                    ? 'bg-gradient-to-r from-brand to-brand-hover text-white shadow-[0_0_20px_rgba(0,112,209,0.5)] hover:scale-[1.02]' 
-                    : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                    ? 'bg-gradient-to-b from-brand to-blue-700 text-white shadow-[0_6px_0_#1e3a8a,0_15px_20px_rgba(0,0,0,0.2)] active:translate-y-[6px] active:shadow-[0_0px_0_#1e3a8a,0_5px_10px_rgba(0,0,0,0.2)]' 
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed border-b-4 border-slate-300'
                 }`}
               >
                 {isRolling ? 'Rolling...' : isMyTurn ? (gameState.hasRolled ? 'Select Token' : 'Roll Dice') : 'Waiting...'}
@@ -221,23 +221,24 @@ export default function Ludo() {
             <motion.div 
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className={`p-6 rounded-xl mt-6 text-center border-2 ${
+              className={`p-6 rounded-xl mt-6 text-center border-b-4 ${
                 gameState.winner === myColor 
-                  ? 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_30px_rgba(34,197,94,0.3)]' 
-                  : 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_30px_rgba(239,68,68,0.3)]'
+                  ? 'bg-green-50 border-green-200 text-green-700 shadow-xl' 
+                  : 'bg-red-50 border-red-200 text-red-700 shadow-xl'
               }`}
             >
               <h3 className="text-2xl font-black uppercase mb-2">
                 {gameState.winner === myColor ? 'You Won!' : 'You Lost!'}
               </h3>
-              <p className="text-sm opacity-80">Match stats have been recorded.</p>
+              <p className="text-sm font-medium opacity-80">Match stats have been recorded.</p>
             </motion.div>
           )}
         </div>
       </div>
 
-      {/* Main Board Area */}
-      <div className="lg:w-2/3 flex items-center justify-center bg-[#0A0E17] rounded-2xl border border-slate-800 shadow-2xl p-4 lg:p-8 relative min-h-[500px]">
+      {/* Main Board Area - The "Table" */}
+      <div className="lg:w-2/3 flex items-center justify-center bg-[#f8fafc] rounded-3xl border border-slate-200 shadow-[inset_0_0_50px_rgba(0,0,0,0.05)] p-4 lg:p-8 relative min-h-[500px]"
+           style={{ backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
         <div className="relative w-full max-w-2xl aspect-square">
           <LudoBoard />
           {/* Render Tokens */}
