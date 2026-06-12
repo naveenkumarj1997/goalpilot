@@ -22,12 +22,14 @@ export default function GameLobby() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!socket || !roomId) {
+    if (!roomId) {
       navigate('/games');
       return;
     }
 
-    socket.emit('joinRoom', { roomId });
+    if (socket) {
+      socket.emit('joinRoom', { roomId });
+    }
 
     socket.on('lobbyMessage', (msg) => {
       setMessages(prev => [...prev, msg].slice(-50)); // Keep last 50

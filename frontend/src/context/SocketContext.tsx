@@ -60,8 +60,9 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       });
 
       newSocket.on('onlineUsers', (users) => {
-        // Filter out self
-        setOnlineUsers(users.filter((u: any) => u.userId !== user._id));
+        // Filter out self safely, handling both id and _id formats
+        const myId = String(user._id || user.id);
+        setOnlineUsers(users.filter((u: any) => String(u.userId) !== myId));
       });
 
       newSocket.on('receiveInvite', (data) => {
@@ -71,7 +72,9 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       newSocket.on('inviteAccepted', (data) => {
         // Automatically navigate to lobby
         setInvite(null);
-        navigate(`/games/lobby/${data.roomId}`, { state: { ...data } });
+        setTimeout(() => {
+          navigate(`/games/lobby/${data.roomId}`, { state: { ...data } });
+        }, 100);
       });
 
       newSocket.on('inviteRejected', (data) => {
