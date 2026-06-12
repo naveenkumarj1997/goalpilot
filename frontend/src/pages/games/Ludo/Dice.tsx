@@ -36,8 +36,6 @@ export default function Dice({ value, onRoll, disabled, isRolling }: DiceProps) 
           rotateY: prev.rotateY - currentModY + extraSpinsY + targetFace.rotateY
         };
       });
-    } else if (value === null) {
-      setDiceRotation({ rotateX: 15, rotateY: 15 });
     }
   }, [isRolling, value]);
 
