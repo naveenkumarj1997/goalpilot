@@ -54,6 +54,11 @@ export default function DashboardLayout() {
       }
     };
     fetchNoFapInfo();
+
+    const handleNoFapCheckedIn = () => setNoFapLastCheckIn(new Date());
+    window.addEventListener('nofapCheckedIn', handleNoFapCheckedIn);
+    
+    return () => window.removeEventListener('nofapCheckedIn', handleNoFapCheckedIn);
   }, [user]);
 
   useEffect(() => {
@@ -289,7 +294,10 @@ export default function DashboardLayout() {
       <NoFapCheckInModal 
         isOpen={showNoFapCheckInModal} 
         onClose={() => setShowNoFapCheckInModal(false)} 
-        onSuccess={() => setNoFapLastCheckIn(new Date())} 
+        onSuccess={() => {
+          setNoFapLastCheckIn(new Date());
+          window.dispatchEvent(new Event('nofapCheckedIn'));
+        }} 
       />
     </div>
   );

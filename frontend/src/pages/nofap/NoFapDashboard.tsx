@@ -11,6 +11,7 @@ export default function NoFapDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
+  const [hasCheckedInToday, setHasCheckedInToday] = useState(false);
 
   const fetchProfile = async () => {
     try {
@@ -19,6 +20,15 @@ export default function NoFapDashboard() {
       if (token) {
         const data = await getProfile(token);
         setProfile(data);
+
+        const lastCheckIn = data.lastCheckInDate ? new Date(data.lastCheckInDate) : null;
+        const today = new Date();
+        const isCheckedIn = lastCheckIn && (
+          lastCheckIn.getDate() === today.getDate() &&
+          lastCheckIn.getMonth() === today.getMonth() &&
+          lastCheckIn.getFullYear() === today.getFullYear()
+        );
+        setHasCheckedInToday(!!isCheckedIn);
       }
     } catch (error) {
       console.error('Failed to fetch NoFap profile', error);
@@ -29,6 +39,13 @@ export default function NoFapDashboard() {
 
   useEffect(() => {
     fetchProfile();
+
+    const handleCheckedIn = () => {
+      fetchProfile();
+    };
+
+    window.addEventListener('nofapCheckedIn', handleCheckedIn);
+    return () => window.removeEventListener('nofapCheckedIn', handleCheckedIn);
   }, []);
 
   if (loading) {
@@ -49,10 +66,15 @@ export default function NoFapDashboard() {
         </div>
         <button 
           onClick={() => setIsCheckInModalOpen(true)}
-          className="btn-primary flex items-center px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-white shadow-lg shadow-brand/25 transition-all"
+          disabled={hasCheckedInToday}
+          className={`flex items-center px-4 py-2 rounded-lg transition-all ${
+            hasCheckedInToday 
+              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 cursor-not-allowed'
+              : 'btn-primary bg-brand hover:bg-brand-hover text-white shadow-lg shadow-brand/25'
+          }`}
         >
           <Shield className="h-5 w-5 mr-2" />
-          Check In Now
+          {hasCheckedInToday ? 'Checked In Today' : 'Check In Now'}
         </button>
       </div>
 
@@ -149,10 +171,7 @@ export default function NoFapDashboard() {
         onClose={() => setIsCheckInModalOpen(false)} 
         onSuccess={() => {
           setIsCheckInModalOpen(false);
-          fetchProfile(); // Refresh dashboard stats
-          // A full page reload might be needed to let DashboardLayout know, 
-          // or DashboardLayout interval will catch it if we had global state.
-          // But `NoFapDashboard` will show the updated streak.
+          window.dispatchEvent(new Event('nofapCheckedIn'));
         }} 
       />
     </div>
