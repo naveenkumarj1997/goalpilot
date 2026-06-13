@@ -20,41 +20,80 @@ import {
   Database,
   MessageCircle,
   FileText,
-  Dumbbell
+  Dumbbell,
+  Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
+import NoFapCheckInModal from '../nofap/NoFapCheckInModal';
+import { getProfile as getNoFapProfile } from '../../api/nofap';
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const { unreadCount } = useSocket();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showNoFapCheckInModal, setShowNoFapCheckInModal] = useState(false);
+  const [noFapLastCheckIn, setNoFapLastCheckIn] = useState<Date | null>(null);
   const location = useLocation();
 
   useEffect(() => {
     if (!user) return;
 
+    // Fetch NoFap profile once to get lastCheckInDate
+    const fetchNoFapInfo = async () => {
+      try {
+        if (user?.token) {
+          const profile = await getNoFapProfile(user.token);
+          if (profile?.lastCheckInDate) {
+            setNoFapLastCheckIn(new Date(profile.lastCheckInDate));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch NoFap profile for layout', err);
+      }
+    };
+    fetchNoFapInfo();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
     const checkShouldShowModal = () => {
-      const lastLog = user.lastDailyLog ? new Date(user.lastDailyLog) : null;
       const today = new Date();
-      
-      const isToday = lastLog && 
+      const currentTimeStr = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`;
+
+      // Daily Check-in Modal Logic
+      const lastLog = user.lastDailyLog ? new Date(user.lastDailyLog) : null;
+      const isTodayDaily = lastLog && 
         lastLog.getDate() === today.getDate() &&
         lastLog.getMonth() === today.getMonth() &&
         lastLog.getFullYear() === today.getFullYear();
 
-      if (isToday) {
+      if (!isTodayDaily) {
+        const checkInTimeStr = user.dailyCheckInTime || '20:00';
+        if (currentTimeStr >= checkInTimeStr) {
+          setShowCheckInModal(true);
+        }
+      } else {
         setShowCheckInModal(false);
-        return;
       }
 
-      // Check time preference
-      const checkInTimeStr = user.dailyCheckInTime || '20:00';
-      const currentTimeStr = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`;
-      
-      if (currentTimeStr >= checkInTimeStr) {
-        setShowCheckInModal(true);
+      // NoFap Check-in Modal Logic
+      const isTodayNoFap = noFapLastCheckIn && 
+        noFapLastCheckIn.getDate() === today.getDate() &&
+        noFapLastCheckIn.getMonth() === today.getMonth() &&
+        noFapLastCheckIn.getFullYear() === today.getFullYear();
+
+      if (!isTodayNoFap) {
+        const noFapTimeStr = user.nofapCheckInTime || '20:00';
+        if (currentTimeStr >= noFapTimeStr) {
+          // Don't show both modals at exactly the same time, prioritize DailyCheckIn if both are true
+          // Wait, they can be stacked or just independent. Let's just set it to true.
+          setShowNoFapCheckInModal(true);
+        }
+      } else {
+        setShowNoFapCheckInModal(false);
       }
     };
 
@@ -63,7 +102,7 @@ export default function DashboardLayout() {
     // Check every minute in case they leave the app open
     const interval = setInterval(checkShouldShowModal, 60000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, noFapLastCheckIn]);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -75,6 +114,7 @@ export default function DashboardLayout() {
     { name: 'Chat', href: '/chat', icon: MessageCircle },
     { name: 'Resume Builder', href: '/resume', icon: FileText },
     { name: 'Home Coach', href: '/workouts', icon: Dumbbell },
+    { name: 'Discipline', href: '/nofap', icon: Shield },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
@@ -244,6 +284,12 @@ export default function DashboardLayout() {
       <DailyCheckInModal 
         isOpen={showCheckInModal} 
         onClose={() => setShowCheckInModal(false)} 
+      />
+
+      <NoFapCheckInModal 
+        isOpen={showNoFapCheckInModal} 
+        onClose={() => setShowNoFapCheckInModal(false)} 
+        onSuccess={() => setNoFapLastCheckIn(new Date())} 
       />
     </div>
   );

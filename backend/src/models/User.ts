@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "20:00", // 24-hour HH:MM format
   },
+  nofapCheckInTime: {
+    type: String,
+    default: "20:00", // 24-hour HH:MM format
+  },
 }, {
   timestamps: true,
 });

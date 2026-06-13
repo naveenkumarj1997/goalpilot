@@ -7,7 +7,7 @@ interface AuthRequest extends Request {
 
 export const updateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { dailyCheckInTime } = req.body;
+    const { dailyCheckInTime, nofapCheckInTime } = req.body;
     
     // Ensure user exists from auth middleware
     const user = await User.findById(req.user.id);
@@ -21,6 +21,10 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
       user.dailyCheckInTime = dailyCheckInTime;
     }
 
+    if (nofapCheckInTime) {
+      user.nofapCheckInTime = nofapCheckInTime;
+    }
+
     const updatedUser = await user.save();
 
     res.json({
@@ -29,6 +33,7 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
       email: updatedUser.email,
       lastDailyLog: updatedUser.lastDailyLog,
       dailyCheckInTime: updatedUser.dailyCheckInTime,
+      nofapCheckInTime: updatedUser.nofapCheckInTime,
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });

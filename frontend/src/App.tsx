@@ -32,6 +32,10 @@ import WorkoutPlanView from './pages/workouts/WorkoutPlanView';
 import ActiveSession from './pages/workouts/ActiveSession';
 import ExerciseLibrary from './pages/workouts/ExerciseLibrary';
 import BodyTracker from './pages/workouts/BodyTracker';
+import NoFapDashboard from './pages/nofap/NoFapDashboard';
+import NoFapCalendar from './pages/nofap/NoFapCalendar';
+import NoFapAnalytics from './pages/nofap/NoFapAnalytics';
+import NoFapJournal from './pages/nofap/NoFapJournal';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -85,6 +89,12 @@ function App() {
               <Route path="/workouts/session" element={<ActiveSession />} />
               <Route path="/workouts/library" element={<ExerciseLibrary />} />
               <Route path="/workouts/tracker" element={<BodyTracker />} />
+
+              {/* NoFap / Discipline Tracker */}
+              <Route path="/nofap" element={<NoFapDashboard />} />
+              <Route path="/nofap/calendar" element={<NoFapCalendar />} />
+              <Route path="/nofap/analytics" element={<NoFapAnalytics />} />
+              <Route path="/nofap/journal" element={<NoFapJournal />} />
             </Route>
           </Route>
           </Routes>
