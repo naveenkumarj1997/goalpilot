@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Quote } from 'lucide-react';
 import { getMotivation } from '../../api/nofap';
-import { useAuth } from '../../context/AuthContext';
+
 
 interface QuoteData {
   text: string;
