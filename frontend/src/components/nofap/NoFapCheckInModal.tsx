@@ -25,7 +25,8 @@ export default function NoFapCheckInModal({ isOpen, onClose, onSuccess }: NoFapC
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to check in');
+      const errorMessage = err.response?.data?.message || 'Failed to log check-in. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
