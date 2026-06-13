@@ -87,14 +87,14 @@ export const dailyCheckIn = async (req: AuthRequest, res: Response): Promise<voi
 
     // Update Profile
     if (success) {
-      profile.currentStreak += 1;
-      profile.totalSuccessfulDays += 1;
-      if (profile.currentStreak > profile.longestStreak) {
+      profile.currentStreak = (profile.currentStreak || 0) + 1;
+      profile.totalSuccessfulDays = (profile.totalSuccessfulDays || 0) + 1;
+      if (profile.currentStreak > (profile.longestStreak || 0)) {
         profile.longestStreak = profile.currentStreak;
       }
     } else {
       profile.currentStreak = 0;
-      profile.relapseCount += 1;
+      profile.relapseCount = (profile.relapseCount || 0) + 1;
     }
 
     profile.lastCheckInDate = new Date();
@@ -102,6 +102,7 @@ export const dailyCheckIn = async (req: AuthRequest, res: Response): Promise<voi
 
     res.status(201).json({ profile, log });
   } catch (error: any) {
+    console.error('Daily Check-In Error:', error);
     res.status(500).json({ message: error.message });
   }
 };
