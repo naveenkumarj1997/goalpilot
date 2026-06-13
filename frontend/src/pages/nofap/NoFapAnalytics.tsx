@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getProfile, getLogs } from '../../api/nofap';
 import { BarChart2, TrendingUp, Activity, PieChart } from 'lucide-react';
 // Note: We might normally use a chart library like Recharts here, but we will build a visual summary for now

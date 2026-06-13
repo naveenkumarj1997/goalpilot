@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getLogs } from '../../api/nofap';
 import { Calendar as CalendarIcon, CheckCircle, XCircle } from 'lucide-react';
 

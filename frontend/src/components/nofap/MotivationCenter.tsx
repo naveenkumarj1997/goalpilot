@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Quote } from 'lucide-react';
 import { getMotivation } from '../../api/nofap';
 import { useAuth } from '../../context/AuthContext';
@@ -9,7 +9,6 @@ interface QuoteData {
 }
 
 export default function MotivationCenter() {
-  const { user } = useAuth();
   const [quote, setQuote] = useState<QuoteData | null>(null);
   const [loading, setLoading] = useState(true);
 

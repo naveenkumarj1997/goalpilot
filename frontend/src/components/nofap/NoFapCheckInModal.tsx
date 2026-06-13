@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, X, Check, XCircle } from 'lucide-react';
 import { dailyCheckIn } from '../../api/nofap';
