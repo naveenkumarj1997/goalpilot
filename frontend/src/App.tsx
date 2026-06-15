@@ -36,6 +36,10 @@ import NoFapDashboard from './pages/nofap/NoFapDashboard';
 import NoFapCalendar from './pages/nofap/NoFapCalendar';
 import NoFapAnalytics from './pages/nofap/NoFapAnalytics';
 import NoFapJournal from './pages/nofap/NoFapJournal';
+import YogaDashboard from './pages/yoga/YogaDashboard';
+import YogaLibrary from './pages/yoga/YogaLibrary';
+import YogaProgress from './pages/yoga/YogaProgress';
+import YogaLessonView from './pages/yoga/YogaLessonView';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -95,6 +99,12 @@ function App() {
               <Route path="/nofap/calendar" element={<NoFapCalendar />} />
               <Route path="/nofap/analytics" element={<NoFapAnalytics />} />
               <Route path="/nofap/journal" element={<NoFapJournal />} />
+
+              {/* Yoga Coach */}
+              <Route path="/yoga" element={<YogaDashboard />} />
+              <Route path="/yoga/library" element={<YogaLibrary />} />
+              <Route path="/yoga/progress" element={<YogaProgress />} />
+              <Route path="/yoga/lesson/:id" element={<YogaLessonView />} />
             </Route>
           </Route>
           </Routes>
