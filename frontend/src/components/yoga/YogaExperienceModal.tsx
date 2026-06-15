@@ -23,7 +23,7 @@ export default function YogaExperienceModal({ isOpen, onSelect }: YogaExperience
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="glass w-full max-w-2xl bg-slate-900 border border-emerald-500/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+        className="glass w-full max-w-2xl bg-slate-900 border border-emerald-500/30 rounded-3xl p-8 shadow-2xl relative overflow-y-auto max-h-[90vh]"
       >
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-teal-500" />
         
