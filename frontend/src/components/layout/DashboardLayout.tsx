@@ -38,6 +38,7 @@ export default function DashboardLayout() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showNoFapCheckInModal, setShowNoFapCheckInModal] = useState(false);
   const [noFapLastCheckIn, setNoFapLastCheckIn] = useState<Date | null>(null);
+  const [hasFetchedNoFap, setHasFetchedNoFap] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -54,6 +55,8 @@ export default function DashboardLayout() {
         }
       } catch (err) {
         console.error('Failed to fetch NoFap profile for layout', err);
+      } finally {
+        setHasFetchedNoFap(true);
       }
     };
     fetchNoFapInfo();
@@ -88,20 +91,20 @@ export default function DashboardLayout() {
       }
 
       // NoFap Check-in Modal Logic
-      const isTodayNoFap = noFapLastCheckIn && 
-        noFapLastCheckIn.getDate() === today.getDate() &&
-        noFapLastCheckIn.getMonth() === today.getMonth() &&
-        noFapLastCheckIn.getFullYear() === today.getFullYear();
+      if (hasFetchedNoFap) {
+        const isTodayNoFap = noFapLastCheckIn && 
+          noFapLastCheckIn.getDate() === today.getDate() &&
+          noFapLastCheckIn.getMonth() === today.getMonth() &&
+          noFapLastCheckIn.getFullYear() === today.getFullYear();
 
-      if (!isTodayNoFap) {
-        const noFapTimeStr = user.nofapCheckInTime || '20:00';
-        if (currentTimeStr >= noFapTimeStr) {
-          // Don't show both modals at exactly the same time, prioritize DailyCheckIn if both are true
-          // Wait, they can be stacked or just independent. Let's just set it to true.
-          setShowNoFapCheckInModal(true);
+        if (!isTodayNoFap) {
+          const noFapTimeStr = user.nofapCheckInTime || '20:00';
+          if (currentTimeStr >= noFapTimeStr) {
+            setShowNoFapCheckInModal(true);
+          }
+        } else {
+          setShowNoFapCheckInModal(false);
         }
-      } else {
-        setShowNoFapCheckInModal(false);
       }
     };
 
@@ -110,7 +113,7 @@ export default function DashboardLayout() {
     // Check every minute in case they leave the app open
     const interval = setInterval(checkShouldShowModal, 60000);
     return () => clearInterval(interval);
-  }, [user, noFapLastCheckIn]);
+  }, [user, noFapLastCheckIn, hasFetchedNoFap]);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },

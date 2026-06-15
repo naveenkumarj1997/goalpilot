@@ -60,8 +60,9 @@ export const completeLesson = async (req: Request, res: Response) => {
     const profile = await StoicProfile.findOne({ user: userId });
     if (!profile) return res.status(404).json({ message: 'Profile not found' });
     
-    if (!profile.completedLessonIds.includes(lessonId)) {
-      profile.completedLessonIds.push(lessonId);
+    const id = lessonId as string;
+    if (!profile.completedLessonIds.includes(id)) {
+      profile.completedLessonIds.push(id);
       profile.lessonsCompleted += 1;
       await profile.save();
     }
