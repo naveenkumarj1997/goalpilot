@@ -128,9 +128,9 @@ const seedYogaData = async () => {
         poses: getPoses(['Warrior II (Virabhadrasana II)', 'Downward-Facing Dog (Adho Mukha Svanasana)', 'Crow Pose (Bakasana)'])
       },
       {
-        title: '40 Minute Evening Wind Down',
-        videoId: 'OQ6NfFIv2RU',
-        durationMinutes: 40,
+        title: '20 Minute Evening Wind Down',
+        videoId: 'BiVDjQpeK30',
+        durationMinutes: 20,
         difficulty: 'Beginner',
         category: 'Relaxation',
         description: 'Unwind after a long day with this relaxing sequence designed to promote deep sleep.',
