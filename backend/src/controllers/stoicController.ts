@@ -7,7 +7,7 @@ import StoicJournal from '../models/StoicJournal';
 // --- Profile ---
 export const getProfile = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     let profile = await StoicProfile.findOne({ user: userId });
     
     if (!profile) {
@@ -55,7 +55,7 @@ export const getLessons = async (req: Request, res: Response) => {
 export const completeLesson = async (req: Request, res: Response) => {
   try {
     const { lessonId } = req.params;
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     
     const profile = await StoicProfile.findOne({ user: userId });
     if (!profile) return res.status(404).json({ message: 'Profile not found' });
@@ -97,12 +97,12 @@ export const getQuotes = async (req: Request, res: Response) => {
     
     if (query) {
       filter.$or = [
-        { quote: { $regex: query, $options: 'i' } },
-        { meaning: { $regex: query, $options: 'i' } }
+        { quote: { $regex: query as string, $options: 'i' } },
+        { meaning: { $regex: query as string, $options: 'i' } }
       ];
     }
     if (author && author !== 'All') {
-      filter.author = author;
+      filter.author = author as string;
     }
     
     const quotes = await StoicQuote.find(filter).sort({ createdAt: -1 });
@@ -115,7 +115,7 @@ export const getQuotes = async (req: Request, res: Response) => {
 // --- Journal ---
 export const getJournal = async (req: Request, res: Response) => {
   try {
-    const entries = await StoicJournal.find({ user: req.user?.id }).sort({ date: -1 });
+    const entries = await StoicJournal.find({ user: (req as any).user?.id }).sort({ date: -1 });
     res.json(entries);
   } catch (error) {
     res.status(500).json({ message: 'Server error fetching journal' });
@@ -125,7 +125,7 @@ export const getJournal = async (req: Request, res: Response) => {
 export const createJournalEntry = async (req: Request, res: Response) => {
   try {
     const { reflection, challenge, lessonLearned } = req.body;
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     
     const entry = await StoicJournal.create({
       user: userId,
@@ -149,7 +149,7 @@ export const createJournalEntry = async (req: Request, res: Response) => {
 // --- Exercises & Challenges ---
 export const completeExercise = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     const profile = await StoicProfile.findOne({ user: userId });
     
     if (profile) {
@@ -165,7 +165,7 @@ export const completeExercise = async (req: Request, res: Response) => {
 
 export const completeChallenge = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     const profile = await StoicProfile.findOne({ user: userId });
     
     if (profile) {
