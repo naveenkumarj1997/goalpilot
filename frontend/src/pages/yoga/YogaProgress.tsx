@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+
 import { Award, Zap, Activity, Flame } from 'lucide-react';
 import { getProfile, getSessionLogs } from '../../api/yoga';
 import AchievementBadges from '../../components/yoga/AchievementBadges';

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Award, Star, Zap, Flame, Crown, Heart, Shield } from 'lucide-react';
+import { Star, Zap, Flame, Crown, Heart, Shield } from 'lucide-react';
 
 interface AchievementBadgesProps {
   profile: any;
@@ -7,7 +7,7 @@ interface AchievementBadgesProps {
 
 export default function AchievementBadges({ profile }: AchievementBadgesProps) {
   const sessions = profile?.sessionsCompleted || 0;
-  const streak = profile?.currentStreak || 0;
+
   const longestStreak = profile?.longestStreak || 0;
   const minutes = profile?.totalMinutesPracticed || 0;
 

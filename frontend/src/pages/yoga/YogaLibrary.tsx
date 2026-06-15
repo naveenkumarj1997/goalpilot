@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Activity, Search, Filter, Star, Check } from 'lucide-react';
+import { Play, Clock, Search, Filter, Star } from 'lucide-react';
 import { getLessons, getProfile, toggleFavorite } from '../../api/yoga';
 
 export default function YogaLibrary() {
