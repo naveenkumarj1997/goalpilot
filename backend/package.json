@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed:meditation": "ts-node src/scripts/seedMeditation.ts"
+    "seed:exercises": "ts-node src/scripts/seedExercises.ts",
+    "seed:meditation": "ts-node src/scripts/seedMeditation.ts",
+    "seed:stoic": "ts-node src/scripts/seedStoic.ts"
   },
   "keywords": [],
   "author": "",

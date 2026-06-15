@@ -23,7 +23,8 @@ import {
   Dumbbell,
   Shield,
   Activity as YogaIcon,
-  Wind
+  Wind,
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -124,6 +125,7 @@ export default function DashboardLayout() {
     { name: 'Discipline', href: '/nofap', icon: Shield },
     { name: 'Yoga Coach', href: '/yoga', icon: YogaIcon },
     { name: 'Meditation', href: '/meditation', icon: Wind },
+    { name: 'Stoicism', href: '/stoicism', icon: BookOpen },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

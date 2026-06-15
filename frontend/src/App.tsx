@@ -46,6 +46,15 @@ import BreathingExercises from './pages/meditation/BreathingExercises';
 import FocusTimer from './pages/meditation/FocusTimer';
 import MeditationProgress from './pages/meditation/MeditationProgress';
 import MeditationSession from './pages/meditation/MeditationSession';
+import StoicDashboard from './pages/stoicism/StoicDashboard';
+import LearnStoicism from './pages/stoicism/LearnStoicism';
+import LessonView from './pages/stoicism/LessonView';
+import DailyWisdom from './pages/stoicism/DailyWisdom';
+import LifeSituations from './pages/stoicism/LifeSituations';
+import QuoteLibrary from './pages/stoicism/QuoteLibrary';
+import StoicExercises from './pages/stoicism/StoicExercises';
+import StoicJournal from './pages/stoicism/StoicJournal';
+import StoicProgress from './pages/stoicism/StoicProgress';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -119,6 +128,17 @@ function App() {
               <Route path="/meditation/focus" element={<FocusTimer />} />
               <Route path="/meditation/progress" element={<MeditationProgress />} />
               <Route path="/meditation/session/:id" element={<MeditationSession />} />
+
+              {/* Stoicism Routes */}
+              <Route path="/stoicism" element={<StoicDashboard />} />
+              <Route path="/stoicism/learn" element={<LearnStoicism />} />
+              <Route path="/stoicism/lesson/:id" element={<LessonView />} />
+              <Route path="/stoicism/wisdom" element={<DailyWisdom />} />
+              <Route path="/stoicism/situations" element={<LifeSituations />} />
+              <Route path="/stoicism/quotes" element={<QuoteLibrary />} />
+              <Route path="/stoicism/exercises" element={<StoicExercises />} />
+              <Route path="/stoicism/journal" element={<StoicJournal />} />
+              <Route path="/stoicism/progress" element={<StoicProgress />} />
             </Route>
           </Route>
           </Routes>
