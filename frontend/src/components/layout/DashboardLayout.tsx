@@ -22,7 +22,8 @@ import {
   FileText,
   Dumbbell,
   Shield,
-  Activity as YogaIcon
+  Activity as YogaIcon,
+  Wind
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -122,6 +123,7 @@ export default function DashboardLayout() {
     { name: 'Home Coach', href: '/workouts', icon: Dumbbell },
     { name: 'Discipline', href: '/nofap', icon: Shield },
     { name: 'Yoga Coach', href: '/yoga', icon: YogaIcon },
+    { name: 'Meditation', href: '/meditation', icon: Wind },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

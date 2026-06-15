@@ -40,6 +40,12 @@ import YogaDashboard from './pages/yoga/YogaDashboard';
 import YogaLibrary from './pages/yoga/YogaLibrary';
 import YogaProgress from './pages/yoga/YogaProgress';
 import YogaLessonView from './pages/yoga/YogaLessonView';
+import MeditationDashboard from './pages/meditation/MeditationDashboard';
+import MeditationLibrary from './pages/meditation/MeditationLibrary';
+import BreathingExercises from './pages/meditation/BreathingExercises';
+import FocusTimer from './pages/meditation/FocusTimer';
+import MeditationProgress from './pages/meditation/MeditationProgress';
+import MeditationSession from './pages/meditation/MeditationSession';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -105,6 +111,14 @@ function App() {
               <Route path="/yoga/library" element={<YogaLibrary />} />
               <Route path="/yoga/progress" element={<YogaProgress />} />
               <Route path="/yoga/lesson/:id" element={<YogaLessonView />} />
+
+              {/* Meditation Coach */}
+              <Route path="/meditation" element={<MeditationDashboard />} />
+              <Route path="/meditation/library" element={<MeditationLibrary />} />
+              <Route path="/meditation/breathing" element={<BreathingExercises />} />
+              <Route path="/meditation/focus" element={<FocusTimer />} />
+              <Route path="/meditation/progress" element={<MeditationProgress />} />
+              <Route path="/meditation/session/:id" element={<MeditationSession />} />
             </Route>
           </Route>
           </Routes>
