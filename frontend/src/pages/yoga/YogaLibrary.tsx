@@ -155,7 +155,7 @@ export default function YogaLibrary() {
               <Link to={`/yoga/lesson/${lesson._id}`}>
                 <div className="relative aspect-video overflow-hidden">
                   <img 
-                    src={`https://img.youtube.com/vi/${lesson.videoId}/maxresdefault.jpg`}
+                    src={`https://img.youtube.com/vi/${lesson.videoId}/hqdefault.jpg`}
                     alt={lesson.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
