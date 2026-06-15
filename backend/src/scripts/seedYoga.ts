@@ -102,7 +102,7 @@ const seedYogaData = async () => {
     const lessons = [
       {
         title: 'Morning Yoga for Beginners',
-        videoId: 'v7AYKMP6rOE', // Example: Yoga With Adriene
+        videoId: 'v7AYKMP6rOE', 
         durationMinutes: 10,
         difficulty: 'Beginner',
         category: 'Morning Yoga',
@@ -111,7 +111,7 @@ const seedYogaData = async () => {
       },
       {
         title: 'Yoga for Flexibility - 20 Min Flow',
-        videoId: 'sTANio_2E0Q', // Example: Yoga with Adriene (Yoga For Flexibility)
+        videoId: 'sTANio_2E0Q',
         durationMinutes: 20,
         difficulty: 'Intermediate',
         category: 'Flexibility',
@@ -119,26 +119,17 @@ const seedYogaData = async () => {
         poses: getPoses(['Downward-Facing Dog (Adho Mukha Svanasana)', 'Cobra Pose (Bhujangasana)', 'Child’s Pose (Balasana)'])
       },
       {
-        title: 'Total Body Yoga Workout',
-        videoId: '9k02pnSxiik', // Example: Total Body Yoga
+        title: '30 Minute Full Body Yoga Flow',
+        videoId: 'b1H3xO3x_Js',
         durationMinutes: 30,
-        difficulty: 'Advanced',
+        difficulty: 'Intermediate',
         category: 'Full Body Yoga',
         description: 'A dynamic 30-minute full body yoga workout designed to build heat, strength, and endurance.',
         poses: getPoses(['Warrior II (Virabhadrasana II)', 'Downward-Facing Dog (Adho Mukha Svanasana)', 'Crow Pose (Bakasana)'])
       },
       {
-        title: 'Yoga for Back Pain Relief',
-        videoId: 'Phjc8E2tQyE', // Example: Yoga for Back Pain
-        durationMinutes: 15,
-        difficulty: 'Beginner',
-        category: 'Back Pain Relief',
-        description: 'Gentle stretches specifically designed to soothe and relieve tension in the lower and upper back.',
-        poses: getPoses(['Cat-Cow Pose (Marjaryasana-Bitilasana)', 'Child’s Pose (Balasana)'])
-      },
-      {
-        title: 'Evening Wind Down & Relaxation',
-        videoId: 'OQ6NfFIv2RU', // Working ID
+        title: '40 Minute Evening Wind Down',
+        videoId: 'OQ6NfFIv2RU',
         durationMinutes: 40,
         difficulty: 'Beginner',
         category: 'Relaxation',
@@ -146,18 +137,9 @@ const seedYogaData = async () => {
         poses: [insertedPoses[0]._id, insertedPoses[6]._id, insertedPoses[7]._id]
       },
       {
-        title: 'Intermediate Flow',
-        description: 'A moderate flow to build heat and flexibility.',
-        videoId: 'b1H3xO3x_Js', // 30 min full body
-        durationMinutes: 30,
-        difficulty: 'Intermediate',
-        category: 'Flexibility',
-        poses: [insertedPoses[0]._id, insertedPoses[2]._id, insertedPoses[3]._id]
-      },
-      {
         title: 'Deep Stretch & Mobility',
         description: 'Focus on opening up tight hips and shoulders.',
-        videoId: 'GLy2rYHwUqY', // Working ID
+        videoId: 'GLy2rYHwUqY', 
         durationMinutes: 45,
         difficulty: 'Intermediate',
         category: 'Mobility',
@@ -166,7 +148,7 @@ const seedYogaData = async () => {
       {
         title: 'Advanced Core Strength',
         description: 'Challenging sequence focusing on core control.',
-        videoId: 'LqXZ628YNj4', // Working ID
+        videoId: 'LqXZ628YNj4', 
         durationMinutes: 25,
         difficulty: 'Advanced',
         category: 'Balance',
