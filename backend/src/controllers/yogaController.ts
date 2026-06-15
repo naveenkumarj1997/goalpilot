@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import YogaProfile from '../models/YogaProfile';
 import YogaLesson from '../models/YogaLesson';
 import YogaSessionLog from '../models/YogaSessionLog';
+import '../models/YogaPose'; // Ensure YogaPose model is registered for population
 import { AuthRequest } from '../middleware/authMiddleware';
 
 // @desc    Get or Create Yoga Profile
