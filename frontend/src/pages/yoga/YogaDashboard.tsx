@@ -112,7 +112,7 @@ export default function YogaDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-transparent z-10" />
           <img 
-            src={`https://img.youtube.com/vi/${recommendedLesson.videoId}/hqdefault.jpg`}
+            src={`https://img.youtube.com/vi/${recommendedLesson.videoId}/0.jpg`}
             alt={recommendedLesson.title}
             className="absolute inset-0 w-full h-full object-cover opacity-40"
           />
