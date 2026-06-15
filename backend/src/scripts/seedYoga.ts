@@ -138,20 +138,38 @@ const seedYogaData = async () => {
       },
       {
         title: 'Evening Wind Down & Relaxation',
-        videoId: 'b1H3xO3x_Js', // Example: Bedtime Yoga
-        durationMinutes: 20,
+        videoId: 'OQ6NfFIv2RU', // Working ID
+        durationMinutes: 40,
         difficulty: 'Beginner',
-        category: 'Evening Yoga',
-        description: 'Unwind after a long day with this relaxing 20-minute sequence designed to promote deep sleep.',
-        poses: getPoses(['Child’s Pose (Balasana)', 'Tree Pose (Vrksasana)']) // Tree pose modification for gentle balance
+        category: 'Relaxation',
+        description: 'Unwind after a long day with this relaxing sequence designed to promote deep sleep.',
+        poses: [insertedPoses[0]._id, insertedPoses[6]._id, insertedPoses[7]._id]
       },
       {
-        title: 'Core Strength Yoga',
-        videoId: 'J3vHnFItzL4', // Example Core Yoga
-        durationMinutes: 25,
+        title: 'Intermediate Flow',
+        description: 'A moderate flow to build heat and flexibility.',
+        videoId: 'b1H3xO3x_Js', // 30 min full body
+        durationMinutes: 30,
         difficulty: 'Intermediate',
+        category: 'Flexibility',
+        poses: [insertedPoses[0]._id, insertedPoses[2]._id, insertedPoses[3]._id]
+      },
+      {
+        title: 'Deep Stretch & Mobility',
+        description: 'Focus on opening up tight hips and shoulders.',
+        videoId: 'GLy2rYHwUqY', // Working ID
+        durationMinutes: 45,
+        difficulty: 'Intermediate',
+        category: 'Mobility',
+        poses: [insertedPoses[1]._id, insertedPoses[4]._id, insertedPoses[5]._id]
+      },
+      {
+        title: 'Advanced Core Strength',
+        description: 'Challenging sequence focusing on core control.',
+        videoId: 'LqXZ628YNj4', // Working ID
+        durationMinutes: 25,
+        difficulty: 'Advanced',
         category: 'Balance',
-        description: 'Build core stability and strength with this active flow focusing on the abdominal muscles.',
         poses: getPoses(['Downward-Facing Dog (Adho Mukha Svanasana)', 'Warrior II (Virabhadrasana II)', 'Crow Pose (Bakasana)'])
       }
     ];
