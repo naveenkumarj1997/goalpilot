@@ -92,7 +92,7 @@ export default function YogaLessonView() {
             <div className="aspect-video relative w-full">
               <iframe 
                 className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${lesson.videoId}?playsinline=1&rel=0&modestbranding=1`}
+                src={`https://www.youtube-nocookie.com/embed/${lesson.videoId}?playsinline=1&rel=0&modestbranding=1`}
                 title={lesson.title}
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 

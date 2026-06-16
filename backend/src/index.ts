@@ -20,6 +20,7 @@ import nofapRoutes from './routes/nofapRoutes';
 import yogaRoutes from './routes/yogaRoutes';
 import meditationRoutes from './routes/meditationRoutes';
 import stoicRoutes from './routes/stoicRoutes';
+import personalRoutes from './routes/personalRoutes';
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use('/api/nofap', nofapRoutes);
 app.use('/api/yoga', yogaRoutes);
 app.use('/api/meditation', meditationRoutes);
 app.use('/api/stoicism', stoicRoutes);
+app.use('/api/personal', personalRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

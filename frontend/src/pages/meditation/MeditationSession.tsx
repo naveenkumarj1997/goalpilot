@@ -69,7 +69,7 @@ export default function MeditationSession() {
       <div className="glass rounded-2xl overflow-hidden border border-indigo-500/30">
         <div className="aspect-video w-full bg-black relative">
           <iframe
-            src={`https://www.youtube.com/embed/${lesson.videoId}?autoplay=0&rel=0&modestbranding=1`}
+            src={`https://www.youtube-nocookie.com/embed/${lesson.videoId}?autoplay=0&rel=0&modestbranding=1`}
             title={lesson.title}
             className="absolute top-0 left-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

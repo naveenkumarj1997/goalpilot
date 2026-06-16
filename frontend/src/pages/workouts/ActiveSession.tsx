@@ -195,7 +195,7 @@ export default function ActiveSession() {
             <div className="aspect-video bg-slate-800 rounded-2xl mb-8 flex items-center justify-center border border-white/5 overflow-hidden relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                  <iframe 
                    className="w-full h-full"
-                   src={`https://www.youtube.com/embed/${exerciseDetails?.animationUrl}?playsinline=1&rel=0&modestbranding=1`}
+                   src={`https://www.youtube-nocookie.com/embed/${exerciseDetails?.animationUrl}?playsinline=1&rel=0&modestbranding=1`}
                    title="YouTube video player" 
                    frameBorder="0" 
                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 

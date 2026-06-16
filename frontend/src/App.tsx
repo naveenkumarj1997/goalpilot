@@ -56,6 +56,19 @@ import QuoteLibrary from './pages/stoicism/QuoteLibrary';
 import StoicExercises from './pages/stoicism/StoicExercises';
 import StoicJournal from './pages/stoicism/StoicJournal';
 import StoicProgress from './pages/stoicism/StoicProgress';
+
+import PersonalOnboarding from './pages/personal/PersonalOnboarding';
+import PersonalDashboard from './pages/personal/PersonalDashboard';
+import Appearance from './pages/personal/Appearance';
+import StyleDressing from './pages/personal/StyleDressing';
+import BodyLanguage from './pages/personal/BodyLanguage';
+import Communication from './pages/personal/Communication';
+import Confidence from './pages/personal/Confidence';
+import SocialSkills from './pages/personal/SocialSkills';
+import Mindset from './pages/personal/Mindset';
+import PersonalChallenges from './pages/personal/PersonalChallenges';
+import PersonalProgress from './pages/personal/PersonalProgress';
+
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -141,6 +154,19 @@ function App() {
               <Route path="/stoicism/exercises" element={<StoicExercises />} />
               <Route path="/stoicism/journal" element={<StoicJournal />} />
               <Route path="/stoicism/progress" element={<StoicProgress />} />
+
+              {/* Personal Development & Presence */}
+              <Route path="/personal/onboarding" element={<PersonalOnboarding />} />
+              <Route path="/personal/dashboard" element={<PersonalDashboard />} />
+              <Route path="/personal/appearance" element={<Appearance />} />
+              <Route path="/personal/style" element={<StyleDressing />} />
+              <Route path="/personal/body-language" element={<BodyLanguage />} />
+              <Route path="/personal/communication" element={<Communication />} />
+              <Route path="/personal/confidence" element={<Confidence />} />
+              <Route path="/personal/social" element={<SocialSkills />} />
+              <Route path="/personal/mindset" element={<Mindset />} />
+              <Route path="/personal/challenges" element={<PersonalChallenges />} />
+              <Route path="/personal/progress" element={<PersonalProgress />} />
             </Route>
           </Route>
           </Routes>

@@ -98,7 +98,7 @@ export default function MusicMeditation() {
       <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isActive ? 'opacity-30' : 'opacity-0 hidden'}`}>
         {isActive && (
           <iframe
-            src={`https://www.youtube.com/embed/${selectedTrack.id}?autoplay=1&controls=0&mute=0&loop=1&playlist=${selectedTrack.id}&modestbranding=1`}
+            src={`https://www.youtube-nocookie.com/embed/${selectedTrack.id}?autoplay=1&controls=0&mute=0&loop=1&playlist=${selectedTrack.id}&modestbranding=1`}
             title="Music Player"
             className="w-[150%] h-[150%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[1.5]"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

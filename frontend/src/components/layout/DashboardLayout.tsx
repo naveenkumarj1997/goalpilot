@@ -24,7 +24,10 @@ import {
   Shield,
   Activity as YogaIcon,
   Wind,
-  BookOpen
+  BookOpen,
+  User,
+  Star,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -129,6 +132,7 @@ export default function DashboardLayout() {
     { name: 'Yoga Coach', href: '/yoga', icon: YogaIcon },
     { name: 'Meditation', href: '/meditation', icon: Wind },
     { name: 'Stoicism', href: '/stoicism', icon: BookOpen },
+    { name: 'Personal Dev', href: '/personal/dashboard', icon: User },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
