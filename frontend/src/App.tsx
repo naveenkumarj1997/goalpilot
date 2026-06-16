@@ -46,6 +46,7 @@ import BreathingExercises from './pages/meditation/BreathingExercises';
 import FocusTimer from './pages/meditation/FocusTimer';
 import MeditationProgress from './pages/meditation/MeditationProgress';
 import MeditationSession from './pages/meditation/MeditationSession';
+import MusicMeditation from './pages/meditation/MusicMeditation';
 import StoicDashboard from './pages/stoicism/StoicDashboard';
 import LearnStoicism from './pages/stoicism/LearnStoicism';
 import LessonView from './pages/stoicism/LessonView';
@@ -126,6 +127,7 @@ function App() {
               <Route path="/meditation/library" element={<MeditationLibrary />} />
               <Route path="/meditation/breathing" element={<BreathingExercises />} />
               <Route path="/meditation/focus" element={<FocusTimer />} />
+              <Route path="/meditation/music" element={<MusicMeditation />} />
               <Route path="/meditation/progress" element={<MeditationProgress />} />
               <Route path="/meditation/session/:id" element={<MeditationSession />} />
 

@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IMeditationLog extends Document {
   user: mongoose.Types.ObjectId;
   lesson?: mongoose.Types.ObjectId; // Optional: If they did a guided lesson
-  type: 'Guided' | 'Timer' | 'Breathing';
+  type: 'Guided' | 'Timer' | 'Breathing' | 'Music';
   durationMinutes: number;
   date: Date;
   moodBefore?: 'Stressed' | 'Anxious' | 'Neutral' | 'Calm' | 'Happy';
@@ -16,7 +16,7 @@ const meditationLogSchema = new Schema({
   lesson: { type: Schema.Types.ObjectId, ref: 'MeditationLesson', required: false },
   type: {
     type: String,
-    enum: ['Guided', 'Timer', 'Breathing'],
+    enum: ['Guided', 'Timer', 'Breathing', 'Music'],
     required: true
   },
   durationMinutes: { type: Number, required: true },

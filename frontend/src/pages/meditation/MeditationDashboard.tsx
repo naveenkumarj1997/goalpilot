@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Wind, Target, Play, Star, BookOpen, Clock, Zap } from 'lucide-react';
+import { Wind, Target, Play, Star, BookOpen, Clock, Zap, Music } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getProfile, updateProfile, getLessons } from '../../api/meditation';
 import MeditationExperienceModal from '../../components/meditation/MeditationExperienceModal';
@@ -101,7 +101,7 @@ export default function MeditationDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Link to="/meditation/library" className="group glass p-6 rounded-2xl border border-indigo-500/30 hover:bg-indigo-500/10 transition-all text-center">
           <BookOpen className="h-8 w-8 text-indigo-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-1">Guided Meditations</h3>
@@ -116,6 +116,11 @@ export default function MeditationDashboard() {
           <Target className="h-8 w-8 text-amber-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-1">Focus Timer</h3>
           <p className="text-xs text-white/50">Distraction-free mode</p>
+        </Link>
+        <Link to="/meditation/music" className="group glass p-6 rounded-2xl border border-fuchsia-500/30 hover:bg-fuchsia-500/10 transition-all text-center">
+          <Music className="h-8 w-8 text-fuchsia-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+          <h3 className="text-lg font-bold text-white mb-1">Music Session</h3>
+          <p className="text-xs text-white/50">Relaxing audio tracks</p>
         </Link>
       </div>
 
