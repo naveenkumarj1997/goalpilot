@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Activity, Target, Shield, Zap } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { createOrUpdatePersonalProfile } from '../../api/personal';
 

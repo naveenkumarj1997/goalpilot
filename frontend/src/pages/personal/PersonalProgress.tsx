@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Trophy, Shield, Star, Award, Target, Zap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getPersonalProfile, getPersonalLogs } from '../../api/personal';

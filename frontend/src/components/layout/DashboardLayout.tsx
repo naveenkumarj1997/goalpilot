@@ -25,9 +25,7 @@ import {
   Activity as YogaIcon,
   Wind,
   BookOpen,
-  User,
-  Star,
-  Zap
+  User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
