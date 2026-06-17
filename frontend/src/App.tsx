@@ -48,6 +48,8 @@ import MeditationProgress from './pages/meditation/MeditationProgress';
 import MeditationSession from './pages/meditation/MeditationSession';
 import MusicMeditation from './pages/meditation/MusicMeditation';
 import StoicDashboard from './pages/stoicism/StoicDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import PremiumUpgrade from './pages/PremiumUpgrade';
 import LearnStoicism from './pages/stoicism/LearnStoicism';
 import LessonView from './pages/stoicism/LessonView';
 import DailyWisdom from './pages/stoicism/DailyWisdom';
@@ -69,6 +71,19 @@ import Mindset from './pages/personal/Mindset';
 import PersonalChallenges from './pages/personal/PersonalChallenges';
 import PersonalProgress from './pages/personal/PersonalProgress';
 
+import ManifestationDashboard from './pages/manifestation/ManifestationDashboard';
+import DreamLifeBuilder from './pages/manifestation/DreamLifeBuilder';
+import VisionBoard from './pages/manifestation/VisionBoard';
+import GoalManifestor from './pages/manifestation/GoalManifestor';
+import DailyVisualization from './pages/manifestation/DailyVisualization';
+import SuccessJournal from './pages/manifestation/SuccessJournal';
+import Affirmations from './pages/manifestation/Affirmations';
+import SuccessHabits from './pages/manifestation/SuccessHabits';
+import OpportunityTracker from './pages/manifestation/OpportunityTracker';
+import AISuccessCoach from './pages/manifestation/AISuccessCoach';
+import SuccessStories from './pages/manifestation/SuccessStories';
+import ManifestationProgress from './pages/manifestation/ManifestationProgress';
+import ModuleGuard from './components/layout/ModuleGuard';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
 
@@ -91,82 +106,126 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/goals" element={<GoalList />} />
-              <Route path="/goals/create" element={<CreateGoal />} />
-              <Route path="/goals/edit/:id" element={<EditGoal />} />
-              <Route path="/goals/update-hours" element={<UpdateHours />} />
-              <Route path="/tasks" element={<TaskList />} />
-              <Route path="/habits" element={<HabitList />} />
-              <Route path="/games" element={<MiniGamesDashboard />} />
-              <Route path="/games/lobby/:roomId" element={<GameLobby />} />
-              <Route path="/games/play/:roomId" element={<GamePlay />} />
+              <Route element={<ModuleGuard moduleName="Goals" />}>
+                <Route path="/goals" element={<GoalList />} />
+                <Route path="/goals/create" element={<CreateGoal />} />
+                <Route path="/goals/edit/:id" element={<EditGoal />} />
+                <Route path="/goals/update-hours" element={<UpdateHours />} />
+              </Route>
+              <Route element={<ModuleGuard moduleName="Tasks" />}>
+                <Route path="/tasks" element={<TaskList />} />
+              </Route>
+              <Route element={<ModuleGuard moduleName="Habits" />}>
+                <Route path="/habits" element={<HabitList />} />
+              </Route>
+              <Route element={<ModuleGuard moduleName="Gaming Lounge" />}>
+                <Route path="/games" element={<MiniGamesDashboard />} />
+                <Route path="/games/lobby/:roomId" element={<GameLobby />} />
+                <Route path="/games/play/:roomId" element={<GamePlay />} />
+              </Route>
               
               {/* Job Modules */}
-              <Route path="/jobs" element={<JobDashboard />} />
-              <Route path="/jobs/preferences" element={<JobPreferences />} />
-              <Route path="/jobs/tracker" element={<JobKanban />} />
-              <Route path="/jobs/analytics" element={<JobAnalytics />} />
-              <Route path="/jobs/admin" element={<AdminCompanySources />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/chat" element={<ChatDashboard />} />
+              <Route element={<ModuleGuard moduleName="Job Tracker" />}>
+                <Route path="/jobs" element={<JobDashboard />} />
+                <Route path="/jobs/preferences" element={<JobPreferences />} />
+                <Route path="/jobs/tracker" element={<JobKanban />} />
+                <Route path="/jobs/analytics" element={<JobAnalytics />} />
+                <Route path="/jobs/admin" element={<AdminCompanySources />} />
+              </Route>
+              <Route path="settings" element={<Settings />} />
+              <Route path="admin" element={<AdminDashboard />} />
+              <Route path="upgrade" element={<PremiumUpgrade />} />
+              <Route element={<ModuleGuard moduleName="Chat" />}>
+                <Route path="/chat" element={<ChatDashboard />} />
+              </Route>
               
               {/* Resume Builder */}
-              <Route path="/resume" element={<ResumeDashboard />} />
-              <Route path="/resume/:id/edit" element={<ResumeBuilder />} />
-              <Route path="/resume/:id/preview" element={<ResumePreview />} />
+              <Route element={<ModuleGuard moduleName="Resume Builder" />}>
+                <Route path="/resume" element={<ResumeDashboard />} />
+                <Route path="/resume/:id/edit" element={<ResumeBuilder />} />
+                <Route path="/resume/:id/preview" element={<ResumePreview />} />
+              </Route>
 
               {/* Workouts */}
-              <Route path="/workouts" element={<WorkoutDashboard />} />
-              <Route path="/workouts/profile" element={<FitnessProfile />} />
-              <Route path="/workouts/plan" element={<WorkoutPlanView />} />
-              <Route path="/workouts/session" element={<ActiveSession />} />
-              <Route path="/workouts/library" element={<ExerciseLibrary />} />
-              <Route path="/workouts/tracker" element={<BodyTracker />} />
+              <Route element={<ModuleGuard moduleName="Home Coach" />}>
+                <Route path="/workouts" element={<WorkoutDashboard />} />
+                <Route path="/workouts/profile" element={<FitnessProfile />} />
+                <Route path="/workouts/plan" element={<WorkoutPlanView />} />
+                <Route path="/workouts/session" element={<ActiveSession />} />
+                <Route path="/workouts/library" element={<ExerciseLibrary />} />
+                <Route path="/workouts/tracker" element={<BodyTracker />} />
+              </Route>
 
               {/* NoFap / Discipline Tracker */}
-              <Route path="/nofap" element={<NoFapDashboard />} />
-              <Route path="/nofap/calendar" element={<NoFapCalendar />} />
-              <Route path="/nofap/analytics" element={<NoFapAnalytics />} />
-              <Route path="/nofap/journal" element={<NoFapJournal />} />
+              <Route element={<ModuleGuard moduleName="Discipline" />}>
+                <Route path="/nofap" element={<NoFapDashboard />} />
+                <Route path="/nofap/calendar" element={<NoFapCalendar />} />
+                <Route path="/nofap/analytics" element={<NoFapAnalytics />} />
+                <Route path="/nofap/journal" element={<NoFapJournal />} />
+              </Route>
 
               {/* Yoga Coach */}
-              <Route path="/yoga" element={<YogaDashboard />} />
-              <Route path="/yoga/library" element={<YogaLibrary />} />
-              <Route path="/yoga/progress" element={<YogaProgress />} />
-              <Route path="/yoga/lesson/:id" element={<YogaLessonView />} />
+              <Route element={<ModuleGuard moduleName="Yoga Coach" />}>
+                <Route path="/yoga" element={<YogaDashboard />} />
+                <Route path="/yoga/library" element={<YogaLibrary />} />
+                <Route path="/yoga/progress" element={<YogaProgress />} />
+                <Route path="/yoga/lesson/:id" element={<YogaLessonView />} />
+              </Route>
 
               {/* Meditation Coach */}
-              <Route path="/meditation" element={<MeditationDashboard />} />
-              <Route path="/meditation/library" element={<MeditationLibrary />} />
-              <Route path="/meditation/breathing" element={<BreathingExercises />} />
-              <Route path="/meditation/focus" element={<FocusTimer />} />
-              <Route path="/meditation/music" element={<MusicMeditation />} />
-              <Route path="/meditation/progress" element={<MeditationProgress />} />
-              <Route path="/meditation/session/:id" element={<MeditationSession />} />
+              <Route element={<ModuleGuard moduleName="Meditation" />}>
+                <Route path="/meditation" element={<MeditationDashboard />} />
+                <Route path="/meditation/library" element={<MeditationLibrary />} />
+                <Route path="/meditation/breathing" element={<BreathingExercises />} />
+                <Route path="/meditation/focus" element={<FocusTimer />} />
+                <Route path="/meditation/music" element={<MusicMeditation />} />
+                <Route path="/meditation/progress" element={<MeditationProgress />} />
+                <Route path="/meditation/session/:id" element={<MeditationSession />} />
+              </Route>
 
               {/* Stoicism Routes */}
-              <Route path="/stoicism" element={<StoicDashboard />} />
-              <Route path="/stoicism/learn" element={<LearnStoicism />} />
-              <Route path="/stoicism/lesson/:id" element={<LessonView />} />
-              <Route path="/stoicism/wisdom" element={<DailyWisdom />} />
-              <Route path="/stoicism/situations" element={<LifeSituations />} />
-              <Route path="/stoicism/quotes" element={<QuoteLibrary />} />
-              <Route path="/stoicism/exercises" element={<StoicExercises />} />
-              <Route path="/stoicism/journal" element={<StoicJournal />} />
-              <Route path="/stoicism/progress" element={<StoicProgress />} />
+              <Route element={<ModuleGuard moduleName="Stoicism" />}>
+                <Route path="/stoicism" element={<StoicDashboard />} />
+                <Route path="/stoicism/learn" element={<LearnStoicism />} />
+                <Route path="/stoicism/lesson/:id" element={<LessonView />} />
+                <Route path="/stoicism/daily" element={<DailyWisdom />} />
+                <Route path="/stoicism/situations" element={<LifeSituations />} />
+                <Route path="/stoicism/quotes" element={<QuoteLibrary />} />
+                <Route path="/stoicism/exercises" element={<StoicExercises />} />
+                <Route path="/stoicism/journal" element={<StoicJournal />} />
+                <Route path="/stoicism/progress" element={<StoicProgress />} />
+              </Route>
 
-              {/* Personal Development & Presence */}
-              <Route path="/personal/onboarding" element={<PersonalOnboarding />} />
-              <Route path="/personal/dashboard" element={<PersonalDashboard />} />
-              <Route path="/personal/appearance" element={<Appearance />} />
-              <Route path="/personal/style" element={<StyleDressing />} />
-              <Route path="/personal/body-language" element={<BodyLanguage />} />
-              <Route path="/personal/communication" element={<Communication />} />
-              <Route path="/personal/confidence" element={<Confidence />} />
-              <Route path="/personal/social" element={<SocialSkills />} />
-              <Route path="/personal/mindset" element={<Mindset />} />
-              <Route path="/personal/challenges" element={<PersonalChallenges />} />
-              <Route path="/personal/progress" element={<PersonalProgress />} />
+              {/* Personal Development Routes */}
+              <Route element={<ModuleGuard moduleName="Personal Dev" />}>
+                <Route path="/personal/onboarding" element={<PersonalOnboarding />} />
+                <Route path="/personal/dashboard" element={<PersonalDashboard />} />
+                <Route path="/personal/appearance" element={<Appearance />} />
+                <Route path="/personal/style" element={<StyleDressing />} />
+                <Route path="/personal/body-language" element={<BodyLanguage />} />
+                <Route path="/personal/communication" element={<Communication />} />
+                <Route path="/personal/confidence" element={<Confidence />} />
+                <Route path="/personal/social-skills" element={<SocialSkills />} />
+                <Route path="/personal/mindset" element={<Mindset />} />
+                <Route path="/personal/challenges" element={<PersonalChallenges />} />
+                <Route path="/personal/progress" element={<PersonalProgress />} />
+              </Route>
+
+              {/* Manifestation Routes */}
+              <Route element={<ModuleGuard moduleName="Manifestation" />}>
+                <Route path="/manifestation/dashboard" element={<ManifestationDashboard />} />
+                <Route path="/manifestation/dream-life" element={<DreamLifeBuilder />} />
+                <Route path="/manifestation/vision-board" element={<VisionBoard />} />
+                <Route path="/manifestation/goals" element={<GoalManifestor />} />
+                <Route path="/manifestation/visualization" element={<DailyVisualization />} />
+                <Route path="/manifestation/success-journal" element={<SuccessJournal />} />
+                <Route path="/manifestation/affirmations" element={<Affirmations />} />
+                <Route path="/manifestation/habits" element={<SuccessHabits />} />
+                <Route path="/manifestation/opportunities" element={<OpportunityTracker />} />
+                <Route path="/manifestation/coach" element={<AISuccessCoach />} />
+                <Route path="/manifestation/stories" element={<SuccessStories />} />
+                <Route path="/manifestation/progress" element={<ManifestationProgress />} />
+              </Route>
             </Route>
           </Route>
           </Routes>

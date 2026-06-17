@@ -26,6 +26,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "20:00", // 24-hour HH:MM format
   },
+  role: {
+    type: String,
+    enum: ['Standard', 'Premium', 'Admin', 'SuperAdmin'],
+    default: 'Standard'
+  },
+  status: {
+    type: String,
+    enum: ['Active', 'Blocked'],
+    default: 'Active'
+  },
+  blockReason: {
+    type: String
+  },
+  moduleOverrides: {
+    type: Map,
+    of: Boolean,
+    default: {}
+  }
 }, {
   timestamps: true,
 });

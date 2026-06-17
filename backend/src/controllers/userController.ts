@@ -34,6 +34,7 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
       lastDailyLog: updatedUser.lastDailyLog,
       dailyCheckInTime: updatedUser.dailyCheckInTime,
       nofapCheckInTime: updatedUser.nofapCheckInTime,
+      moduleOverrides: (updatedUser as any).moduleOverrides ? Object.fromEntries((updatedUser as any).moduleOverrides) : {},
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });

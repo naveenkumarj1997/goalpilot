@@ -20,6 +20,8 @@ export default function PersonalOnboarding() {
     communicationLevel: 5,
     fitnessLevel: 5
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleNext = () => setStep(step + 1);
   const handlePrev = () => setStep(step - 1);
@@ -35,11 +37,29 @@ export default function PersonalOnboarding() {
 
   const handleSubmit = async () => {
     if (!user?.token) return;
+    
+    setError('');
+    
+    if (!formData.age || !formData.height || !formData.weight || !formData.occupation) {
+      setError('Please fill out all required fields (Age, Height, Weight, Occupation).');
+      return;
+    }
+
+    setLoading(true);
     try {
-      await createOrUpdatePersonalProfile(formData, user.token);
+      const submitData = {
+        ...formData,
+        age: Number(formData.age),
+        height: Number(formData.height),
+        weight: Number(formData.weight)
+      };
+      await createOrUpdatePersonalProfile(submitData, user.token);
       navigate('/personal/dashboard');
     } catch (err) {
       console.error('Failed to save profile', err);
+      setError('Failed to save profile. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,8 +208,11 @@ export default function PersonalOnboarding() {
 
             <div className="flex gap-4 mt-8">
               <button onClick={handlePrev} className="flex-1 py-3 bg-white/5 text-white rounded-lg font-bold hover:bg-white/10 transition-colors">Back</button>
-              <button onClick={handleSubmit} className="flex-1 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600 transition-colors shadow-[0_0_20px_rgba(99,102,241,0.4)]">Complete Profile</button>
+              <button disabled={loading} onClick={handleSubmit} className="flex-1 py-3 bg-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-600 transition-colors shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-50">
+                {loading ? 'Saving...' : 'Complete Profile'}
+              </button>
             </div>
+            {error && <div className="mt-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-400 text-sm text-center font-bold">{error}</div>}
           </motion.div>
         )}
 

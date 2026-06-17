@@ -8,6 +8,28 @@ const generateToken = (id: string) => {
   });
 };
 
+export const getCurrentUser = async (req: Request | any, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user?._id).select('-password');
+    if (user) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        lastDailyLog: user.lastDailyLog,
+        dailyCheckInTime: user.dailyCheckInTime,
+        role: (user as any).role || 'Standard',
+        moduleOverrides: (user as any).moduleOverrides ? Object.fromEntries((user as any).moduleOverrides) : {},
+        token: req.headers.authorization?.split(' ')[1] // keep the same token
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching user' });
+  }
+};
+
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password } = req.body;
@@ -32,6 +54,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         email: user.email,
         lastDailyLog: user.lastDailyLog,
         dailyCheckInTime: user.dailyCheckInTime,
+        role: user.role || 'Standard',
+        moduleOverrides: user.moduleOverrides ? Object.fromEntries(user.moduleOverrides) : {},
         token: generateToken(user._id.toString()),
       });
     } else {
@@ -55,6 +79,8 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         lastDailyLog: user.lastDailyLog,
         dailyCheckInTime: user.dailyCheckInTime,
+        role: (user as any).role || 'Standard',
+        moduleOverrides: (user as any).moduleOverrides ? Object.fromEntries((user as any).moduleOverrides) : {},
         token: generateToken(user._id.toString()),
       });
     } else {

@@ -21,6 +21,10 @@ import yogaRoutes from './routes/yogaRoutes';
 import meditationRoutes from './routes/meditationRoutes';
 import stoicRoutes from './routes/stoicRoutes';
 import personalRoutes from './routes/personalRoutes';
+import manifestationRoutes from './routes/manifestationRoutes';
+import adminRoutes from './routes/adminRoutes';
+import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
+import { protect } from './middleware/authMiddleware';
 
 dotenv.config();
 
@@ -31,25 +35,33 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/goals', goalRoutes);
+
+// Apply auth protection and block checks to all subsequent API routes
+app.use('/api', protect, blockCheck);
+
 app.use('/api/users', userRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/habits', habitRoutes);
-app.use('/api/games', gameRoutes);
-app.use('/api/jobs', jobRoutes);
 app.use('/api/friends', friendRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/resumes', resumeRoutes);
-app.use('/api/workouts', workoutRoutes);
-app.use('/api/nofap', nofapRoutes);
-app.use('/api/yoga', yogaRoutes);
-app.use('/api/meditation', meditationRoutes);
-app.use('/api/stoicism', stoicRoutes);
-app.use('/api/personal', personalRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Module Routes Protected by RBAC & Feature Flags
+app.use('/api/goals', checkModuleAccess('Goals'), goalRoutes);
+app.use('/api/tasks', checkModuleAccess('Tasks'), taskRoutes);
+app.use('/api/habits', checkModuleAccess('Habits'), habitRoutes);
+app.use('/api/games', checkModuleAccess('Gaming Lounge'), gameRoutes);
+app.use('/api/jobs', checkModuleAccess('Job Tracker'), jobRoutes);
+app.use('/api/chat', checkModuleAccess('Chat'), chatRoutes);
+app.use('/api/resumes', checkModuleAccess('Resume Builder'), resumeRoutes);
+app.use('/api/workouts', checkModuleAccess('Home Coach'), workoutRoutes);
+app.use('/api/nofap', checkModuleAccess('Discipline'), nofapRoutes);
+app.use('/api/yoga', checkModuleAccess('Yoga Coach'), yogaRoutes);
+app.use('/api/meditation', checkModuleAccess('Meditation'), meditationRoutes);
+app.use('/api/stoicism', checkModuleAccess('Stoicism'), stoicRoutes);
+app.use('/api/personal', checkModuleAccess('Personal Dev'), personalRoutes);
+app.use('/api/manifestation', checkModuleAccess('Manifestation'), manifestationRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

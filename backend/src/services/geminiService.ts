@@ -130,3 +130,22 @@ export const calculateATSScore = async (resumeData: any) => {
     return { score: 50, suggestions: ["Could not analyze ATS score properly."] };
   }
 };
+
+export const chatSuccessCoach = async (message: string, context: any) => {
+  if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const prompt = `
+    You are an expert AI Success Coach, Mindset Expert, and Personal Growth Mentor.
+    The user has asked you the following: "${message}"
+    
+    Here is their current Manifestation Profile context:
+    ${JSON.stringify(context)}
+    
+    Provide practical, motivational, and actionable advice to help them achieve their goals, build consistency, and overcome their challenges. Keep your response conversational but highly impactful.
+  `;
+
+  const result = await generateWithRetry(model, prompt);
+  return result.response.text().trim();
+};

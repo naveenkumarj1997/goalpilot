@@ -22,6 +22,19 @@ const logout = () => {
   localStorage.removeItem('user');
 };
 
+const getCurrentUser = async (token: string) => {
+  const response = await axios.get(API_URL + 'me', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (response.data) {
+    const userStr = localStorage.getItem('user');
+    const oldUser = userStr ? JSON.parse(userStr) : {};
+    const updatedUser = { ...oldUser, ...response.data, token };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    return updatedUser;
+  }
+};
+
 const updateSettings = async (settingsData: any) => {
   const userStr = localStorage.getItem('user');
   if (!userStr) return null;
@@ -42,6 +55,7 @@ const authService = {
   register,
   login,
   logout,
+  getCurrentUser,
   updateSettings,
 };
 

@@ -25,22 +25,30 @@ import {
   Activity as YogaIcon,
   Wind,
   BookOpen,
-  User
+  User,
+  Sparkles,
+  Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
 import NoFapCheckInModal from '../nofap/NoFapCheckInModal';
+import LockedModuleModal from '../LockedModuleModal';
 import { getProfile as getNoFapProfile } from '../../api/nofap';
 
 export default function DashboardLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, featureFlags, refreshUser } = useAuth();
   const { unreadCount } = useSocket();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showNoFapCheckInModal, setShowNoFapCheckInModal] = useState(false);
+  const [lockedModule, setLockedModule] = useState<{ isOpen: boolean; name: string; status: 'Premium' | 'Disabled' }>({ isOpen: false, name: '', status: 'Premium' });
   const [noFapLastCheckIn, setNoFapLastCheckIn] = useState<Date | null>(null);
   const [hasFetchedNoFap, setHasFetchedNoFap] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    refreshUser?.();
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!user) return;
@@ -116,7 +124,7 @@ export default function DashboardLayout() {
     return () => clearInterval(interval);
   }, [user, noFapLastCheckIn, hasFetchedNoFap]);
 
-  const navigation = [
+  const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Goals', href: '/goals', icon: Target },
     { name: 'Update Hours', href: '/goals/update-hours', icon: Clock },
@@ -131,8 +139,16 @@ export default function DashboardLayout() {
     { name: 'Meditation', href: '/meditation', icon: Wind },
     { name: 'Stoicism', href: '/stoicism', icon: BookOpen },
     { name: 'Personal Dev', href: '/personal/dashboard', icon: User },
+    { name: 'Manifestation', href: '/manifestation/dashboard', icon: Sparkles },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
+
+  // Dynamic premium modules are loaded from feature flags
+
+  let navigation = [...baseNavigation];
+  if (user?.role === 'Admin' || user?.role === 'SuperAdmin') {
+    navigation.push({ name: 'Admin Panel', href: '/admin', icon: Settings2 });
+  }
 
   return (
     <div className="min-h-screen bg-transparent flex relative overflow-hidden">
@@ -169,6 +185,30 @@ export default function DashboardLayout() {
           <nav className="space-y-1">
             {navigation.map((item, index) => {
               const isActive = location.pathname.startsWith(item.href);
+              const flag = featureFlags?.find((f: any) => f.moduleName === item.name);
+              const isGloballyDisabled = flag ? !flag.isEnabled : false;
+              
+              const isPremiumModule = flag ? flag.isPremium : false;
+              const hasOverride = user?.moduleOverrides && user.moduleOverrides[item.name] === true;
+              const isExplicitlyDenied = user?.moduleOverrides && user.moduleOverrides[item.name] === false;
+              const needsUpgrade = isPremiumModule && (user?.role !== 'Premium' && user?.role !== 'Admin' && user?.role !== 'SuperAdmin') && !hasOverride;
+              const isLocked = isGloballyDisabled || needsUpgrade || isExplicitlyDenied;
+              const handleModuleClick = (e: React.MouseEvent) => {
+                if (isExplicitlyDenied) {
+                  e.preventDefault();
+                  setLockedModule({ isOpen: true, name: item.name, status: 'Disabled' });
+                } else if (isGloballyDisabled) {
+                  e.preventDefault();
+                  setLockedModule({ isOpen: true, name: item.name, status: 'Disabled' });
+                } else if (needsUpgrade) {
+                  e.preventDefault();
+                  setIsSidebarOpen(false);
+                  setLockedModule({ isOpen: true, name: item.name, status: 'Premium' });
+                } else {
+                  setIsSidebarOpen(false);
+                }
+              };
+
               return (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -177,21 +217,27 @@ export default function DashboardLayout() {
                   key={item.name}
                 >
                   <Link
-                    to={item.href}
+                    to={isLocked ? '#' : item.href}
                     className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
-                      isActive
+                      isGloballyDisabled || isExplicitlyDenied
+                        ? 'opacity-60 cursor-not-allowed text-slate-400 bg-slate-900/30 border border-slate-700/50 hover:bg-slate-800/50'
+                        : needsUpgrade
+                        ? 'text-yellow-100/80 hover:bg-yellow-500/10 border border-transparent hover:border-yellow-500/30'
+                        : isActive
                         ? 'bg-brand/20 text-white shadow-[0_0_15px_rgba(0,112,209,0.4)] border border-brand/50 neon-border-brand scale-[1.02]'
                         : 'text-text-secondary hover:bg-brand/10 hover:text-brand hover:scale-105'
                     }`}
-                    onClick={() => setIsSidebarOpen(false)}
+                    onClick={handleModuleClick}
                   >
                     <item.icon
                       className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${
-                        isActive ? 'text-white' : 'text-emerald-400 group-hover:text-brand'
+                        (isGloballyDisabled || isExplicitlyDenied) ? 'text-slate-500' : needsUpgrade ? 'text-yellow-500/70 group-hover:text-yellow-400' : isActive ? 'text-white' : 'text-emerald-400 group-hover:text-brand'
                       }`}
                     />
                     <span className="truncate flex-1">{item.name}</span>
-                    {item.name === 'Chat' && unreadCount > 0 && (
+                    {(isGloballyDisabled || isExplicitlyDenied) && <Lock className="w-3.5 h-3.5 text-slate-500" />}
+                    {needsUpgrade && !(isGloballyDisabled || isExplicitlyDenied) && <Lock className="w-3.5 h-3.5 text-yellow-500/70 group-hover:text-yellow-400" />}
+                    {item.name === 'Chat' && unreadCount > 0 && !isLocked && (
                       <span className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-bold">
                         {unreadCount}
                       </span>
@@ -210,6 +256,23 @@ export default function DashboardLayout() {
               <span className="truncate">Job Feed</span>
             </NavLink>
             
+            {/* Premium Upgrade Banner for Standard Users */}
+            {user?.role === 'Standard' && (
+              <div className="mt-4 p-4 bg-gradient-to-br from-slate-900 to-slate-800 border border-emerald-500/30 rounded-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/20 rounded-full blur-xl -mr-8 -mt-8"></div>
+                <Sparkles className="w-5 h-5 text-emerald-400 mb-2" />
+                <h4 className="text-white font-bold text-sm mb-1">Unlock Premium</h4>
+                <p className="text-slate-400 text-xs mb-3">Get access to Game Lounge, Resume Builder and more.</p>
+                <Link 
+                  to="/upgrade" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="block text-center w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors"
+                >
+                  Upgrade Now
+                </Link>
+              </div>
+            )}
+
             <NavLink to="/jobs/tracker" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
               <Columns className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/tracker') ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
               <span className="truncate">App Tracker</span>
@@ -309,6 +372,13 @@ export default function DashboardLayout() {
           setNoFapLastCheckIn(new Date());
           window.dispatchEvent(new Event('nofapCheckedIn'));
         }} 
+      />
+
+      <LockedModuleModal
+        isOpen={lockedModule.isOpen}
+        onClose={() => setLockedModule(prev => ({ ...prev, isOpen: false }))}
+        moduleName={lockedModule.name}
+        status={lockedModule.status}
       />
     </div>
   );
