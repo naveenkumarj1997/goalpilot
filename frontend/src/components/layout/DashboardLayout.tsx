@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { DEFAULT_UNLOCKED_MODULES } from '../../utils/modules';
 import { 
   LayoutDashboard, 
   Target, 
@@ -215,8 +216,11 @@ export default function DashboardLayout() {
               const isPremiumModule = flag ? flag.isPremium : false;
               const hasOverride = user?.moduleOverrides && user.moduleOverrides[item.name] === true;
               const isExplicitlyDenied = user?.moduleOverrides && user.moduleOverrides[item.name] === false;
+              
+              const isDefaultLocked = !DEFAULT_UNLOCKED_MODULES.includes(item.name) && !isPremiumModule;
               const needsUpgrade = isPremiumModule && (user?.role !== 'Premium' && user?.role !== 'Admin' && user?.role !== 'SuperAdmin') && !hasOverride;
-              const isLocked = isGloballyDisabled || needsUpgrade || isExplicitlyDenied;
+              
+              const isLocked = isGloballyDisabled || isExplicitlyDenied || needsUpgrade || (isDefaultLocked && !hasOverride && user?.role !== 'Admin' && user?.role !== 'SuperAdmin');
               const hasPurchasedPremium = isPremiumModule && !isLocked && !isGloballyDisabled && !isExplicitlyDenied;
 
               const handleModuleClick = (e: React.MouseEvent) => {
@@ -255,11 +259,19 @@ export default function DashboardLayout() {
                     }`}
                     onClick={handleModuleClick}
                   >
-                    <item.icon
-                      className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${
-                        (isGloballyDisabled || isExplicitlyDenied) ? 'text-slate-500' : needsUpgrade ? 'text-yellow-500/70 group-hover:text-yellow-400' : isActive ? 'text-white' : 'text-emerald-400 group-hover:text-brand'
-                      }`}
-                    />
+                    {!isLocked && <item.icon className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${isActive ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />}
+                    {isLocked && (
+                      <span className="flex-shrink-0 -ml-1 mr-3 h-5 w-5 text-slate-500/70" title={
+                        isGloballyDisabled ? "Globally Disabled" :
+                        isExplicitlyDenied ? "Locked by Admin" :
+                        needsUpgrade ? "Premium Required" :
+                        "Locked by Default (Requires Admin Unlock)"
+                      }>
+                        {isGloballyDisabled ? <Ban className="h-5 w-5 text-red-500/50" /> :
+                         isExplicitlyDenied ? <LockKeyhole className="h-5 w-5 text-red-400/70" /> :
+                         <Lock className="h-5 w-5" />}
+                      </span>
+                    )}
                     <span className="truncate flex-1">{item.name}</span>
                     {hasPurchasedPremium && <span title="Premium Purchased"><Crown className="w-4 h-4 text-yellow-400 ml-1" /></span>}
                     

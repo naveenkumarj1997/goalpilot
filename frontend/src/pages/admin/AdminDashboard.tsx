@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { DEFAULT_UNLOCKED_MODULES } from '../../utils/modules';
 
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -820,7 +821,9 @@ export default function AdminDashboard() {
                         }}
                         className={`text-sm rounded-lg px-3 py-1 outline-none font-bold ${currentVal === true ? 'bg-emerald-500/20 text-emerald-400' : currentVal === false ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-300'}`}
                       >
-                        <option value="default">Default</option>
+                        <option value="default">
+                          Default ({DEFAULT_UNLOCKED_MODULES.includes(modName) ? 'Unlocked' : 'Locked'})
+                        </option>
                         <option value="true">Force Unlock</option>
                         <option value="false">Force Lock</option>
                       </select>
