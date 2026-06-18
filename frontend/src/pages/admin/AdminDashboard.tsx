@@ -17,7 +17,7 @@ import {
   getSupportConversations,
   replyToSupportMessage
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Lock, Unlock, Send } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();

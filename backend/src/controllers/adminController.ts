@@ -6,6 +6,7 @@ import AuditLog from '../models/AuditLog';
 import UpgradeRequest from '../models/UpgradeRequest';
 import SystemConfig from '../models/SystemConfig';
 import SupportMessage from '../models/SupportMessage';
+import mongoose from 'mongoose';
 
 const logAction = async (adminId: any, action: string, targetUserId?: any, details?: string) => {
   await AuditLog.create({
@@ -394,7 +395,7 @@ export const replyToSupportMessage = async (req: AuthRequest, res: Response) => 
     const { text } = req.body;
     
     const message = await SupportMessage.create({
-      user: id,
+      user: new mongoose.Types.ObjectId(id),
       sender: 'Admin',
       text
     });
