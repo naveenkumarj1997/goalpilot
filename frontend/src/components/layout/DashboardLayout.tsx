@@ -154,12 +154,32 @@ export default function DashboardLayout() {
     navigation.push({ name: 'Admin Panel', href: '/admin', icon: Settings2 });
   }
 
+  const getThemeVars = (path: string) => {
+    if (path.includes('/goals') || path.includes('/workouts')) return { bg: '/images/fire_bg.png', color: '#EF4444' }; // Red
+    if (path.includes('/meditation') || path.includes('/yoga') || path.includes('/personal')) return { bg: '/images/air_bg.png', color: '#38BDF8' }; // Sky Blue
+    if (path.includes('/habits') || path.includes('/tasks') || path.includes('/stoicism') || path.includes('/nofap')) return { bg: '/images/earth_bg.png', color: '#10B981' }; // Emerald Green
+    if (path.includes('/chat') || path.includes('/games') || path.includes('/manifestation')) return { bg: '/images/water_bg.png', color: '#3B82F6' }; // Deep Blue
+    return { bg: '/images/login_bg.png', color: '#8B5CF6' }; // Avatar Violet (Dashboard)
+  };
+
+  const currentTheme = getThemeVars(location.pathname);
+
   return (
-    <div className="min-h-screen bg-transparent flex relative overflow-hidden">
+    <div 
+      className="min-h-screen bg-transparent flex relative overflow-hidden"
+      style={{ '--color-brand': currentTheme.color } as React.CSSProperties}
+    >
+      {/* Dynamic Theme Background */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out z-[-2]"
+        style={{ backgroundImage: `url("${currentTheme.bg}")` }}
+      ></div>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-none z-[-1]"></div>
+
       {/* Animated Background Elements */}
       <div className="fixed inset-0 pointer-events-none z-[-1]">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#0070D1]/20 rounded-full mix-blend-screen filter blur-[100px] opacity-70 animate-float" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-900/30 rounded-full mix-blend-screen filter blur-[100px] opacity-70 animate-float-delayed" />
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full mix-blend-screen filter blur-[100px] opacity-70 animate-float" style={{ backgroundColor: currentTheme.color }} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full mix-blend-screen filter blur-[100px] opacity-70 animate-float-delayed" style={{ backgroundColor: currentTheme.color }} />
       </div>
 
       {/* Mobile sidebar backdrop */}
