@@ -125,7 +125,7 @@ function App() {
               </Route>
               
               {/* Job Modules */}
-              <Route element={<ModuleGuard moduleName="Job Tracker" />}>
+              <Route element={<ModuleGuard moduleName="Job Discovery" />}>
                 <Route path="/jobs" element={<JobDashboard />} />
                 <Route path="/jobs/preferences" element={<JobPreferences />} />
                 <Route path="/jobs/tracker" element={<JobKanban />} />

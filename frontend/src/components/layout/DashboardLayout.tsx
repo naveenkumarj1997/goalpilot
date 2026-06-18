@@ -211,8 +211,6 @@ export default function DashboardLayout() {
             {navigation.map((item, index) => {
               const isActive = location.pathname.startsWith(item.href);
               const flag = featureFlags?.find((f: any) => f.moduleName === item.name);
-              const isGloballyDisabled = flag ? !flag.isEnabled : false;
-              
               const isPremiumModule = flag ? flag.isPremium : false;
               const hasOverride = user?.moduleOverrides && user.moduleOverrides[item.name] === true;
               const isExplicitlyDenied = user?.moduleOverrides && user.moduleOverrides[item.name] === false;
@@ -220,6 +218,7 @@ export default function DashboardLayout() {
               const isDefaultLocked = !DEFAULT_UNLOCKED_MODULES.includes(item.name) && !isPremiumModule;
               const needsUpgrade = isPremiumModule && (user?.role !== 'Premium' && user?.role !== 'Admin' && user?.role !== 'SuperAdmin') && !hasOverride;
               
+              const isGloballyDisabled = flag && !flag.isEnabled;
               const isLocked = isGloballyDisabled || isExplicitlyDenied || needsUpgrade || (isDefaultLocked && !hasOverride && user?.role !== 'Admin' && user?.role !== 'SuperAdmin');
               const hasPurchasedPremium = isPremiumModule && !isLocked && !isGloballyDisabled && !isExplicitlyDenied;
 
@@ -300,10 +299,43 @@ export default function DashboardLayout() {
               <span className="px-3 text-xs font-bold text-emerald-600/70 uppercase tracking-widest">Job Discovery</span>
             </div>
             
-            <NavLink to="/jobs" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-              <Briefcase className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname === '/jobs' ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
-              <span className="truncate">Job Feed</span>
-            </NavLink>
+            {(() => {
+              const jobFlag = featureFlags?.find((f: any) => f.moduleName === 'Job Discovery');
+              const isJobPremium = jobFlag ? jobFlag.isPremium : false;
+              const hasJobOverride = user?.moduleOverrides && user.moduleOverrides['Job Discovery'] === true;
+              const isJobExplicitlyDenied = user?.moduleOverrides && user.moduleOverrides['Job Discovery'] === false;
+              const isJobDefaultLocked = !DEFAULT_UNLOCKED_MODULES.includes('Job Discovery') && !isJobPremium;
+              const jobNeedsUpgrade = isJobPremium && (user?.role !== 'Premium' && user?.role !== 'Admin' && user?.role !== 'SuperAdmin') && !hasJobOverride;
+              const isJobGloballyDisabled = jobFlag && !jobFlag.isEnabled;
+              const isJobLocked = isJobGloballyDisabled || isJobExplicitlyDenied || jobNeedsUpgrade || (isJobDefaultLocked && !hasJobOverride && user?.role !== 'Admin' && user?.role !== 'SuperAdmin');
+
+              if (isJobLocked) {
+                return (
+                  <div className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg opacity-60 cursor-not-allowed text-slate-400 bg-slate-900/30 border border-slate-700/50">
+                    <span className="flex-shrink-0 -ml-1 mr-3 h-5 w-5 text-slate-500/70" title={
+                      isJobGloballyDisabled ? "Globally Disabled" :
+                      isJobExplicitlyDenied ? "Locked by Admin" :
+                      jobNeedsUpgrade ? "Premium Required" :
+                      "Locked by Default (Requires Admin Unlock)"
+                    }>
+                      {isJobGloballyDisabled ? <Ban className="h-5 w-5 text-red-500/50" /> :
+                       isJobExplicitlyDenied ? <LockKeyhole className="h-5 w-5 text-red-400/70" /> :
+                       <Lock className="h-5 w-5" />}
+                    </span>
+                    <span className="truncate flex-1">Job Discovery</span>
+                    {jobNeedsUpgrade && !(isJobGloballyDisabled || isJobExplicitlyDenied) && (
+                      <span title="Premium Required"><Lock className="w-3.5 h-3.5 text-yellow-500/70" /></span>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  <NavLink to="/jobs" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
+                    <Briefcase className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname === '/jobs' ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
+                    <span className="truncate">Job Feed</span>
+                  </NavLink>
             
             {/* Premium Upgrade Banner for Standard Users */}
             {user?.role === 'Standard' && (
@@ -337,10 +369,13 @@ export default function DashboardLayout() {
               <span className="truncate">Analytics</span>
             </NavLink>
             
-            <NavLink to="/jobs/admin" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-red-600 text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-red-500 hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-              <Database className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/admin') ? 'text-white' : 'text-red-400 group-hover:text-red-500'}`} />
-              <span className="truncate">Admin Targets</span>
-            </NavLink>
+                  <NavLink to="/jobs/admin" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-red-600 text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-red-500 hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
+                    <Database className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/admin') ? 'text-white' : 'text-red-400 group-hover:text-red-500'}`} />
+                    <span className="truncate">Admin Targets</span>
+                  </NavLink>
+                </>
+              );
+            })()}
 
           </nav>
         </div>

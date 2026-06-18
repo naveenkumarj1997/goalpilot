@@ -54,7 +54,7 @@ app.use('/api/goals', checkModuleAccess('Goals'), goalRoutes);
 app.use('/api/tasks', checkModuleAccess('Tasks'), taskRoutes);
 app.use('/api/habits', checkModuleAccess('Habits'), habitRoutes);
 app.use('/api/games', checkModuleAccess('Gaming Lounge'), gameRoutes);
-app.use('/api/jobs', checkModuleAccess('Job Tracker'), jobRoutes);
+app.use('/api/jobs', checkModuleAccess('Job Discovery'), jobRoutes);
 app.use('/api/chat', checkModuleAccess('Chat'), chatRoutes);
 app.use('/api/resumes', checkModuleAccess('Resume Builder'), resumeRoutes);
 app.use('/api/workouts', checkModuleAccess('Home Coach'), workoutRoutes);
