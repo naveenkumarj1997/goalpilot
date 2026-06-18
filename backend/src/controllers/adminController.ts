@@ -395,7 +395,7 @@ export const replyToSupportMessage = async (req: AuthRequest, res: Response) => 
     const { text } = req.body;
     
     const message = await SupportMessage.create({
-      user: new mongoose.Types.ObjectId(id),
+      user: new mongoose.Types.ObjectId(id as string),
       sender: 'Admin',
       text
     });

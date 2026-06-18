@@ -61,6 +61,10 @@ export default function AdminDashboard() {
     if (!user?.token) return;
     try {
       setLoading(true);
+      
+      // Always fetch flags as they are needed for modals
+      setFlags(await getFeatureFlags(user.token));
+
       if (activeTab === 'dashboard') {
         setStats(await getStats(user.token));
       } else if (activeTab === 'users') {
@@ -89,7 +93,6 @@ export default function AdminDashboard() {
         setRequests(await getUpgradeRequests(user.token));
       } else if (activeTab === 'pricing') {
         setConfig(await getSystemConfig(user.token));
-        setFlags(await getFeatureFlags(user.token));
       } else if (activeTab === 'support') {
         setConversations(await getSupportConversations(user.token));
       }
@@ -777,10 +780,14 @@ export default function AdminDashboard() {
             
             <div className="p-6 overflow-y-auto space-y-4">
               <p className="text-sm text-slate-400 mb-4">
-                You can explicitly lock or unlock modules for this user. "Default" means it follows the global feature flags and premium rules.
+                You can explicitly lock or unlock free modules for this user. Premium or globally disabled modules are hidden.
               </p>
               
-              {ALL_MODULES.map(modName => {
+              {ALL_MODULES.filter(modName => {
+                const flag = flags.find(f => f.moduleName === modName);
+                if (!flag) return true; // If no flag exists, assume it's free and enabled
+                return flag.isEnabled && !flag.isPremium;
+              }).map(modName => {
                 const currentVal = tempOverrides[modName];
                 return (
                   <div key={modName} className="flex justify-between items-center p-3 bg-slate-800 rounded-xl border border-slate-700">
