@@ -1,22 +1,70 @@
-import { chromium } from 'playwright';
+import * as cheerio from 'cheerio';
 import crypto from 'crypto';
 import CompanySource from '../models/CompanySource';
 import Job from '../models/Job';
-import JobPreference from '../models/JobPreference';
-// Import notification services later...
 
 const generateHash = (company: string, title: string, link: string) => {
   return crypto.createHash('md5').update(`${company}_${title}_${link}`).digest('hex');
 };
 
-const DUMMY_JOBS = [
-  { title: 'React Developer', location: 'Chennai', experience: '1 Year' },
-  { title: 'Senior React Developer', location: 'Remote', experience: '3 Years' },
-  { title: 'Full Stack MERN Engineer', location: 'Bangalore', experience: '2 Years' },
-  { title: 'Node.js Backend Developer', location: 'Pune', experience: 'Fresher' },
-  { title: 'Frontend UI Developer', location: 'Chennai', experience: '1 Year' },
-  { title: 'Lead Web Developer', location: 'Hyderabad', experience: '3 Years' },
+const COMMON_ROLES = [
+  'React Developer',
+  'Node.js Developer',
+  'Full Stack Engineer',
+  'Frontend Developer',
+  'Backend Developer'
 ];
+
+export const fetchExactJobLinks = async (companyUrl: string, jobTitle: string, location?: string) => {
+  try {
+    let hostname = '';
+    try {
+      hostname = new URL(companyUrl).hostname;
+    } catch(e) {
+      hostname = companyUrl; // fallback
+    }
+    
+    const query = `site:${hostname} "${jobTitle}" ${location || ''} job`;
+    const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    
+    const jobs: any[] = [];
+    
+    $('.result__url').each((i, el) => {
+      if (i >= 5) return;
+      const ddgUrl = $(el).attr('href');
+      if (ddgUrl) {
+        try {
+          const uddgMatch = ddgUrl.match(/uddg=([^&]+)/);
+          if (uddgMatch && uddgMatch[1]) {
+            const realUrl = decodeURIComponent(uddgMatch[1]);
+            jobs.push({
+              title: jobTitle,
+              location: location || 'Remote/Various',
+              link: realUrl,
+              experience: 'Check Listing'
+            });
+          }
+        } catch (e) {
+          console.error("Error decoding DDG URL", e);
+        }
+      }
+    });
+    
+    return jobs;
+  } catch (err) {
+    console.error("Search integration failed:", err);
+    return [];
+  }
+};
 
 export const runScrapers = async () => {
   const sources = await CompanySource.find({ isActive: true });
@@ -26,39 +74,25 @@ export const runScrapers = async () => {
     return;
   }
 
-  // Set up Playwright (demonstration of headless architecture)
-  // For a production deployment, specific scrapers would be injected here per company.
-  let browser;
-  try {
-    browser = await chromium.launch({ headless: true });
+  for (const source of sources) {
+    console.log(`Scraping exact links for ${source.name}...`);
+    let jobsAdded = 0;
     
-    for (const source of sources) {
-      console.log(`Scraping ${source.name}...`);
-      
-      // Attempting generic navigation
-      try {
-        const page = await browser.newPage();
-        // await page.goto(source.careerUrl, { waitUntil: 'networkidle', timeout: 15000 });
+    try {
+      for (const role of COMMON_ROLES) {
+        const foundJobs = await fetchExactJobLinks(source.careerUrl, role);
         
-        // Since generic scraping of enterprise SPA sites fails without specific selectors,
-        // we will generate highly realistic dynamic data based on the requested company to populate the dashboard.
-        
-        let jobsAdded = 0;
-        
-        for (let i = 0; i < 3; i++) {
-          const template = DUMMY_JOBS[Math.floor(Math.random() * DUMMY_JOBS.length)];
-          const link = `${source.careerUrl}?q=${encodeURIComponent(template.title)}`;
-          const hash = generateHash(source.name, template.title, link);
-          
-          // Check if exists
+        for (const job of foundJobs) {
+          const hash = generateHash(source.name, job.title, job.link);
           const exists = await Job.findOne({ hash });
+          
           if (!exists) {
             await Job.create({
-              title: template.title,
+              title: job.title,
               company: source.name,
-              location: template.location,
-              experience: template.experience,
-              link,
+              location: job.location,
+              experience: job.experience,
+              link: job.link,
               hash,
               sourceId: source._id,
             });
@@ -66,34 +100,20 @@ export const runScrapers = async () => {
           }
         }
         
-        source.lastScannedAt = new Date();
-        source.lastStatus = `Success: Found ${jobsAdded} new jobs`;
-        await source.save();
-
-        await page.close();
-      } catch (err: any) {
-        source.lastScannedAt = new Date();
-        source.lastStatus = `Failed: ${err.message}`;
-        await source.save();
+        // Anti-rate-limit sleep
+        await new Promise(r => setTimeout(r, 2000));
       }
-    }
-  } catch (error) {
-    console.error('Playwright engine failed to start:', error);
-  } finally {
-    if (browser) {
-      await browser.close();
+      
+      source.lastScannedAt = new Date();
+      source.lastStatus = `Success: Found ${jobsAdded} exact job links`;
+      await source.save();
+
+    } catch (err: any) {
+      source.lastScannedAt = new Date();
+      source.lastStatus = `Failed: ${err.message}`;
+      await source.save();
     }
   }
 
-  // After scraping, trigger match alerts
-  await triggerMatchAlerts();
-};
-
-const triggerMatchAlerts = async () => {
-  // This function would normally:
-  // 1. Fetch jobs added in the last 30 minutes
-  // 2. Fetch all JobPreferences
-  // 3. Match them up
-  // 4. Send emails / telegrams
-  console.log('Running match alerts engine...');
+  console.log('Finished background job scan with DuckDuckGo integration.');
 };
