@@ -142,3 +142,55 @@ export const triggerScan = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error', error });
   }
 };
+
+export const exportJobsToSheet = async (req: AuthRequest, res: Response) => {
+  try {
+    const { title, location, webhookUrl } = req.body;
+    
+    if (!webhookUrl || !webhookUrl.startsWith('https://script.google.com/')) {
+      return res.status(400).json({ success: false, message: 'Invalid webhook URL. Please ensure it starts with https://script.google.com/' });
+    }
+
+    let query: any = {};
+    if (title) query.title = new RegExp(title as string, 'i');
+    if (location) query.location = new RegExp(location as string, 'i');
+
+    const jobs = await Job.find(query).sort({ discoveredAt: -1 }).limit(50);
+    
+    if (jobs.length === 0) {
+      return res.json({ success: false, message: 'No jobs found matching your criteria.' });
+    }
+
+    const exportData = {
+      jobs: jobs.map(j => ({
+        title: j.title,
+        company: j.company,
+        location: j.location,
+        experience: j.experience || 'Not specified',
+        link: j.link
+      }))
+    };
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(exportData)
+    });
+
+    const text = await response.text();
+    let result = null;
+    try {
+      result = JSON.parse(text);
+    } catch(e) {
+      console.log('Non-JSON response from Apps Script:', text);
+    }
+
+    res.json({ success: true, count: jobs.length, result });
+
+  } catch (error: any) {
+    console.error('Export Error:', error);
+    res.status(500).json({ success: false, message: 'Server error exporting jobs. Ensure your Apps Script is deployed to Anyone.', error: error.message });
+  }
+};

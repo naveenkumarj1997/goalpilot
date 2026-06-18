@@ -17,9 +17,6 @@ import MiniGamesDashboard from './pages/games/MiniGamesDashboard';
 import GameLobby from './pages/games/GameLobby';
 import GamePlay from './pages/games/GamePlay';
 import JobDashboard from './pages/jobs/JobDashboard';
-import JobPreferences from './pages/jobs/JobPreferences';
-import JobKanban from './pages/jobs/JobKanban';
-import JobAnalytics from './pages/jobs/JobAnalytics';
 import AdminCompanySources from './pages/jobs/AdminCompanySources';
 import Settings from './pages/settings/Settings';
 import ChatDashboard from './pages/chat/ChatDashboard';
@@ -127,9 +124,6 @@ function App() {
               {/* Job Modules */}
               <Route element={<ModuleGuard moduleName="Job Discovery" />}>
                 <Route path="/jobs" element={<JobDashboard />} />
-                <Route path="/jobs/preferences" element={<JobPreferences />} />
-                <Route path="/jobs/tracker" element={<JobKanban />} />
-                <Route path="/jobs/analytics" element={<JobAnalytics />} />
                 <Route path="/jobs/admin" element={<AdminCompanySources />} />
               </Route>
               <Route path="settings" element={<Settings />} />

@@ -11,7 +11,8 @@ import {
   getSources,
   addSource,
   removeSource,
-  triggerScan
+  triggerScan,
+  exportJobsToSheet
 } from '../controllers/jobController';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.route('/preferences').get(getPreferences).put(updatePreferences);
 
 // Jobs Discovery
 router.get('/search', getJobs);
+router.post('/export-to-sheet', exportJobsToSheet);
 router.get('/analytics', getJobAnalytics);
 
 // User Job State (Kanban / Saved)

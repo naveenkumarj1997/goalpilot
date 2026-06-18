@@ -332,10 +332,7 @@ export default function DashboardLayout() {
 
               return (
                 <>
-                  <NavLink to="/jobs" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-                    <Briefcase className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname === '/jobs' ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
-                    <span className="truncate">Job Feed</span>
-                  </NavLink>
+
             
             {/* Premium Upgrade Banner for Standard Users */}
             {user?.role === 'Standard' && (
@@ -354,20 +351,10 @@ export default function DashboardLayout() {
               </div>
             )}
 
-            <NavLink to="/jobs/tracker" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-              <Columns className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/tracker') ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
-              <span className="truncate">App Tracker</span>
-            </NavLink>
-            
-            <NavLink to="/jobs/preferences" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-              <Settings2 className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/preferences') ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
-              <span className="truncate">Preferences</span>
-            </NavLink>
-            
-            <NavLink to="/jobs/analytics" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-              <BarChart3 className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/analytics') ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
-              <span className="truncate">Analytics</span>
-            </NavLink>
+                  <NavLink to="/jobs" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
+                    <Briefcase className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname === '/jobs' ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
+                    <span className="truncate">Job Automation</span>
+                  </NavLink>
             
                   <NavLink to="/jobs/admin" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-red-600 text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-red-500 hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
                     <Database className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/admin') ? 'text-white' : 'text-red-400 group-hover:text-red-500'}`} />

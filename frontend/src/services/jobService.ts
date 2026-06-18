@@ -55,6 +55,10 @@ const jobService = {
   triggerScan: async () => {
     const res = await axios.post(API_URL + 'scan', {}, getAuthHeaders());
     return res.data;
+  },
+  exportJobsToSheet: async (data: { title: string, location: string, webhookUrl: string }) => {
+    const res = await axios.post(API_URL + 'export-to-sheet', data, getAuthHeaders());
+    return res.data;
   }
 };
 
