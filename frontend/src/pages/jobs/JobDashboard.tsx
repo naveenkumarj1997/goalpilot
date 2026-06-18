@@ -57,8 +57,8 @@ export default function JobDashboard() {
   };
 
   const handleRunAutomation = async () => {
-    if (!title || !location || !webhookUrl) {
-      setError('Please fill in all fields before starting the automation.');
+    if (!title || !webhookUrl) {
+      setError('Please fill in the Job Title and Web App URL before starting the automation.');
       return;
     }
     
