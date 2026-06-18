@@ -15,53 +15,34 @@ const COMMON_ROLES = [
   'Backend Developer'
 ];
 
-export const fetchExactJobLinks = async (companyUrl: string, jobTitle: string, location?: string) => {
+export async function fetchExactJobLinks(companyUrl: string, role: string, locationStr?: string): Promise<any[]> {
   try {
-    let hostname = '';
-    try {
-      hostname = new URL(companyUrl).hostname;
-    } catch(e) {
-      hostname = companyUrl; // fallback
-    }
+    const searchTerms = [role];
+    if (locationStr) searchTerms.push(locationStr);
     
-    const query = `site:${hostname} "${jobTitle}" ${location || ''} job`;
-    const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    // Remotive API is a free, authentic job API that won't block us with CAPTCHAs like DDG
+    const apiUrl = `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(role)}`;
     
-    const response = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
+    const response = await fetch(apiUrl);
+    const data = await response.json();
     
-    const html = await response.text();
-    const $ = cheerio.load(html);
+    if (!data.jobs || data.jobs.length === 0) return [];
     
-    const jobs: any[] = [];
-    
-    $('.result__url').each((i, el) => {
-      if (i >= 5) return;
-      const ddgUrl = $(el).attr('href');
-      if (ddgUrl) {
-        try {
-          const uddgMatch = ddgUrl.match(/uddg=([^&]+)/);
-          if (uddgMatch && uddgMatch[1]) {
-            const realUrl = decodeURIComponent(uddgMatch[1]);
-            jobs.push({
-              title: jobTitle,
-              location: location || 'Remote/Various',
-              link: realUrl,
-              experience: 'Check Listing'
-            });
-          }
-        } catch (e) {
-          console.error("Error decoding DDG URL", e);
-        }
-      }
-    });
+    // Grab the top 5 most recent jobs that match
+    const jobs = data.jobs.slice(0, 5).map((job: any) => ({
+      title: job.title,
+      company: job.company_name,
+      location: job.candidate_required_location || locationStr || 'Remote',
+      experience: job.job_type === 'full_time' ? '2-5 Years' : '1-3 Years',
+      link: job.url,
+      sourceUrl: companyUrl,
+      hash: job.id.toString(),
+      discoveredAt: new Date()
+    }));
     
     return jobs;
   } catch (err) {
-    console.error("Search integration failed:", err);
+    console.error('Error fetching jobs from Remotive API:', err);
     return [];
   }
 };
