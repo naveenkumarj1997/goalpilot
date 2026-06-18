@@ -198,7 +198,7 @@ export default function DashboardLayout() {
 
       {/* Sidebar */}
       <motion.div
-        className={`fixed inset-y-0 left-0 z-30 w-64 glass border-r border-emerald-100 transform lg:translate-x-0 lg:static lg:inset-0 transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 glass border-r border-emerald-100 flex flex-col transform lg:translate-x-0 lg:static lg:inset-0 transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -206,7 +206,7 @@ export default function DashboardLayout() {
           <Target className="h-8 w-8 text-brand animate-ps-glow rounded-full p-1" />
           <span className="ml-2 text-xl font-bold text-text-primary tracking-tight neon-text-brand">GoalPilot</span>
         </div>
-        <div className="overflow-y-auto h-full p-4">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 space-y-1.5 custom-scrollbar">
           <nav className="space-y-1">
             {navigation.map((item, index) => {
               const isActive = location.pathname.startsWith(item.href);

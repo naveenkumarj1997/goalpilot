@@ -525,7 +525,7 @@ export default function AdminDashboard() {
                 <h2 className="text-xl font-bold text-white mb-6">Module Pricing (INR)</h2>
                 <p className="text-slate-400 mb-6 text-sm">Set prices for individual premium modules. Only standard users without access will be prompted to pay this amount.</p>
                 <div className="space-y-4">
-                  {['Dashboard', 'Goals', 'Update Hours', 'Tasks', 'Habits', 'Gaming Lounge', 'Chat', 'Resume Builder', 'Home Coach', 'Discipline', 'Yoga Coach', 'Meditation', 'Stoicism', 'Personal Dev', 'Manifestation'].map(modName => {
+                  {ALL_MODULES.map(modName => {
                     const flag = flags.find(f => f.moduleName === modName);
                     const isPremium = flag ? flag.isPremium : false;
                     const price = flag ? flag.price || 0 : 0;
@@ -571,7 +571,7 @@ export default function AdminDashboard() {
               <p className="text-slate-400 mb-6">Toggle modules globally. If disabled, Standard/Premium users cannot see or access them.</p>
               
               <div className="space-y-4">
-                {['Dashboard', 'Goals', 'Update Hours', 'Tasks', 'Habits', 'Gaming Lounge', 'Chat', 'Resume Builder', 'Home Coach', 'Discipline', 'Yoga Coach', 'Meditation', 'Stoicism', 'Personal Dev', 'Manifestation'].map(modName => {
+                {ALL_MODULES.map(modName => {
                   const flag = flags.find(f => f.moduleName === modName);
                   const isEnabled = flag ? flag.isEnabled : true;
                   const isPremium = flag ? flag.isPremium : false;
