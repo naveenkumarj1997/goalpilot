@@ -18,7 +18,7 @@ import {
   getSupportConversations,
   replyToSupportMessage
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, Lock } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, Lock, ArrowLeft } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -669,9 +669,9 @@ export default function AdminDashboard() {
 
           {/* SUPPORT TAB */}
           {activeTab === 'support' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-14rem)] min-h-[500px]">
               {/* Conversations List */}
-              <div className="bg-slate-900 border border-slate-700 rounded-2xl overflow-y-auto flex flex-col">
+              <div className={`bg-slate-900 border border-slate-700 rounded-2xl overflow-y-auto flex-col ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-slate-700 bg-slate-800/50">
                   <h3 className="font-bold text-white">Conversations</h3>
                 </div>
@@ -702,13 +702,21 @@ export default function AdminDashboard() {
               </div>
 
               {/* Chat Area */}
-              <div className="md:col-span-2 bg-slate-900 border border-slate-700 rounded-2xl flex flex-col">
+              <div className={`md:col-span-2 bg-slate-900 border border-slate-700 rounded-2xl flex-col ${!activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 {activeConversation ? (
                   <>
-                    <div className="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
-                      <div>
-                        <h3 className="font-bold text-white">{activeConversation.user.name}</h3>
-                        <p className="text-xs text-slate-400">{activeConversation.user.email}</p>
+                    <div className="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center shrink-0">
+                      <div className="flex items-center">
+                        <button 
+                          onClick={() => setActiveConversation(null)} 
+                          className="md:hidden mr-3 text-slate-400 hover:text-white transition-colors"
+                        >
+                          <ArrowLeft className="w-6 h-6" />
+                        </button>
+                        <div>
+                          <h3 className="font-bold text-white">{activeConversation.user.name}</h3>
+                          <p className="text-xs text-slate-400">{activeConversation.user.email}</p>
+                        </div>
                       </div>
                       <button 
                         onClick={() => handleOpenAccessModal(activeConversation.user)}
