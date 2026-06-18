@@ -57,15 +57,15 @@ export default function AdminCompanySources() {
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center text-white"><Database className="w-8 h-8 mr-3 text-red-500" /> Admin: Scraper Sources</h1>
-          <p className="text-slate-400 mt-2">Manage the career pages the Playwright engine scans.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center text-white"><Database className="w-8 h-8 mr-3 text-red-500" /> Admin Targets</h1>
+          <p className="text-slate-400 mt-2 text-sm sm:text-base">Manage the career pages the live search engine targets.</p>
         </div>
         <button 
           onClick={handleTriggerScan}
           disabled={scanning}
-          className={`flex items-center px-6 py-3 rounded-lg font-bold transition-all ${
+          className={`flex items-center justify-center w-full sm:w-auto px-6 py-3 rounded-lg font-bold transition-all ${
             scanning ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-500/20'
           }`}
         >
@@ -76,11 +76,11 @@ export default function AdminCompanySources() {
 
       <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 mb-8 shadow-xl">
         <h3 className="font-bold text-lg mb-4">Add New Target</h3>
-        <form onSubmit={handleAdd} className="flex gap-4">
+        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-4">
           <input 
             type="text" 
             required
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white" 
+            className="flex-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white" 
             placeholder="Company Name (e.g. TCS)"
             value={newSource.name}
             onChange={e => setNewSource({...newSource, name: e.target.value})}
@@ -88,18 +88,18 @@ export default function AdminCompanySources() {
           <input 
             type="url" 
             required
-            className="flex-2 w-1/2 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white" 
+            className="flex-2 w-full sm:w-1/2 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white" 
             placeholder="Career URL"
             value={newSource.careerUrl}
             onChange={e => setNewSource({...newSource, careerUrl: e.target.value})}
           />
-          <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold flex items-center">
+          <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold flex items-center justify-center w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-1" /> Add
           </button>
         </form>
       </div>
 
-      <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-xl">
+      <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-x-auto shadow-xl">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-900/50 border-b border-slate-700 text-sm uppercase text-slate-400">
