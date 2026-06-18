@@ -191,18 +191,7 @@ export const exportJobsToSheet = async (req: AuthRequest, res: Response) => {
       if (liveJobs.length > 0) {
         jobs = await Job.insertMany(liveJobs);
       } else {
-        // Absolute fallback if everything fails
-        const dummyJobs = [
-          {
-            title: (title as string) || 'Frontend Developer',
-            company: 'Tech Corp Global',
-            location: (location as string) || 'Remote',
-            experience: '2-4 Years',
-            link: 'https://example.com/careers/fallback/1',
-            hash: Math.random().toString(36).substring(7)
-          }
-        ];
-        jobs = await Job.insertMany(dummyJobs);
+        return res.json({ success: false, message: 'No jobs found matching your exact criteria at the targeted companies.' });
       }
     }
 
