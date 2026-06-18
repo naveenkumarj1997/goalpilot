@@ -356,10 +356,12 @@ export default function DashboardLayout() {
                     <span className="truncate">Job Automation</span>
                   </NavLink>
             
-                  <NavLink to="/jobs/admin" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-red-600 text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-red-500 hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
-                    <Database className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/admin') ? 'text-white' : 'text-red-400 group-hover:text-red-500'}`} />
-                    <span className="truncate">Admin Targets</span>
-                  </NavLink>
+                  {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
+                    <NavLink to="/jobs/admin" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-red-600 text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-red-500 hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
+                      <Database className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname.startsWith('/jobs/admin') ? 'text-white' : 'text-red-400 group-hover:text-red-500'}`} />
+                      <span className="truncate">Admin Targets</span>
+                    </NavLink>
+                  )}
                 </>
               );
             })()}
