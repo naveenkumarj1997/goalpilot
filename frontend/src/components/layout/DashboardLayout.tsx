@@ -28,7 +28,9 @@ import {
   User,
   Sparkles,
   Lock,
-  Crown
+  Crown,
+  Ban,
+  LockKeyhole
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -239,9 +241,19 @@ export default function DashboardLayout() {
                       }`}
                     />
                     <span className="truncate flex-1">{item.name}</span>
-                    {hasPurchasedPremium && <Crown className="w-4 h-4 text-yellow-400 ml-1" />}
-                    {(isGloballyDisabled || isExplicitlyDenied) && <Lock className="w-3.5 h-3.5 text-slate-500" />}
-                    {needsUpgrade && !(isGloballyDisabled || isExplicitlyDenied) && <Lock className="w-3.5 h-3.5 text-yellow-500/70 group-hover:text-yellow-400" />}
+                    {hasPurchasedPremium && <span title="Premium Purchased"><Crown className="w-4 h-4 text-yellow-400 ml-1" /></span>}
+                    
+                    {isGloballyDisabled && !isExplicitlyDenied && (
+                      <span title="Temporarily Disabled"><Ban className="w-3.5 h-3.5 text-slate-500" /></span>
+                    )}
+                    
+                    {isExplicitlyDenied && (
+                      <span title="Locked by Admin"><LockKeyhole className="w-3.5 h-3.5 text-red-500/70 group-hover:text-red-400" /></span>
+                    )}
+                    
+                    {needsUpgrade && !(isGloballyDisabled || isExplicitlyDenied) && (
+                      <span title="Premium Required"><Lock className="w-3.5 h-3.5 text-yellow-500/70 group-hover:text-yellow-400" /></span>
+                    )}
                     {item.name === 'Chat' && unreadCount > 0 && !isLocked && (
                       <span className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-bold">
                         {unreadCount}
