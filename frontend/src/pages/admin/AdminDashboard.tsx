@@ -27,6 +27,13 @@ export default function AdminDashboard() {
   const [requests, setRequests] = useState<any[]>([]);
   const [config, setConfig] = useState<any>({});
 
+  // Users List State
+  const [userSearch, setUserSearch] = useState('');
+  const [userPage, setUserPage] = useState(1);
+  const [userSortBy, setUserSortBy] = useState('createdAt');
+  const [userSortOrder, setUserSortOrder] = useState('desc');
+  const [userTotalPages, setUserTotalPages] = useState(1);
+
   // Audit Logs State
   const [auditSearch, setAuditSearch] = useState('');
   const [auditPage, setAuditPage] = useState(1);
@@ -41,7 +48,15 @@ export default function AdminDashboard() {
       if (activeTab === 'dashboard') {
         setStats(await getStats(user.token));
       } else if (activeTab === 'users') {
-        setUsersList(await getUsers(user.token));
+        const response = await getUsers(user.token, {
+          page: userPage,
+          limit: 10,
+          search: userSearch,
+          sortBy: userSortBy,
+          sortOrder: userSortOrder
+        });
+        setUsersList(response.users || []);
+        setUserTotalPages(response.totalPages || 1);
       } else if (activeTab === 'features') {
         setFlags(await getFeatureFlags(user.token));
       } else if (activeTab === 'audit') {
@@ -69,11 +84,17 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab, user, auditPage, auditSortBy, auditSortOrder]);
+  }, [activeTab, user, auditPage, auditSortBy, auditSortOrder, userPage, userSortBy, userSortOrder]);
 
   const handleAuditSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setAuditPage(1); // reset to page 1 on new search
+    fetchData();
+  };
+
+  const handleUserSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserPage(1); // reset to page 1 on new search
     fetchData();
   };
 
@@ -201,7 +222,44 @@ export default function AdminDashboard() {
 
           {/* USERS TAB */}
           {activeTab === 'users' && (
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden overflow-x-auto">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden flex flex-col">
+              {/* Controls Bar */}
+              <div className="p-4 border-b border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-800/50">
+                <form onSubmit={handleUserSearch} className="flex gap-2 w-full md:w-auto">
+                  <input 
+                    type="text" 
+                    placeholder="Search by name or email..." 
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 w-full md:w-64"
+                  />
+                  <button type="submit" className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-bold text-sm transition-colors">
+                    Search
+                  </button>
+                </form>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <select 
+                    value={userSortBy}
+                    onChange={(e) => setUserSortBy(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 w-full md:w-auto"
+                  >
+                    <option value="createdAt">Date Joined</option>
+                    <option value="name">Name</option>
+                    <option value="role">Role</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <select 
+                    value={userSortOrder}
+                    onChange={(e) => setUserSortOrder(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 w-full md:w-auto"
+                  >
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-800 text-slate-400 text-xs uppercase">
                   <tr>
@@ -249,6 +307,31 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              {usersList.length === 0 && <p className="text-slate-500 text-center py-8">No users found.</p>}
+              
+              {/* Pagination */}
+              {usersList.length > 0 && (
+                <div className="p-4 border-t border-slate-700 flex justify-between items-center bg-slate-800/30">
+                  <button 
+                    onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                    disabled={userPage === 1}
+                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-slate-400 font-bold">
+                    Page {userPage} of {userTotalPages}
+                  </span>
+                  <button 
+                    onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))}
+                    disabled={userPage === userTotalPages}
+                    className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+              </div>
             </div>
           )}
 

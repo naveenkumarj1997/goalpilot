@@ -10,8 +10,18 @@ export const getStats = async (token: string) => {
   return res.json();
 };
 
-export const getUsers = async (token: string) => {
-  const res = await fetch(`${API_URL}/admin/users`, { headers: headers(token) });
+export const getUsers = async (token: string, params?: { page: number, limit: number, search: string, sortBy: string, sortOrder: string }) => {
+  let url = `${API_URL}/admin/users`;
+  if (params) {
+    const qs = new URLSearchParams();
+    if (params.page) qs.append('page', params.page.toString());
+    if (params.limit) qs.append('limit', params.limit.toString());
+    if (params.search) qs.append('search', params.search);
+    if (params.sortBy) qs.append('sortBy', params.sortBy);
+    if (params.sortOrder) qs.append('sortOrder', params.sortOrder);
+    url += `?${qs.toString()}`;
+  }
+  const res = await fetch(url, { headers: headers(token) });
   return res.json();
 };
 
