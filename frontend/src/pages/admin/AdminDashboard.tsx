@@ -17,7 +17,7 @@ import {
   getSupportConversations,
   replyToSupportMessage
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, Lock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -780,36 +780,51 @@ export default function AdminDashboard() {
             
             <div className="p-6 overflow-y-auto space-y-4">
               <p className="text-sm text-slate-400 mb-4">
-                You can explicitly lock or unlock free modules for this user. Premium or globally disabled modules are hidden.
+                You can explicitly lock or unlock free modules for this user. Premium modules are shown here for reference but their access is managed via Premium Requests.
               </p>
               
               {ALL_MODULES.filter(modName => {
                 const flag = flags.find(f => f.moduleName === modName);
                 if (!flag) return true; // If no flag exists, assume it's free and enabled
-                return flag.isEnabled && !flag.isPremium;
+                return flag.isEnabled;
               }).map(modName => {
                 const currentVal = tempOverrides[modName];
+                const flag = flags.find(f => f.moduleName === modName);
+                const isPremium = flag ? flag.isPremium : false;
+
                 return (
                   <div key={modName} className="flex justify-between items-center p-3 bg-slate-800 rounded-xl border border-slate-700">
                     <span className="text-white font-bold text-sm">{modName}</span>
-                    <select
-                      value={currentVal === true ? 'true' : currentVal === false ? 'false' : 'default'}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setTempOverrides(prev => {
-                          const next = { ...prev };
-                          if (val === 'default') delete next[modName];
-                          else if (val === 'true') next[modName] = true;
-                          else if (val === 'false') next[modName] = false;
-                          return next;
-                        });
-                      }}
-                      className={`text-sm rounded-lg px-3 py-1 outline-none font-bold ${currentVal === true ? 'bg-emerald-500/20 text-emerald-400' : currentVal === false ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-300'}`}
-                    >
-                      <option value="default">Default</option>
-                      <option value="true">Force Unlock</option>
-                      <option value="false">Force Lock</option>
-                    </select>
+                    {isPremium ? (
+                      currentVal === true ? (
+                        <div className="flex items-center gap-1.5 text-yellow-400 font-bold text-sm bg-yellow-500/10 px-3 py-1 rounded-lg border border-yellow-500/20">
+                          <Crown className="w-4 h-4" /> Purchased
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-slate-400 font-bold text-sm bg-slate-900 px-3 py-1 rounded-lg border border-slate-700/50">
+                          <Lock className="w-3.5 h-3.5" /> Premium (Locked)
+                        </div>
+                      )
+                    ) : (
+                      <select
+                        value={currentVal === true ? 'true' : currentVal === false ? 'false' : 'default'}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTempOverrides(prev => {
+                            const next = { ...prev };
+                            if (val === 'default') delete next[modName];
+                            else if (val === 'true') next[modName] = true;
+                            else if (val === 'false') next[modName] = false;
+                            return next;
+                          });
+                        }}
+                        className={`text-sm rounded-lg px-3 py-1 outline-none font-bold ${currentVal === true ? 'bg-emerald-500/20 text-emerald-400' : currentVal === false ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-300'}`}
+                      >
+                        <option value="default">Default</option>
+                        <option value="true">Force Unlock</option>
+                        <option value="false">Force Lock</option>
+                      </select>
+                    )}
                   </div>
                 );
               })}

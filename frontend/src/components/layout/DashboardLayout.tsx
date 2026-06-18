@@ -27,7 +27,8 @@ import {
   BookOpen,
   User,
   Sparkles,
-  Lock
+  Lock,
+  Crown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -194,6 +195,8 @@ export default function DashboardLayout() {
               const isExplicitlyDenied = user?.moduleOverrides && user.moduleOverrides[item.name] === false;
               const needsUpgrade = isPremiumModule && (user?.role !== 'Premium' && user?.role !== 'Admin' && user?.role !== 'SuperAdmin') && !hasOverride;
               const isLocked = isGloballyDisabled || needsUpgrade || isExplicitlyDenied;
+              const hasPurchasedPremium = isPremiumModule && !isLocked && !isGloballyDisabled && !isExplicitlyDenied;
+
               const handleModuleClick = (e: React.MouseEvent) => {
                 if (isExplicitlyDenied) {
                   e.preventDefault();
@@ -236,6 +239,7 @@ export default function DashboardLayout() {
                       }`}
                     />
                     <span className="truncate flex-1">{item.name}</span>
+                    {hasPurchasedPremium && <Crown className="w-4 h-4 text-yellow-400 ml-1" />}
                     {(isGloballyDisabled || isExplicitlyDenied) && <Lock className="w-3.5 h-3.5 text-slate-500" />}
                     {needsUpgrade && !(isGloballyDisabled || isExplicitlyDenied) && <Lock className="w-3.5 h-3.5 text-yellow-500/70 group-hover:text-yellow-400" />}
                     {item.name === 'Chat' && unreadCount > 0 && !isLocked && (
