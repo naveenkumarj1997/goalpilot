@@ -33,6 +33,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
 import NoFapCheckInModal from '../nofap/NoFapCheckInModal';
 import LockedModuleModal from '../LockedModuleModal';
+import SupportChatWidget from '../SupportChatWidget';
 import { getProfile as getNoFapProfile } from '../../api/nofap';
 
 export default function DashboardLayout() {
@@ -380,6 +381,8 @@ export default function DashboardLayout() {
         moduleName={lockedModule.name}
         status={lockedModule.status}
       />
+
+      <SupportChatWidget />
     </div>
   );
 }

@@ -117,3 +117,29 @@ export const updateSystemConfig = async (key: string, value: string, token: stri
   });
   return res.json();
 };
+
+export const updateUserOverrides = async (id: string, overrides: Record<string, boolean>, token: string) => {
+  const res = await fetch(`${API_URL}/admin/users/${id}/overrides`, {
+    method: 'PUT',
+    headers: headers(token),
+    body: JSON.stringify({ overrides })
+  });
+  if (!res.ok) throw new Error('Failed to update overrides');
+  return res.json();
+};
+
+export const getSupportConversations = async (token: string) => {
+  const res = await fetch(`${API_URL}/admin/support/conversations`, { headers: headers(token) });
+  if (!res.ok) throw new Error('Failed to fetch conversations');
+  return res.json();
+};
+
+export const replyToSupportMessage = async (userId: string, text: string, token: string) => {
+  const res = await fetch(`${API_URL}/admin/support/conversations/${userId}/reply`, {
+    method: 'POST',
+    headers: headers(token),
+    body: JSON.stringify({ text })
+  });
+  if (!res.ok) throw new Error('Failed to send reply');
+  return res.json();
+};

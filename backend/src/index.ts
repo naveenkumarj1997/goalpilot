@@ -23,6 +23,7 @@ import stoicRoutes from './routes/stoicRoutes';
 import personalRoutes from './routes/personalRoutes';
 import manifestationRoutes from './routes/manifestationRoutes';
 import adminRoutes from './routes/adminRoutes';
+import supportRoutes from './routes/supportRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -46,6 +47,7 @@ app.use('/api', protect, blockCheck);
 app.use('/api/users', userRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/support', supportRoutes);
 
 // Module Routes Protected by RBAC & Feature Flags
 app.use('/api/goals', checkModuleAccess('Goals'), goalRoutes);

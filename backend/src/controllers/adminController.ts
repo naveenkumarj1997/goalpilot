@@ -5,6 +5,7 @@ import FeatureFlag from '../models/FeatureFlag';
 import AuditLog from '../models/AuditLog';
 import UpgradeRequest from '../models/UpgradeRequest';
 import SystemConfig from '../models/SystemConfig';
+import SupportMessage from '../models/SupportMessage';
 
 const logAction = async (adminId: any, action: string, targetUserId?: any, details?: string) => {
   await AuditLog.create({
@@ -333,5 +334,79 @@ export const updateSystemConfig = async (req: AuthRequest, res: Response) => {
     res.json(config);
   } catch (error) {
     res.status(500).json({ message: 'Error updating system config' });
+  }
+};
+
+export const updateUserOverrides = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { overrides } = req.body; // Map of moduleName -> boolean
+    
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.moduleOverrides = new Map(Object.entries(overrides));
+    await user.save();
+    
+    await logAction(req.user?._id, 'UPDATE_USER_OVERRIDES', user._id, 'Updated specific module overrides');
+    res.json({ message: 'User overrides updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating user overrides' });
+  }
+};
+
+export const getSupportConversations = async (req: AuthRequest, res: Response) => {
+  try {
+    // Get all distinct users who have sent support messages
+    const messages = await SupportMessage.find({}).populate('user', 'name email').sort({ createdAt: 1 });
+    
+    // Group by user
+    const conversations: any = {};
+    messages.forEach((msg: any) => {
+      if (!msg.user) return;
+      const userId = msg.user._id.toString();
+      if (!conversations[userId]) {
+        conversations[userId] = {
+          user: msg.user,
+          messages: [],
+          unreadCount: 0
+        };
+      }
+      conversations[userId].messages.push(msg);
+      if (msg.sender === 'User' && !msg.isRead) {
+        conversations[userId].unreadCount += 1;
+      }
+    });
+
+    res.json(Object.values(conversations).sort((a: any, b: any) => {
+      const lastA = a.messages[a.messages.length - 1].createdAt;
+      const lastB = b.messages[b.messages.length - 1].createdAt;
+      return new Date(lastB).getTime() - new Date(lastA).getTime();
+    }));
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching conversations' });
+  }
+};
+
+export const replyToSupportMessage = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params; // User ID
+    const { text } = req.body;
+    
+    const message = await SupportMessage.create({
+      user: id,
+      sender: 'Admin',
+      text
+    });
+
+    // Mark previous user messages as read
+    await SupportMessage.updateMany(
+      { user: id, sender: 'User', isRead: false },
+      { isRead: true }
+    );
+
+    res.status(201).json(message);
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending reply' });
   }
 };

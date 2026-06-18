@@ -14,7 +14,10 @@ import {
   processUpgradeRequest,
   createUpgradeRequest,
   getSystemConfig,
-  updateSystemConfig
+  updateSystemConfig,
+  updateUserOverrides,
+  getSupportConversations,
+  replyToSupportMessage
 } from '../controllers/adminController';
 
 const router = express.Router();
@@ -30,8 +33,14 @@ router.use(requireRole(['Admin', 'SuperAdmin']));
 
 router.get('/stats', getDashboardStats);
 router.get('/users', getUsers);
-router.put('/users/:id/status', updateUserStatus);
-router.put('/users/:id/role', updateUserRole);
+router.route('/users/:id/status')
+  .put(updateUserStatus);
+
+router.route('/users/:id/role')
+  .put(updateUserRole);
+
+router.route('/users/:id/overrides')
+  .put(updateUserOverrides);
 
 router.get('/features', getFeatureFlags);
 router.put('/features', updateFeatureFlag);
@@ -39,7 +48,14 @@ router.put('/features', updateFeatureFlag);
 router.get('/audit-logs', getAuditLogs);
 
 router.get('/upgrades', getUpgradeRequests);
-router.put('/upgrades/:id', processUpgradeRequest);
+router.route('/upgrades/:id')
+  .put(processUpgradeRequest);
+
+router.route('/support/conversations')
+  .get(getSupportConversations);
+
+router.route('/support/conversations/:id/reply')
+  .post(replyToSupportMessage);
 
 router.put('/config', updateSystemConfig);
 

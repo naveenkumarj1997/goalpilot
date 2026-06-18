@@ -41,10 +41,22 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    const DEFAULT_LOCKED_MODULES = [
+      'Gaming Lounge', 'Chat', 'Resume Builder', 'Home Coach', 
+      'Discipline', 'Yoga Coach', 'Meditation', 'Personal Dev', 
+      'Manifestation', 'Job Tracker'
+    ];
+
+    const moduleOverrides = new Map<string, boolean>();
+    DEFAULT_LOCKED_MODULES.forEach(mod => {
+      moduleOverrides.set(mod, false);
+    });
+
     const user = await User.create({
       name,
       email,
       password,
+      moduleOverrides
     });
 
     if (user) {

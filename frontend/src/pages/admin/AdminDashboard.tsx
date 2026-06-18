@@ -12,9 +12,12 @@ import {
   getUpgradeRequests, 
   processUpgradeRequest,
   getSystemConfig,
-  updateSystemConfig
+  updateSystemConfig,
+  updateUserOverrides,
+  getSupportConversations,
+  replyToSupportMessage
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Lock, Unlock, Send } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -26,6 +29,19 @@ export default function AdminDashboard() {
   const [logs, setLogs] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [config, setConfig] = useState<any>({});
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [activeConversation, setActiveConversation] = useState<any>(null);
+  const [replyText, setReplyText] = useState('');
+  
+  // Module Access Modal
+  const [accessModalUser, setAccessModalUser] = useState<any>(null);
+  const [tempOverrides, setTempOverrides] = useState<Record<string, boolean>>({});
+  const ALL_MODULES = [
+    'Dashboard', 'Goals', 'Update Hours', 'Tasks', 'Habits', 
+    'Gaming Lounge', 'Chat', 'Resume Builder', 'Home Coach', 
+    'Discipline', 'Yoga Coach', 'Meditation', 'Stoicism', 
+    'Personal Dev', 'Manifestation', 'Job Tracker'
+  ];
 
   // Users List State
   const [userSearch, setUserSearch] = useState('');
@@ -74,6 +90,8 @@ export default function AdminDashboard() {
       } else if (activeTab === 'pricing') {
         setConfig(await getSystemConfig(user.token));
         setFlags(await getFeatureFlags(user.token));
+      } else if (activeTab === 'support') {
+        setConversations(await getSupportConversations(user.token));
       }
     } catch (err) {
       console.error(err);
@@ -161,6 +179,31 @@ export default function AdminDashboard() {
     fetchData();
   };
 
+  const handleOpenAccessModal = (u: any) => {
+    setAccessModalUser(u);
+    setTempOverrides(u.moduleOverrides || {});
+  };
+
+  const handleSaveAccess = async () => {
+    if (!user?.token || !accessModalUser) return;
+    await updateUserOverrides(accessModalUser._id, tempOverrides, user.token);
+    setAccessModalUser(null);
+    fetchData();
+  };
+
+  const handleReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.token || !activeConversation || !replyText.trim()) return;
+    await replyToSupportMessage(activeConversation.user._id, replyText, user.token);
+    setReplyText('');
+    
+    // Refresh conversations and update active
+    const updated = await getSupportConversations(user.token);
+    setConversations(updated);
+    const newActive = updated.find((c: any) => c.user._id === activeConversation.user._id);
+    setActiveConversation(newActive);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -181,6 +224,7 @@ export default function AdminDashboard() {
           { id: 'upgrades', label: 'Premium Requests', icon: Shield },
           { id: 'pricing', label: 'Premium & Pricing', icon: CreditCard },
           { id: 'features', label: 'Feature Flags', icon: Settings },
+          { id: 'support', label: 'Support Chat', icon: MessageCircle },
           { id: 'audit', label: 'Audit Logs', icon: List }
         ].map(tab => (
           <button
@@ -295,13 +339,21 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <button 
-                          onClick={() => handleBlockUser(u._id, u.status || 'Active')}
-                          className={`text-sm font-bold ${u.status === 'Blocked' ? 'text-emerald-400' : 'text-red-400'}`}
-                          disabled={u.role === 'SuperAdmin'}
-                        >
-                          {u.status === 'Blocked' ? 'Unblock' : 'Block'}
-                        </button>
+                        <div className="flex flex-col gap-2">
+                          <button 
+                            onClick={() => handleBlockUser(u._id, u.status || 'Active')}
+                            className={`text-sm font-bold w-fit ${u.status === 'Blocked' ? 'text-emerald-400' : 'text-red-400'}`}
+                            disabled={u.role === 'SuperAdmin'}
+                          >
+                            {u.status === 'Blocked' ? 'Unblock' : 'Block'}
+                          </button>
+                          <button
+                            onClick={() => handleOpenAccessModal(u)}
+                            className="text-sm font-bold text-indigo-400 hover:text-indigo-300 w-fit"
+                          >
+                            Manage Access
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -611,8 +663,169 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* SUPPORT TAB */}
+          {activeTab === 'support' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
+              {/* Conversations List */}
+              <div className="bg-slate-900 border border-slate-700 rounded-2xl overflow-y-auto flex flex-col">
+                <div className="p-4 border-b border-slate-700 bg-slate-800/50">
+                  <h3 className="font-bold text-white">Conversations</h3>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {conversations.map((c: any) => (
+                    <button
+                      key={c.user._id}
+                      onClick={() => setActiveConversation(c)}
+                      className={`w-full text-left p-4 border-b border-slate-800 hover:bg-slate-800 transition-colors ${activeConversation?.user._id === c.user._id ? 'bg-slate-800 border-l-4 border-l-indigo-500' : ''}`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-white">{c.user.name}</span>
+                        {c.unreadCount > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            {c.unreadCount} new
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-400 truncate">
+                        {c.messages[c.messages.length - 1].text}
+                      </div>
+                    </button>
+                  ))}
+                  {conversations.length === 0 && (
+                    <div className="p-8 text-center text-slate-500">No support messages yet.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Chat Area */}
+              <div className="md:col-span-2 bg-slate-900 border border-slate-700 rounded-2xl flex flex-col">
+                {activeConversation ? (
+                  <>
+                    <div className="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-bold text-white">{activeConversation.user.name}</h3>
+                        <p className="text-xs text-slate-400">{activeConversation.user.email}</p>
+                      </div>
+                      <button 
+                        onClick={() => handleOpenAccessModal(activeConversation.user)}
+                        className="px-4 py-2 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500 hover:text-white rounded-lg text-sm font-bold transition-colors"
+                      >
+                        Manage Access
+                      </button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                      {activeConversation.messages.map((msg: any) => {
+                        const isAdmin = msg.sender === 'Admin';
+                        return (
+                          <div key={msg._id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${isAdmin ? 'bg-indigo-500 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'}`}>
+                              {msg.text}
+                              <div className={`text-[10px] mt-1 ${isAdmin ? 'text-indigo-200 text-right' : 'text-slate-500'}`}>
+                                {new Date(msg.createdAt).toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <form onSubmit={handleReply} className="p-4 border-t border-slate-700 bg-slate-800">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Type a reply..."
+                          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white outline-none focus:border-indigo-500"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!replyText.trim()}
+                          className="px-6 bg-indigo-500 text-white rounded-xl disabled:opacity-50 hover:bg-indigo-600 font-bold transition-colors flex items-center"
+                        >
+                          <Send className="w-4 h-4 mr-2" /> Send
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-slate-500">
+                    Select a conversation to view and reply.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
       )}
+
+      {/* ACCESS MODAL */}
+      {accessModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-bold text-white">Manage Module Access</h3>
+                <p className="text-sm text-slate-400 mt-1">User: <span className="font-bold text-white">{accessModalUser.name}</span></p>
+              </div>
+              <button onClick={() => setAccessModalUser(null)} className="text-slate-400 hover:text-white">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-4">
+              <p className="text-sm text-slate-400 mb-4">
+                You can explicitly lock or unlock modules for this user. "Default" means it follows the global feature flags and premium rules.
+              </p>
+              
+              {ALL_MODULES.map(modName => {
+                const currentVal = tempOverrides[modName];
+                return (
+                  <div key={modName} className="flex justify-between items-center p-3 bg-slate-800 rounded-xl border border-slate-700">
+                    <span className="text-white font-bold text-sm">{modName}</span>
+                    <select
+                      value={currentVal === true ? 'true' : currentVal === false ? 'false' : 'default'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTempOverrides(prev => {
+                          const next = { ...prev };
+                          if (val === 'default') delete next[modName];
+                          else if (val === 'true') next[modName] = true;
+                          else if (val === 'false') next[modName] = false;
+                          return next;
+                        });
+                      }}
+                      className={`text-sm rounded-lg px-3 py-1 outline-none font-bold ${currentVal === true ? 'bg-emerald-500/20 text-emerald-400' : currentVal === false ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-300'}`}
+                    >
+                      <option value="default">Default</option>
+                      <option value="true">Force Unlock</option>
+                      <option value="false">Force Lock</option>
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="p-6 border-t border-slate-800 flex justify-end gap-3 bg-slate-800/50">
+              <button
+                onClick={() => setAccessModalUser(null)}
+                className="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAccess}
+                className="px-6 py-2 rounded-xl font-bold bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
