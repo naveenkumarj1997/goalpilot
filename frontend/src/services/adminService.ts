@@ -10,6 +10,11 @@ export const getStats = async (token: string) => {
   return res.json();
 };
 
+export const getDailyActiveUsers = async (token: string) => {
+  const res = await fetch(`${API_URL}/admin/active-users`, { headers: headers(token) });
+  return res.json();
+};
+
 export const getUsers = async (token: string, params?: { page: number, limit: number, search: string, sortBy: string, sortOrder: string }) => {
   let url = `${API_URL}/admin/users`;
   if (params) {

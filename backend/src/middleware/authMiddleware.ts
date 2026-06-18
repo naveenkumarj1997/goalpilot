@@ -24,6 +24,16 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
       req.user = await User.findById(decoded.id).select('-password');
+      
+      if (req.user) {
+        // Update lastActiveAt if it's been more than 5 minutes
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        if (!req.user.lastActiveAt || req.user.lastActiveAt < fiveMinutesAgo) {
+          req.user.lastActiveAt = new Date();
+          await req.user.save();
+        }
+      }
+      
       next();
     } catch (error) {
       res.status(401).json({ message: 'Not authorized, token failed' });

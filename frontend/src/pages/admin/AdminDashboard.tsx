@@ -16,9 +16,10 @@ import {
   updateSystemConfig,
   updateUserOverrides,
   getSupportConversations,
-  replyToSupportMessage
+  replyToSupportMessage,
+  getDailyActiveUsers
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, Lock, ArrowLeft } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, Lock, ArrowLeft, Clock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -57,6 +58,21 @@ export default function AdminDashboard() {
   const [auditSortBy, setAuditSortBy] = useState('createdAt');
   const [auditSortOrder, setAuditSortOrder] = useState('desc');
   const [auditTotalPages, setAuditTotalPages] = useState(1);
+
+  // Active Users Modal State
+  const [showActiveUsersModal, setShowActiveUsersModal] = useState(false);
+  const [dailyActiveUsers, setDailyActiveUsers] = useState<any[]>([]);
+
+  const fetchDailyActiveUsers = async () => {
+    if (!user?.token) return;
+    try {
+      const users = await getDailyActiveUsers(user.token);
+      setDailyActiveUsers(users);
+      setShowActiveUsersModal(true);
+    } catch (error) {
+      console.error('Failed to fetch daily active users', error);
+    }
+  };
 
   const fetchData = async () => {
     if (!user?.token) return;
@@ -253,9 +269,16 @@ export default function AdminDashboard() {
                 <p className="text-slate-400 text-sm font-bold mb-1">Total Users</p>
                 <p className="text-4xl font-black text-white">{stats.totalUsers}</p>
               </div>
-              <div className="bg-slate-900 border border-emerald-500/30 p-6 rounded-2xl">
-                <p className="text-emerald-400 text-sm font-bold mb-1">Active Users</p>
-                <p className="text-4xl font-black text-white">{stats.activeUsers}</p>
+              <div 
+                className="bg-slate-900 border border-slate-700 p-6 rounded-2xl cursor-pointer hover:bg-slate-800 hover:border-emerald-500/50 transition-all group"
+                onClick={fetchDailyActiveUsers}
+              >
+                <div className="flex items-center text-emerald-400 mb-2">
+                  <Activity className="w-5 h-5 mr-2" />
+                  <span className="font-bold">Online Today</span>
+                </div>
+                <div className="text-4xl font-black text-white group-hover:text-emerald-400 transition-colors">{stats.activeUsers}</div>
+                <div className="text-xs text-slate-400 mt-2 font-bold uppercase tracking-wider">Click to view list</div>
               </div>
               <div className="bg-slate-900 border border-red-500/30 p-6 rounded-2xl">
                 <p className="text-red-400 text-sm font-bold mb-1">Blocked Users</p>
@@ -853,6 +876,84 @@ export default function AdminDashboard() {
                 className="px-6 py-2 rounded-xl font-bold bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/20"
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DAILY ACTIVE USERS MODAL */}
+      {showActiveUsersModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-emerald-400" />
+                  Users Online Today
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">Total: <span className="font-bold text-white">{dailyActiveUsers.length}</span></p>
+              </div>
+              <button onClick={() => setShowActiveUsersModal(false)} className="text-slate-400 hover:text-white transition-colors">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-0 overflow-y-auto">
+              {dailyActiveUsers.length > 0 ? (
+                <table className="w-full text-left text-sm text-slate-400">
+                  <thead className="bg-slate-800/50 sticky top-0">
+                    <tr>
+                      <th className="px-6 py-4 font-bold text-slate-300">User</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Role</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Last Active</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {dailyActiveUsers.map((u: any) => (
+                      <tr key={u._id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-white">{u.name}</div>
+                          <div className="text-xs text-slate-500">{u.email}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-md text-xs font-bold ${
+                            u.role === 'Admin' || u.role === 'SuperAdmin' ? 'bg-purple-500/20 text-purple-400' :
+                            u.role === 'Premium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-slate-800 text-slate-300'
+                          }`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-emerald-500/70" />
+                            <span>
+                              {new Date(u.lastActiveAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            {new Date(u.lastActiveAt).toLocaleDateString()}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-12 text-center text-slate-500">
+                  <Activity className="w-12 h-12 text-slate-700 mx-auto mb-4" />
+                  <p>No users have been active today.</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-slate-800 bg-slate-800/50 flex justify-end">
+              <button
+                onClick={() => setShowActiveUsersModal(false)}
+                className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { protect } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/rbacMiddleware';
 import {
   getDashboardStats,
+  getDailyActiveUsers,
   getUsers,
   updateUserStatus,
   updateUserRole,
@@ -32,6 +33,7 @@ router.use(protect);
 router.use(requireRole(['Admin', 'SuperAdmin']));
 
 router.get('/stats', getDashboardStats);
+router.get('/active-users', getDailyActiveUsers);
 router.get('/users', getUsers);
 router.route('/users/:id/status')
   .put(updateUserStatus);

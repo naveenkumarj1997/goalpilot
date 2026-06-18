@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
     type: Map,
     of: Boolean,
     default: {}
+  },
+  lastActiveAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true,

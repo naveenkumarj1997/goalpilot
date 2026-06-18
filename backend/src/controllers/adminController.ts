@@ -20,7 +20,9 @@ const logAction = async (adminId: any, action: string, targetUserId?: any, detai
 export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
     const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({ status: 'Active' });
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const activeUsers = await User.countDocuments({ lastActiveAt: { $gte: startOfDay } });
     const blockedUsers = await User.countDocuments({ status: 'Blocked' });
     
     // Get pending upgrades
@@ -29,6 +31,19 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
     res.json({ totalUsers, activeUsers, blockedUsers, pendingUpgrades });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching stats' });
+  }
+};
+
+export const getDailyActiveUsers = async (req: AuthRequest, res: Response) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const users = await User.find({ lastActiveAt: { $gte: startOfDay } })
+      .select('name email lastActiveAt role')
+      .sort({ lastActiveAt: -1 });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching daily active users' });
   }
 };
 
