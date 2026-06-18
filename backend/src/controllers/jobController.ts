@@ -152,8 +152,14 @@ export const exportJobsToSheet = async (req: AuthRequest, res: Response) => {
     }
 
     let query: any = {};
-    if (title) query.title = new RegExp(title as string, 'i');
-    if (location) query.location = new RegExp(location as string, 'i');
+    if (title) {
+      const titleRegexStr = (title as string).split(',').map(s => s.trim()).filter(Boolean).join('|');
+      query.title = new RegExp(titleRegexStr, 'i');
+    }
+    if (location) {
+      const locationRegexStr = (location as string).split(',').map(s => s.trim()).filter(Boolean).join('|');
+      query.location = new RegExp(locationRegexStr, 'i');
+    }
 
     let jobs = await Job.find(query).sort({ discoveredAt: -1 }).limit(50);
     

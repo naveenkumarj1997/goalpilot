@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Briefcase, MapPin, ExternalLink, Zap, Settings2, Play, CheckCircle2, ChevronRight, AlertCircle, Copy, Check } from 'lucide-react';
 import jobService from '../../services/jobService';
 
@@ -12,6 +12,21 @@ export default function JobDashboard() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('jobAutomationPrefs');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.title) setTitle(parsed.title);
+        if (parsed.location) setLocation(parsed.location);
+        if (parsed.webhookUrl) {
+          setWebhookUrl(parsed.webhookUrl);
+          setStep(2); // Automatically skip setup if URL exists
+        }
+      } catch (e) {}
+    }
+  }, []);
 
   const appsScriptCode = `function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -57,6 +72,9 @@ export default function JobDashboard() {
       setError('');
       setStep(3); // Processing step
       
+      // Save configuration
+      localStorage.setItem('jobAutomationPrefs', JSON.stringify({ title, location, webhookUrl }));
+
       const response = await jobService.exportJobsToSheet({
         title,
         location,
