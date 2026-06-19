@@ -59,6 +59,18 @@ const jobService = {
   exportJobsToSheet: async (data: { title: string, location: string, webhookUrl: string }) => {
     const res = await axios.post(API_URL + 'export-to-sheet', data, getAuthHeaders());
     return res.data;
+  },
+  getKeywords: async () => {
+    const res = await axios.get(API_URL + 'keywords', getAuthHeaders());
+    return res.data;
+  },
+  addKeyword: async (data: { keyword: string }) => {
+    const res = await axios.post(API_URL + 'keywords', data, getAuthHeaders());
+    return res.data;
+  },
+  removeKeyword: async (id: string) => {
+    const res = await axios.delete(API_URL + `keywords/${id}`, getAuthHeaders());
+    return res.data;
   }
 };
 

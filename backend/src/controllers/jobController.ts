@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import Job from '../models/Job';
 import JobPreference from '../models/JobPreference';
 import CompanySource from '../models/CompanySource';
+import JobKeyword from '../models/JobKeyword';
 import UserJobState from '../models/UserJobState';
 import { triggerManualScan } from '../services/cronService';
-import { fetchExactJobLinks } from '../services/scraperService';
+import { fetchTargetedJobs } from '../services/scraperService';
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -144,6 +145,33 @@ export const triggerScan = async (req: Request, res: Response) => {
   }
 };
 
+export const getKeywords = async (req: Request, res: Response) => {
+  try {
+    const keywords = await JobKeyword.find();
+    res.json(keywords);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error });
+  }
+};
+
+export const addKeyword = async (req: Request, res: Response) => {
+  try {
+    const keyword = await JobKeyword.create(req.body);
+    res.json(keyword);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error });
+  }
+};
+
+export const removeKeyword = async (req: Request, res: Response) => {
+  try {
+    await JobKeyword.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error });
+  }
+};
+
 export const exportJobsToSheet = async (req: AuthRequest, res: Response) => {
   try {
     const { title, location, webhookUrl } = req.body;
@@ -175,7 +203,7 @@ export const exportJobsToSheet = async (req: AuthRequest, res: Response) => {
 
         for (let i = 0; i < Math.min(2, sources.length); i++) {
           const source = sources[i];
-          const found = await fetchExactJobLinks(source.careerUrl, searchTitle, searchLocation);
+          const found = await fetchTargetedJobs(source.name, source.careerUrl, searchTitle, searchLocation);
           
           for (const job of found) {
              liveJobs.push({
@@ -196,13 +224,26 @@ export const exportJobsToSheet = async (req: AuthRequest, res: Response) => {
     }
 
     const exportData = {
-      jobs: jobs.map(j => ({
-        title: j.title,
-        company: j.company,
-        location: j.location,
-        experience: j.experience || 'Not specified',
-        link: j.link
-      }))
+      jobs: jobs.map(j => {
+        // Calculate how many days ago it was discovered
+        let dateStr = 'Unknown';
+        if (j.discoveredAt) {
+          const daysAgo = Math.floor((new Date().getTime() - new Date(j.discoveredAt).getTime()) / (1000 * 3600 * 24));
+          if (daysAgo === 0) dateStr = 'Today';
+          else if (daysAgo === 1) dateStr = 'Yesterday';
+          else dateStr = `${daysAgo} days ago`;
+        }
+
+        return {
+          title: j.title,
+          company: j.company,
+          location: j.location,
+          experience: j.experience || 'Not specified',
+          link: j.link,
+          sourceType: j.sourceId ? 'Targeted' : 'Broad',
+          discoveredAt: dateStr
+        };
+      })
     };
 
     const response = await fetch(webhookUrl, {

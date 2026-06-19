@@ -34,13 +34,13 @@ export default function JobDashboard() {
   
   // Add headers if sheet is empty
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Title', 'Company', 'Location', 'Experience', 'Date Discovered', 'Apply Link']);
-    sheet.getRange(1, 1, 1, 6).setFontWeight('bold').setBackground('#f3f4f6');
+    sheet.appendRow(['Title', 'Company', 'Location', 'Experience', 'Source Type', 'Date Discovered', 'Apply Link']);
+    sheet.getRange(1, 1, 1, 7).setFontWeight('bold').setBackground('#f3f4f6');
   }
   
   // Append jobs
   var rows = data.jobs.map(function(job) {
-    return [job.title, job.company, job.location, job.experience, new Date().toLocaleString(), job.link];
+    return [job.title, job.company, job.location, job.experience, job.sourceType || 'Broad', new Date().toLocaleString(), job.link];
   });
   
   if (rows.length > 0) {

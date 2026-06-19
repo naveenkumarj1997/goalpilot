@@ -12,7 +12,10 @@ import {
   addSource,
   removeSource,
   triggerScan,
-  exportJobsToSheet
+  exportJobsToSheet,
+  getKeywords,
+  addKeyword,
+  removeKeyword
 } from '../controllers/jobController';
 
 const router = express.Router();
@@ -35,5 +38,8 @@ router.delete('/state/:id', deleteJobState);
 router.route('/sources').get(getSources).post(addSource);
 router.delete('/sources/:id', removeSource);
 router.post('/scan', triggerScan);
+
+router.route('/keywords').get(getKeywords).post(addKeyword);
+router.delete('/keywords/:id', removeKeyword);
 
 export default router;
