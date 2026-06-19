@@ -16,8 +16,6 @@ import {
   Gamepad2,
   Briefcase,
   Settings2,
-  Columns,
-  BarChart3,
   Database,
   MessageCircle,
   FileText,

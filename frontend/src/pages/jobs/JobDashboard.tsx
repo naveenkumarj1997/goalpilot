@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, MapPin, ExternalLink, Zap, Settings2, Play, CheckCircle2, ChevronRight, AlertCircle, Copy, Check } from 'lucide-react';
+import { Briefcase, MapPin, ExternalLink, Zap, Play, CheckCircle2, ChevronRight, AlertCircle, Copy, Check } from 'lucide-react';
 import jobService from '../../services/jobService';
 
 export default function JobDashboard() {
