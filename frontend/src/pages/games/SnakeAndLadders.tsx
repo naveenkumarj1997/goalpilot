@@ -317,7 +317,7 @@ export default function SnakeAndLadders() {
 
   // Bulletproof Token Sync
   useEffect(() => {
-    let syncInterval: NodeJS.Timeout;
+    let syncInterval: ReturnType<typeof setInterval>;
     if (!showCustomizer) {
       // Keep telling the opponent my shape/color until they confirm via game action or ready state
       syncInterval = setInterval(() => {
