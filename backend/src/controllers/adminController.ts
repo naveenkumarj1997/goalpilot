@@ -249,8 +249,47 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
 
 export const getUpgradeRequests = async (req: AuthRequest, res: Response) => {
   try {
-    const requests = await UpgradeRequest.find({}).populate('user', 'name email').sort({ createdAt: -1 });
-    res.json(requests);
+    const { page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+    
+    let query: any = {};
+    if (search) {
+      const users = await User.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      } as any).select('_id');
+      const userIds = users.map(u => u._id);
+      
+      query = {
+        $or: [
+          { moduleName: { $regex: search, $options: 'i' } },
+          { transactionReference: { $regex: search, $options: 'i' } },
+          { status: { $regex: search, $options: 'i' } },
+          { user: { $in: userIds } }
+        ]
+      };
+    }
+
+    const totalCount = await UpgradeRequest.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / Number(limit));
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const sortConfig: any = {};
+    sortConfig[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
+
+    const requests = await UpgradeRequest.find(query)
+      .populate('user', 'name email')
+      .sort(sortConfig)
+      .skip(skip)
+      .limit(Number(limit));
+
+    res.json({
+      requests,
+      totalCount,
+      totalPages,
+      currentPage: Number(page)
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching requests' });
   }
@@ -271,12 +310,18 @@ export const processUpgradeRequest = async (req: AuthRequest, res: Response) => 
     if (status === 'Approved') {
       const user = await User.findById(request.user._id);
       if (user) {
-        if (!user.moduleOverrides) {
-          user.moduleOverrides = new Map();
+        if (request.moduleName === 'VIP Premium') {
+          user.role = 'Premium';
+          await user.save();
+          await logAction(req.user?._id, 'APPROVE_UPGRADE', user._id, `Granted VIP Premium role`);
+        } else {
+          if (!user.moduleOverrides) {
+            user.moduleOverrides = new Map();
+          }
+          user.moduleOverrides.set(request.moduleName, true);
+          await user.save();
+          await logAction(req.user?._id, 'APPROVE_UPGRADE', user._id, `Unlocked premium module: ${request.moduleName}`);
         }
-        user.moduleOverrides.set(request.moduleName, true);
-        await user.save();
-        await logAction(req.user?._id, 'APPROVE_UPGRADE', user._id, `Unlocked premium module: ${request.moduleName}`);
       }
     }
     
@@ -361,6 +406,35 @@ export const updateUserOverrides = async (req: AuthRequest, res: Response) => {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Fetch premium flags to handle manual grants
+    const premiumFlags = await FeatureFlag.find({ isPremium: true });
+    const premiumModules = new Set(premiumFlags.map(f => f.moduleName));
+
+    for (const mod of premiumModules) {
+      const isNowUnlocked = overrides[mod] === true;
+      
+      if (isNowUnlocked) {
+        const existingReq = await UpgradeRequest.findOne({ user: user._id, moduleName: mod, status: 'Approved' });
+        if (!existingReq) {
+          await UpgradeRequest.create({
+            user: user._id,
+            moduleName: mod,
+            status: 'Approved',
+            pricePaid: 0,
+            transactionReference: 'Granted manually by Admin',
+            reviewedBy: req.user?._id
+          });
+        }
+      } else {
+        await UpgradeRequest.deleteOne({ 
+          user: user._id, 
+          moduleName: mod, 
+          status: 'Approved',
+          transactionReference: 'Granted manually by Admin'
+        });
+      }
+    }
+
     user.moduleOverrides = new Map(Object.entries(overrides));
     await user.save();
     
@@ -424,5 +498,53 @@ export const replyToSupportMessage = async (req: AuthRequest, res: Response) => 
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ message: 'Error sending reply' });
+  }
+};
+
+export const getPremiumPurchases = async (req: AuthRequest, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string || '';
+    const sortBy = req.query.sortBy as string || 'updatedAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+    let query: any = { status: 'Approved' };
+
+    if (search) {
+      // Find users matching search to filter by user
+      const matchingUsers = await User.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      }).select('_id');
+      const userIds = matchingUsers.map(u => u._id);
+
+      query.$or = [
+        { moduleName: { $regex: search, $options: 'i' } },
+        { transactionReference: { $regex: search, $options: 'i' } },
+        { user: { $in: userIds } }
+      ];
+    }
+
+    const totalCount = await UpgradeRequest.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+    const skip = (page - 1) * limit;
+
+    const purchases = await UpgradeRequest.find(query)
+      .populate('user', 'name email')
+      .sort({ [sortBy]: sortOrder })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      purchases,
+      totalCount,
+      totalPages,
+      currentPage: page
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching premium purchases' });
   }
 };

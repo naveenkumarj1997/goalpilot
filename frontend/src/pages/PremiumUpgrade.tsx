@@ -23,7 +23,7 @@ export default function PremiumUpgrade() {
     }
   }, [user]);
 
-  if (!moduleName) return <Navigate to="/dashboard" />;
+  if (!moduleName || user?.role === 'Premium' || user?.role === 'Admin' || user?.role === 'SuperAdmin') return <Navigate to="/dashboard" />;
 
   const flag = featureFlags?.find((f:any) => f.moduleName === moduleName);
   const price = flag?.price || 0;

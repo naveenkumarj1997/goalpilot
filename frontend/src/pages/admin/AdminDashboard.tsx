@@ -17,9 +17,10 @@ import {
   updateUserOverrides,
   getSupportConversations,
   replyToSupportMessage,
-  getDailyActiveUsers
+  getDailyActiveUsers,
+  getPremiumPurchases
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, Lock, ArrowLeft, Clock } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, ArrowLeft, Clock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -58,6 +59,21 @@ export default function AdminDashboard() {
   const [auditSortBy, setAuditSortBy] = useState('createdAt');
   const [auditSortOrder, setAuditSortOrder] = useState('desc');
   const [auditTotalPages, setAuditTotalPages] = useState(1);
+
+  // Upgrade Requests State
+  const [requestSearch, setRequestSearch] = useState('');
+  const [requestPage, setRequestPage] = useState(1);
+  const [requestSortBy] = useState('createdAt');
+  const [requestSortOrder] = useState('desc');
+  const [requestTotalPages, setRequestTotalPages] = useState(1);
+
+  // Premium Purchases State
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [purchaseSearch, setPurchaseSearch] = useState('');
+  const [purchasePage, setPurchasePage] = useState(1);
+  const [purchaseSortBy] = useState('updatedAt');
+  const [purchaseSortOrder] = useState('desc');
+  const [purchaseTotalPages, setPurchaseTotalPages] = useState(1);
 
   // Active Users Modal State
   const [showActiveUsersModal, setShowActiveUsersModal] = useState(false);
@@ -107,11 +123,29 @@ export default function AdminDashboard() {
         setLogs(response.logs || []);
         setAuditTotalPages(response.totalPages || 1);
       } else if (activeTab === 'upgrades') {
-        setRequests(await getUpgradeRequests(user.token));
+        const response = await getUpgradeRequests(user.token, {
+          page: requestPage,
+          limit: 10,
+          search: requestSearch,
+          sortBy: requestSortBy,
+          sortOrder: requestSortOrder
+        });
+        setRequests(response.requests || []);
+        setRequestTotalPages(response.totalPages || 1);
       } else if (activeTab === 'pricing') {
         setConfig(await getSystemConfig(user.token));
       } else if (activeTab === 'support') {
         setConversations(await getSupportConversations(user.token));
+      } else if (activeTab === 'premium-users') {
+        const response = await getPremiumPurchases(user.token, {
+          page: purchasePage,
+          limit: 10,
+          search: purchaseSearch,
+          sortBy: purchaseSortBy,
+          sortOrder: purchaseSortOrder
+        });
+        setPurchases(response.purchases || []);
+        setPurchaseTotalPages(response.totalPages || 1);
       }
     } catch (err) {
       console.error(err);
@@ -122,11 +156,23 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab, user, auditPage, auditSortBy, auditSortOrder, userPage, userSortBy, userSortOrder]);
+  }, [activeTab, user, auditPage, auditSortBy, auditSortOrder, userPage, userSortBy, userSortOrder, purchasePage, purchaseSortBy, purchaseSortOrder, requestPage, requestSortBy, requestSortOrder]);
 
   const handleAuditSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setAuditPage(1); // reset to page 1 on new search
+    fetchData();
+  };
+
+  const handleRequestSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRequestPage(1); // reset to page 1 on new search
+    fetchData();
+  };
+
+  const handlePurchaseSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPurchasePage(1); // reset to page 1 on new search
     fetchData();
   };
 
@@ -241,6 +287,7 @@ export default function AdminDashboard() {
         {[ 
           { id: 'dashboard', label: 'Dashboard', icon: Activity },
           { id: 'users', label: 'Users', icon: Users },
+          { id: 'premium-users', label: 'Premium Users', icon: Crown },
           { id: 'upgrades', label: 'Premium Requests', icon: Shield },
           { id: 'pricing', label: 'Premium & Pricing', icon: CreditCard },
           { id: 'features', label: 'Feature Flags', icon: Settings },
@@ -414,41 +461,188 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* PREMIUM USERS TAB */}
+          {activeTab === 'premium-users' && (
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 className="text-xl font-bold text-white">Premium Users</h2>
+                <form onSubmit={handlePurchaseSearch} className="flex w-full sm:w-auto">
+                  <input 
+                    type="text" 
+                    placeholder="Search users or modules..."
+                    value={purchaseSearch}
+                    onChange={(e) => setPurchaseSearch(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 rounded-l-xl px-4 py-2 text-white outline-none focus:border-indigo-500 w-full sm:w-64"
+                  />
+                  <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-r-xl text-white font-bold transition-colors">
+                    Search
+                  </button>
+                </form>
+              </div>
+
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full text-left text-sm text-slate-400">
+                  <thead className="bg-slate-800/50">
+                    <tr>
+                      <th className="px-6 py-4 font-bold text-slate-300">User</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Module</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Amount Paid</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Transaction Ref</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Date Purchased</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {purchases.map((p: any) => (
+                      <tr key={p._id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-white">{p.user?.name}</div>
+                          <div className="text-xs text-slate-500">{p.user?.email}</div>
+                        </td>
+                        <td className="px-6 py-4 font-bold text-emerald-400 flex items-center">
+                          <Crown className="w-4 h-4 mr-2" />
+                          {p.moduleName}
+                        </td>
+                        <td className="px-6 py-4 text-white">
+                          ₹{p.pricePaid || 0}
+                        </td>
+                        <td className="px-6 py-4">
+                          {p.transactionReference === 'Granted manually by Admin' ? (
+                            <span className="bg-purple-500/20 text-purple-400 px-2 py-1 rounded-md text-xs font-bold border border-purple-500/30">
+                              Granted by Admin
+                            </span>
+                          ) : (
+                            <span className="text-slate-300">{p.transactionReference || 'N/A'}</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-slate-500">
+                          {new Date(p.updatedAt).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {purchases.length === 0 && <p className="text-slate-500 text-center py-8">No premium purchases found.</p>}
+                
+                {/* Pagination */}
+                {purchases.length > 0 && (
+                  <div className="p-4 border-t border-slate-700 flex justify-between items-center bg-slate-800/30 mt-4 rounded-b-xl">
+                    <button 
+                      onClick={() => setPurchasePage(p => Math.max(1, p - 1))}
+                      disabled={purchasePage === 1}
+                      className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-slate-400 font-bold">
+                      Page {purchasePage} of {purchaseTotalPages}
+                    </span>
+                    <button 
+                      onClick={() => setPurchasePage(p => Math.min(purchaseTotalPages, p + 1))}
+                      disabled={purchasePage === purchaseTotalPages}
+                      className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* UPGRADES TAB */}
           {activeTab === 'upgrades' && (
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6">
-              <h2 className="text-xl font-bold text-white mb-6">Premium Upgrade Requests</h2>
-              <div className="space-y-4">
-                {requests.map((r: any) => (
-                  <div key={r._id} className="bg-slate-800 p-4 rounded-xl flex items-center justify-between border border-slate-700">
-                    <div>
-                      <div className="font-bold text-white">{r.user?.name} <span className="text-slate-400 text-sm font-normal">({r.user?.email})</span></div>
-                      <div className="text-emerald-400 font-bold mt-1 text-sm flex items-center">
-                        <CreditCard className="w-4 h-4 mr-1" />
-                        {r.moduleName} - ₹{r.pricePaid || 0}
-                      </div>
-                      <div className="text-sm text-indigo-400 mt-1">Txn Ref: {r.transactionReference}</div>
-                      <div className="text-xs text-slate-500 mt-1">{new Date(r.createdAt).toLocaleString()}</div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {r.status === 'Pending' ? (
-                        <>
-                          <button onClick={() => handleProcessRequest(r._id, 'Approved')} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500 hover:text-white transition-colors">
-                            <CheckCircle className="w-5 h-5" />
-                          </button>
-                          <button onClick={() => handleProcessRequest(r._id, 'Rejected')} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors">
-                            <XCircle className="w-5 h-5" />
-                          </button>
-                        </>
-                      ) : (
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${r.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {r.status}
-                        </span>
-                      )}
-                    </div>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 className="text-xl font-bold text-white">Premium Upgrade Requests</h2>
+                <form onSubmit={handleRequestSearch} className="flex w-full sm:w-auto">
+                  <input 
+                    type="text" 
+                    placeholder="Search requests..."
+                    value={requestSearch}
+                    onChange={(e) => setRequestSearch(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 rounded-l-xl px-4 py-2 text-white outline-none focus:border-indigo-500 w-full sm:w-64"
+                  />
+                  <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-r-xl text-white font-bold transition-colors">
+                    Search
+                  </button>
+                </form>
+              </div>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full text-left text-sm text-slate-400">
+                  <thead className="bg-slate-800/50">
+                    <tr>
+                      <th className="px-6 py-4 font-bold text-slate-300">User</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Module</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Txn Ref</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Date</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Status</th>
+                      <th className="px-6 py-4 font-bold text-slate-300">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {requests.map((r: any) => (
+                      <tr key={r._id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-white">{r.user?.name}</div>
+                          <div className="text-xs text-slate-500">{r.user?.email}</div>
+                        </td>
+                        <td className="px-6 py-4 font-bold text-emerald-400">
+                          <div className="flex items-center">
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            {r.moduleName} - ₹{r.pricePaid || 0}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-indigo-400">{r.transactionReference}</td>
+                        <td className="px-6 py-4">{new Date(r.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4">
+                          {r.status === 'Pending' ? (
+                            <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-bold">Pending</span>
+                          ) : (
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${r.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                              {r.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {r.status === 'Pending' && (
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => handleProcessRequest(r._id, 'Approved')} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500 hover:text-white transition-colors" title="Approve">
+                                <CheckCircle className="w-5 h-5" />
+                              </button>
+                              <button onClick={() => handleProcessRequest(r._id, 'Rejected')} className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors" title="Reject">
+                                <XCircle className="w-5 h-5" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {requests.length === 0 && <p className="text-slate-400 text-center py-8">No requests found.</p>}
+                
+                {/* Pagination */}
+                {requests.length > 0 && (
+                  <div className="p-4 border-t border-slate-700 flex justify-between items-center bg-slate-800/30">
+                    <button 
+                      onClick={() => setRequestPage(p => Math.max(1, p - 1))}
+                      disabled={requestPage === 1}
+                      className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-slate-400 font-bold">
+                      Page {requestPage} of {requestTotalPages}
+                    </span>
+                    <button 
+                      onClick={() => setRequestPage(p => Math.min(requestTotalPages, p + 1))}
+                      disabled={requestPage === requestTotalPages}
+                      className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700"
+                    >
+                      Next
+                    </button>
                   </div>
-                ))}
-                {requests.length === 0 && <p className="text-slate-400 text-center py-4">No requests found.</p>}
+                )}
               </div>
             </div>
           )}
@@ -518,6 +712,32 @@ export default function AdminDashboard() {
                       <img src={config.paymentQrCode} alt="QR Code" className="w-48 h-48 rounded-xl bg-white object-contain" />
                     </div>
                   )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-white mb-6">VIP Pass Pricing (INR)</h2>
+                <p className="text-slate-400 mb-6 text-sm">Set the price for the global VIP Premium pass. When users purchase this, they are automatically upgraded to the 'Premium' role, granting them access to all premium modules forever.</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-800 rounded-xl border border-yellow-500/30 gap-4">
+                  <div className="font-bold text-white flex items-center mb-4 sm:mb-0">
+                    <Crown className="w-5 h-5 mr-3 text-yellow-500" />
+                    VIP Premium
+                  </div>
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                    <span className="text-slate-400">₹</span>
+                    <input 
+                      type="number" 
+                      defaultValue={flags.find(f => f.moduleName === 'VIP Premium')?.price || 0}
+                      id="price-vip-premium"
+                      className="w-24 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1 text-white outline-none focus:ring-2 focus:ring-yellow-500 text-right"
+                    />
+                    <button 
+                      onClick={() => handleSetPrice('VIP Premium', Number((document.getElementById('price-vip-premium') as HTMLInputElement).value))}
+                      className="px-4 py-1.5 bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg font-bold text-sm transition-colors"
+                    >
+                      Save Price
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -812,7 +1032,7 @@ export default function AdminDashboard() {
             
             <div className="p-6 overflow-y-auto space-y-4">
               <p className="text-sm text-slate-400 mb-4">
-                You can explicitly lock or unlock free modules for this user. Premium modules are shown here for reference but their access is managed via Premium Requests.
+                You can explicitly lock or unlock modules for this user. Force Unlocking a Premium module will automatically grant them access and log it as an Admin grant.
               </p>
               
               {ALL_MODULES.filter(modName => {
@@ -826,19 +1046,15 @@ export default function AdminDashboard() {
 
                 return (
                   <div key={modName} className="flex justify-between items-center p-3 bg-slate-800 rounded-xl border border-slate-700">
-                    <span className="text-white font-bold text-sm">{modName}</span>
-                    {isPremium ? (
-                      currentVal === true ? (
-                        <div className="flex items-center gap-1.5 text-yellow-400 font-bold text-sm bg-yellow-500/10 px-3 py-1 rounded-lg border border-yellow-500/20">
-                          <Crown className="w-4 h-4" /> Purchased
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-slate-400 font-bold text-sm bg-slate-900 px-3 py-1 rounded-lg border border-slate-700/50">
-                          <Lock className="w-3.5 h-3.5" /> Premium (Locked)
-                        </div>
-                      )
-                    ) : (
-                      <select
+                    <div className="flex flex-col">
+                      <span className="text-white font-bold text-sm flex items-center gap-2">
+                        {modName}
+                        {isPremium && <Crown className="w-3.5 h-3.5 text-yellow-500" />}
+                      </span>
+                      {isPremium && <span className="text-[10px] text-slate-500 font-bold">PREMIUM</span>}
+                    </div>
+                    
+                    <select
                         value={currentVal === true ? 'true' : currentVal === false ? 'false' : 'default'}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -858,7 +1074,6 @@ export default function AdminDashboard() {
                         <option value="true">Force Unlock</option>
                         <option value="false">Force Lock</option>
                       </select>
-                    )}
                   </div>
                 );
               })}

@@ -11,6 +11,7 @@ interface SocketContextType {
   invite: any | null;
   clearInvite: () => void;
   unreadCount: number;
+  unreadPerUser: Record<string, number>;
   fetchUnreadCount: () => void;
 }
 
@@ -20,6 +21,7 @@ const SocketContext = createContext<SocketContextType>({
   invite: null,
   clearInvite: () => {},
   unreadCount: 0,
+  unreadPerUser: {},
   fetchUnreadCount: () => {},
 });
 
@@ -31,6 +33,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [invite, setInvite] = useState<any | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [unreadPerUser, setUnreadPerUser] = useState<Record<string, number>>({});
   const navigate = useNavigate();
 
   const fetchUnreadCount = useCallback(async () => {
@@ -40,6 +43,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setUnreadCount(data.total);
+      setUnreadPerUser(data.perUser || {});
     } catch (err) {
       console.error(err);
     }
@@ -101,7 +105,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const clearInvite = () => setInvite(null);
 
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers, invite, clearInvite, unreadCount, fetchUnreadCount }}>
+    <SocketContext.Provider value={{ socket, onlineUsers, invite, clearInvite, unreadCount, unreadPerUser, fetchUnreadCount }}>
       {children}
       
       {/* Global Invitation Popup */}

@@ -18,7 +18,8 @@ import {
   updateSystemConfig,
   updateUserOverrides,
   getSupportConversations,
-  replyToSupportMessage
+  replyToSupportMessage,
+  getPremiumPurchases
 } from '../controllers/adminController';
 
 const router = express.Router();
@@ -58,6 +59,8 @@ router.route('/support/conversations')
 
 router.route('/support/conversations/:id/reply')
   .post(replyToSupportMessage);
+
+router.get('/premium-purchases', getPremiumPurchases);
 
 router.put('/config', updateSystemConfig);
 

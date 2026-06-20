@@ -82,8 +82,9 @@ export const getAuditLogs = async (token: string, params?: { page: number, limit
   return res.json();
 };
 
-export const getUpgradeRequests = async (token: string) => {
-  const res = await fetch(`${API_URL}/admin/upgrades`, { headers: headers(token) });
+export const getUpgradeRequests = async (token: string, params?: any) => {
+  const query = new URLSearchParams(params || {}).toString();
+  const res = await fetch(`${API_URL}/admin/upgrades?${query}`, { headers: headers(token) });
   return res.json();
 };
 
@@ -146,5 +147,20 @@ export const replyToSupportMessage = async (userId: string, text: string, token:
     body: JSON.stringify({ text })
   });
   if (!res.ok) throw new Error('Failed to send reply');
+  return res.json();
+};
+
+export const getPremiumPurchases = async (token: string, params?: { page: number, limit: number, search: string, sortBy: string, sortOrder: string }) => {
+  let url = `${API_URL}/admin/premium-purchases`;
+  if (params) {
+    const qs = new URLSearchParams();
+    if (params.page) qs.append('page', params.page.toString());
+    if (params.limit) qs.append('limit', params.limit.toString());
+    if (params.search) qs.append('search', params.search);
+    if (params.sortBy) qs.append('sortBy', params.sortBy);
+    if (params.sortOrder) qs.append('sortOrder', params.sortOrder);
+    url += `?${qs.toString()}`;
+  }
+  const res = await fetch(url, { headers: headers(token) });
   return res.json();
 };

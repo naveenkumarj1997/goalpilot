@@ -221,16 +221,16 @@ export default function DashboardLayout() {
               const hasPurchasedPremium = isPremiumModule && !isLocked && !isGloballyDisabled && !isExplicitlyDenied;
 
               const handleModuleClick = (e: React.MouseEvent) => {
-                if (isExplicitlyDenied) {
-                  e.preventDefault();
-                  setLockedModule({ isOpen: true, name: item.name, status: 'Disabled' });
-                } else if (isGloballyDisabled) {
+                if (isGloballyDisabled) {
                   e.preventDefault();
                   setLockedModule({ isOpen: true, name: item.name, status: 'Disabled' });
                 } else if (needsUpgrade) {
                   e.preventDefault();
                   setIsSidebarOpen(false);
                   setLockedModule({ isOpen: true, name: item.name, status: 'Premium' });
+                } else if (isExplicitlyDenied || (isDefaultLocked && !hasOverride && user?.role !== 'Admin' && user?.role !== 'SuperAdmin')) {
+                  e.preventDefault();
+                  setLockedModule({ isOpen: true, name: item.name, status: 'Disabled' });
                 } else {
                   setIsSidebarOpen(false);
                 }
@@ -270,7 +270,14 @@ export default function DashboardLayout() {
                       </span>
                     )}
                     <span className="truncate flex-1">{item.name}</span>
-                    {hasPurchasedPremium && <span title="Premium Purchased"><Crown className="w-4 h-4 text-yellow-400 ml-1" /></span>}
+                    {hasPurchasedPremium && (
+                      <span 
+                        title="Premium Purchased" 
+                        className="flex items-center ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-500/20 text-yellow-500 border border-yellow-500/30"
+                      >
+                        <Crown className="w-3 h-3 mr-1" /> PRO
+                      </span>
+                    )}
                     
                     {isGloballyDisabled && !isExplicitlyDenied && (
                       <span title="Temporarily Disabled"><Ban className="w-3.5 h-3.5 text-slate-500" /></span>
@@ -306,6 +313,7 @@ export default function DashboardLayout() {
               const jobNeedsUpgrade = isJobPremium && (user?.role !== 'Premium' && user?.role !== 'Admin' && user?.role !== 'SuperAdmin') && !hasJobOverride;
               const isJobGloballyDisabled = jobFlag && !jobFlag.isEnabled;
               const isJobLocked = isJobGloballyDisabled || isJobExplicitlyDenied || jobNeedsUpgrade || (isJobDefaultLocked && !hasJobOverride && user?.role !== 'Admin' && user?.role !== 'SuperAdmin');
+              const hasJobPurchasedPremium = isJobPremium && !isJobLocked && !isJobGloballyDisabled && !isJobExplicitlyDenied;
 
               if (isJobLocked) {
                 return (
@@ -341,6 +349,7 @@ export default function DashboardLayout() {
                 <p className="text-slate-400 text-xs mb-3">Get access to Game Lounge, Resume Builder and more.</p>
                 <Link 
                   to="/upgrade" 
+                  state={{ moduleName: 'VIP Premium' }}
                   onClick={() => setIsSidebarOpen(false)}
                   className="block text-center w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors"
                 >
@@ -351,7 +360,15 @@ export default function DashboardLayout() {
 
                   <NavLink to="/jobs" className={({ isActive }) => `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand text-white shadow-md transform scale-[1.02]' : 'text-text-secondary hover:bg-brand-light hover:text-brand hover:scale-105'}`} onClick={() => setIsSidebarOpen(false)}>
                     <Briefcase className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 transition-colors ${location.pathname === '/jobs' ? 'text-white' : 'text-emerald-400 group-hover:text-brand'}`} />
-                    <span className="truncate">Job Automation</span>
+                    <span className="truncate flex-1">Job Automation</span>
+                    {hasJobPurchasedPremium && (
+                      <span 
+                        title="Premium Purchased" 
+                        className="flex items-center ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-500/20 text-yellow-500 border border-yellow-500/30"
+                      >
+                        <Crown className="w-3 h-3 mr-1" /> PRO
+                      </span>
+                    )}
                   </NavLink>
             
                   {(user?.role === 'Admin' || user?.role === 'SuperAdmin') && (

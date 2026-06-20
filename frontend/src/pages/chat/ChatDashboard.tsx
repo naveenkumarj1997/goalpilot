@@ -7,7 +7,7 @@ import { Send, UserPlus, Check, X as CloseIcon, MessageCircle, ArrowLeft } from 
 
 export default function ChatDashboard() {
   const { user } = useAuth();
-  const { socket, onlineUsers, fetchUnreadCount } = useSocket();
+  const { socket, onlineUsers, fetchUnreadCount, unreadPerUser } = useSocket();
   const [friends, setFriends] = useState<any[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [activeChat, setActiveChat] = useState<any | null>(null);
@@ -165,6 +165,7 @@ export default function ChatDashboard() {
               friends.map(friend => {
                 const isOnline = onlineUsers.some(u => u.userId === friend._id);
                 const isActive = activeChat?._id === friend._id;
+                const unreadForFriend = unreadPerUser[friend._id] || 0;
                 return (
                   <div 
                     key={friend._id} 
@@ -175,17 +176,22 @@ export default function ChatDashboard() {
                         : 'hover:bg-brand/10 border border-transparent hover:border-brand/20 hover:scale-[1.01]'
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
+                    <div className="flex items-center gap-4 w-full">
+                      <div className="relative shrink-0">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-[0_0_10px_rgba(0,112,209,0.5)]">
                           {friend.name.charAt(0).toUpperCase()}
                         </div>
                         {isOnline && <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#0A0E17] shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>}
                       </div>
-                      <div>
-                        <p className={`text-base font-semibold ${isActive ? 'text-white' : 'text-text-primary'}`}>{friend.name}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-base font-semibold truncate ${isActive ? 'text-white' : 'text-text-primary'}`}>{friend.name}</p>
                         <p className="text-xs text-text-secondary mt-0.5">{isOnline ? 'Online' : 'Offline'}</p>
                       </div>
+                      {unreadForFriend > 0 && (
+                        <div className="shrink-0 bg-red-500 text-white text-[10px] font-bold h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]">
+                          {unreadForFriend > 99 ? '99+' : unreadForFriend}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
