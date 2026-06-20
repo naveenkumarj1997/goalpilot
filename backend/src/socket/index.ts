@@ -250,6 +250,28 @@ export const setupSocket = (httpServer: HttpServer) => {
       }
     });
 
+    // --- SNAKE & LADDERS 2D EMOTES, COMBAT & CHAT ---
+    socket.on('sl2dEmote', ({ roomId, emote }) => {
+      io.to(roomId).emit('sl2dEmoteReceived', { userId: user.id, emote });
+    });
+
+    socket.on('sl2dReady', ({ roomId, color, shape }) => {
+      io.to(roomId).emit('sl2dReadyReceived', { userId: user.id, color, shape });
+    });
+
+    socket.on('sl2dCombatAction', ({ roomId, actionData }) => {
+      // Broadcast attack or buff to other players in the room
+      socket.to(roomId).emit('sl2dCombatActionReceived', { userId: user.id, ...actionData });
+    });
+
+    socket.on('sl2dRequestSync', ({ roomId }) => {
+      socket.to(roomId).emit('sl2dRequestSyncReceived', { userId: user.id });
+    });
+
+    socket.on('sl2dGameStateSync', ({ roomId, syncData }) => {
+      socket.to(roomId).emit('sl2dGameStateSyncReceived', syncData);
+    });
+
     // --- BATTLESHIP SPECIFIC ---
     socket.on('bshipReady', ({ roomId }) => {
       const room = rooms.get(roomId);
