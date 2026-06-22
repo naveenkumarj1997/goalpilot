@@ -7,6 +7,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Dashboard from './pages/dashboard/Dashboard';
+import MissionControlDashboard from './pages/mission-control/MissionControlDashboard';
 import GoalList from './pages/goals/GoalList';
 import CreateGoal from './pages/goals/CreateGoal';
 import EditGoal from './pages/goals/EditGoal';
@@ -90,7 +91,7 @@ function App() {
       <BrowserRouter>
         <SocketProvider>
           <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/mission-control" replace />} />
           
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
@@ -102,6 +103,7 @@ function App() {
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
+              <Route path="/mission-control" element={<MissionControlDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route element={<ModuleGuard moduleName="Goals" />}>
                 <Route path="/goals" element={<GoalList />} />

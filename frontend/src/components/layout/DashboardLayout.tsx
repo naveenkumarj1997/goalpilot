@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -29,7 +29,8 @@ import {
   Lock,
   Crown,
   Ban,
-  LockKeyhole
+  LockKeyhole,
+  Rocket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -48,6 +49,19 @@ export default function DashboardLayout() {
   const [noFapLastCheckIn, setNoFapLastCheckIn] = useState<Date | null>(null);
   const [hasFetchedNoFap, setHasFetchedNoFap] = useState(false);
   const location = useLocation();
+
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     refreshUser?.();
@@ -128,6 +142,7 @@ export default function DashboardLayout() {
   }, [user, noFapLastCheckIn, hasFetchedNoFap]);
 
   const baseNavigation = [
+    { name: 'Mission Control', href: '/mission-control', icon: Rocket },
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Goals', href: '/goals', icon: Target },
     { name: 'Update Hours', href: '/goals/update-hours', icon: Clock },
@@ -158,6 +173,7 @@ export default function DashboardLayout() {
     if (path.includes('/meditation') || path.includes('/yoga') || path.includes('/personal')) return { bg: '/images/air_bg.png', color: '#38BDF8' }; // Sky Blue
     if (path.includes('/habits') || path.includes('/tasks') || path.includes('/stoicism') || path.includes('/nofap')) return { bg: '/images/earth_bg.png', color: '#10B981' }; // Emerald Green
     if (path.includes('/chat') || path.includes('/games') || path.includes('/manifestation')) return { bg: '/images/water_bg.png', color: '#3B82F6' }; // Deep Blue
+    if (path.includes('/mission-control')) return { bg: '/images/space_bg.png', color: '#F59E0B' }; // Amber
     return { bg: '/images/login_bg.png', color: '#8B5CF6' }; // Avatar Violet (Dashboard)
   };
 
@@ -405,21 +421,92 @@ export default function DashboardLayout() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <button className="text-emerald-600 hover:text-brand transition-colors hover:scale-110 transform">
-              <Bell className="h-5 w-5" />
-            </button>
+            <div className="relative" ref={notificationsRef}>
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="relative text-emerald-600 hover:text-brand transition-colors hover:scale-110 transform"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-white"></span>
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed left-4 right-4 top-16 mt-2 sm:absolute sm:left-auto sm:-right-4 lg:right-0 sm:top-auto sm:mt-3 sm:w-80 rounded-xl bg-slate-900/95 backdrop-blur-xl border border-emerald-500/20 shadow-2xl overflow-hidden z-50 origin-top sm:origin-top-right"
+                  >
+                    <div className="p-4 border-b border-emerald-500/20 flex justify-between items-center bg-slate-800/50">
+                      <h3 className="text-sm font-bold text-white">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <span className="bg-brand/20 text-brand text-[10px] px-2 py-0.5 rounded-full border border-brand/30">
+                          {unreadCount} New
+                        </span>
+                      )}
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                      {unreadCount > 0 ? (
+                        <div className="p-4 border-b border-emerald-500/10 hover:bg-slate-800/30 transition-colors cursor-pointer" onClick={() => {setIsNotificationsOpen(false); /* Optional: route to chat */}}>
+                          <div className="flex items-start gap-3">
+                            <div className="h-8 w-8 rounded-full bg-brand/20 flex items-center justify-center text-brand flex-shrink-0 mt-0.5">
+                              <MessageCircle className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-slate-200">New Chat Messages</p>
+                              <p className="text-xs text-slate-400 mt-1">You have {unreadCount} unread message{unreadCount > 1 ? 's' : ''} waiting for you.</p>
+                              <p className="text-[10px] text-slate-500 mt-2">Just now</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="p-4 border-b border-emerald-500/10 hover:bg-slate-800/30 transition-colors cursor-pointer">
+                        <div className="flex items-start gap-3">
+                          <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                            <Target className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-200">Welcome to GoalPilot</p>
+                            <p className="text-xs text-slate-400 mt-1">Stay consistent and track your goals every day to level up!</p>
+                            <p className="text-[10px] text-slate-500 mt-2">System</p>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div className="p-2 border-t border-emerald-500/20 bg-slate-800/50 text-center">
+                      <button 
+                        onClick={() => setIsNotificationsOpen(false)}
+                        className="text-xs text-emerald-400 hover:text-emerald-300 font-medium w-full py-1"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             
-            <div className="flex items-center space-x-3 border-l border-emerald-200 pl-4">
-              <div className="flex flex-col text-right hidden sm:block">
-                <span className="text-sm font-medium text-text-primary">{user?.name}</span>
-                <span className="text-xs text-text-secondary">{user?.email}</span>
+            <div className="flex items-center gap-2 sm:gap-3 border-l border-emerald-200 pl-2 sm:pl-4">
+              <div className="flex flex-col text-right justify-center">
+                <span className="text-xs sm:text-sm font-medium text-text-primary truncate max-w-[80px] sm:max-w-[150px]">{user?.name}</span>
+                <span className="text-[10px] sm:text-xs text-text-secondary truncate max-w-[80px] sm:max-w-[150px]">{user?.email}</span>
               </div>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand to-brand-hover flex items-center justify-center text-white font-semibold shadow-sm">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-brand to-brand-hover flex items-center justify-center text-white font-semibold shadow-sm">
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
               <button
                 onClick={logout}
-                className="ml-2 text-emerald-600 hover:text-red-500 transition-colors hover:scale-110 transform"
+                className="text-emerald-600 hover:text-red-500 transition-colors hover:scale-110 transform flex-shrink-0"
                 title="Logout"
               >
                 <LogOut className="h-5 w-5" />

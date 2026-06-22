@@ -77,9 +77,6 @@ export default function SnakeAndLadders() {
   useEffect(() => { tokenShapeRef.current = tokenShape; }, [tokenShape]);
 
   // Combat States
-  const [inventory, setInventory] = useState<Power | null>(null);
-  const inventoryRef = useRef(inventory);
-  useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
 
   const [activeBuffs, setActiveBuffs] = useState<Record<string, { shield: number, smoke: number }>>({
     [user._id]: { shield: 0, smoke: 0 },
@@ -104,6 +101,13 @@ export default function SnakeAndLadders() {
   const [winner, setWinner] = useState<string | null>(null);
   const [gameStarted] = useState(Date.now());
   const [actionMessage, setActionMessage] = useState<string>('Customize your token to start!');
+
+  // Update Action Message Dynamically
+  useEffect(() => {
+    if (!showCustomizer && opponentReady && !isRolling && !winner) {
+      setActionMessage(turnId === user._id ? 'Your Turn! Roll the dice.' : `${opponentName}'s Turn.`);
+    }
+  }, [opponentReady, showCustomizer, turnId, isRolling, winner, user._id, opponentName]);
   
   // Social States
   const [playerEmotes, setPlayerEmotes] = useState<Record<string, string>>({});
@@ -138,13 +142,13 @@ export default function SnakeAndLadders() {
         
         setTimeout(() => {
           setActionMessage(`${opponentName} rolled a ${data.roll}!`);
-        }, 5000);
+        }, 6000);
 
         setTimeout(() => {
           setIsRolling(false);
           setTargetPositions(prev => ({ ...prev, [opponentId]: data.newPosition }));
           setTurnId(user._id);
-        }, 7000); // Wait for dice to land
+        }, 6500); // Wait for dice to land
       }
     });
 
@@ -169,7 +173,6 @@ export default function SnakeAndLadders() {
                senderId: user._id,
                targetPositions: positionsRef.current,
                buffs: buffsRef.current,
-               inventory: inventoryRef.current,
                turnId: turnRef.current,
                color: tokenColorRef.current,
                shape: tokenShapeRef.current
@@ -241,6 +244,7 @@ export default function SnakeAndLadders() {
          showBigEvent(`${attackerName} fired a ROCKET LAUNCHER!`, 'bad');
          setTimeout(() => {
            setTargetPositions(prev => ({ ...prev, [targetId]: 1 }));
+           setVisualPositions(prev => ({ ...prev, [targetId]: 1 }));
          }, 1500);
       } else {
          if (isProtected) {
@@ -250,8 +254,10 @@ export default function SnakeAndLadders() {
            setTimeout(() => {
              if (type === 'gun') {
                setTargetPositions(prev => ({ ...prev, [targetId]: 1 }));
+               setVisualPositions(prev => ({ ...prev, [targetId]: 1 }));
              } else if (type === 'bomb') {
                setTargetPositions(prev => ({ ...prev, [targetId]: randomDrop }));
+               setVisualPositions(prev => ({ ...prev, [targetId]: randomDrop }));
              }
            }, 1500);
          }
@@ -259,26 +265,6 @@ export default function SnakeAndLadders() {
     }
   };
 
-  const usePower = () => {
-    if (!inventory || isRolling) return;
-    const power = inventory;
-    setInventory(null);
-    
-    let targetId = opponentId;
-    if (power === 'shield' || power === 'smoke') {
-       targetId = user._id;
-    }
-
-    let randomDrop = 1;
-    if (power === 'bomb') {
-       const oppPos = positionsRef.current[opponentId];
-       randomDrop = Math.max(1, Math.floor(Math.random() * (oppPos - 1)) + 1);
-    }
-
-    const actionData = { type: power, targetId, randomDrop };
-    socket?.emit('sl2dCombatAction', { roomId, actionData });
-    handleCombatAction({ userId: user._id, ...actionData });
-  };
 
   // Step-by-Step Movement Logic
   useEffect(() => {
@@ -318,14 +304,16 @@ export default function SnakeAndLadders() {
   // Bulletproof Token Sync
   useEffect(() => {
     let syncInterval: ReturnType<typeof setInterval>;
-    if (!showCustomizer) {
-      // Keep telling the opponent my shape/color until they confirm via game action or ready state
+    if (!showCustomizer && !opponentReady) {
+      // Keep telling the opponent my shape/color until they confirm
       syncInterval = setInterval(() => {
         socket?.emit('sl2dReady', { roomId, color: tokenColor, shape: tokenShape });
       }, 1000);
     }
-    return () => clearInterval(syncInterval);
-  }, [showCustomizer, socket, roomId, tokenColor, tokenShape]);
+    return () => {
+      if (syncInterval) clearInterval(syncInterval);
+    };
+  }, [showCustomizer, opponentReady, socket, roomId, tokenColor, tokenShape]);
 
   const checkTileEvents = (pos: number, pid: string) => {
     if (evaluatedTargets.current[pid].has(pos)) return; // Already checked this tile
@@ -340,16 +328,33 @@ export default function SnakeAndLadders() {
       if (MYSTERY_BOXES.includes(pos)) {
         if (isMe) {
           const power = POWERS[Math.floor(Math.random() * POWERS.length)];
-          setInventory(power);
-          showBigEvent(`You found a Mystery Box! Got: ${power.toUpperCase()}`, 'good');
+          showBigEvent(`Mystery Box! Autocasting: ${power.toUpperCase()}!`, 'good');
+          
+          setTimeout(() => {
+            let targetId = opponentId;
+            if (power === 'shield' || power === 'smoke') {
+               targetId = user._id;
+            }
+
+            let randomDrop = 1;
+            if (power === 'bomb') {
+               const oppPos = positionsRef.current[opponentId];
+               randomDrop = Math.max(1, Math.floor(Math.random() * (oppPos - 1)) + 1);
+            }
+
+            const actionData = { type: power, targetId, randomDrop };
+            socket?.emit('sl2dCombatAction', { roomId, actionData });
+            handleCombatAction({ userId: user._id, ...actionData });
+          }, 1500);
         }
       }
       // Special Events
       else if (SPECIAL_EVENTS[pos]) {
         const event = SPECIAL_EVENTS[pos];
         showBigEvent(event.message, 'good');
-        finalPos += event.bonus;
-        setTargetPositions(prev => ({ ...prev, [pid]: finalPos }));
+        setTimeout(() => {
+           setTargetPositions(prev => ({ ...prev, [pid]: pos + event.bonus }));
+        }, 800);
       }
       // Snakes
       else if (SNAKES[pos]) {
@@ -358,15 +363,19 @@ export default function SnakeAndLadders() {
            showBigEvent(`${name}'s protection blocked the snake bite!`, 'good');
         } else {
            showBigEvent(`Oh no! ${name} got bitten by a snake!`, 'bad');
-           finalPos = SNAKES[pos];
-           setTargetPositions(prev => ({ ...prev, [pid]: finalPos }));
+           setTimeout(() => {
+               setTargetPositions(prev => ({ ...prev, [pid]: SNAKES[pos] }));
+               setVisualPositions(prev => ({ ...prev, [pid]: SNAKES[pos] }));
+           }, 800);
         }
       } 
       // Ladders
       else if (LADDERS[pos]) {
         showBigEvent(`Awesome! ${name} found a ladder!`, 'good');
-        finalPos = LADDERS[pos];
-        setTargetPositions(prev => ({ ...prev, [pid]: finalPos }));
+        setTimeout(() => {
+           setTargetPositions(prev => ({ ...prev, [pid]: LADDERS[pos] }));
+           setVisualPositions(prev => ({ ...prev, [pid]: LADDERS[pos] }));
+        }, 800);
       }
 
       // Check win
@@ -396,8 +405,8 @@ export default function SnakeAndLadders() {
   const triggerDiceAnimation = (roll: number) => {
     setDiceRotation(prev => {
       const targetFace = diceRotations[roll] || { rotateX: 0, rotateY: 0 };
-      const extraSpinsX = (Math.floor(Math.random() * 5) + 5) * 360;
-      const extraSpinsY = (Math.floor(Math.random() * 5) + 5) * 360;
+      const extraSpinsX = (Math.floor(Math.random() * 5) + 15) * 360;
+      const extraSpinsY = (Math.floor(Math.random() * 5) + 15) * 360;
       return {
         rotateX: prev.rotateX - (prev.rotateX % 360) + extraSpinsX + targetFace.rotateX,
         rotateY: prev.rotateY - (prev.rotateY % 360) + extraSpinsY + targetFace.rotateY
@@ -426,7 +435,7 @@ export default function SnakeAndLadders() {
       } else {
         setActionMessage(`You rolled a ${roll}!`);
       }
-    }, 5000);
+    }, 6000);
 
     socket?.emit('gameMove', {
       roomId,
@@ -437,7 +446,20 @@ export default function SnakeAndLadders() {
       setIsRolling(false);
       setTargetPositions(prev => ({ ...prev, [user._id]: actualNewPosition }));
       setTurnId(opponentId);
-    }, 7000);
+      
+      // Auto-sync state after roll finishes to prevent any turn deadlocks
+      socket?.emit('sl2dGameStateSync', {
+         roomId,
+         syncData: {
+            senderId: user._id,
+            targetPositions: { ...positionsRef.current, [user._id]: actualNewPosition },
+            buffs: buffsRef.current,
+            turnId: opponentId,
+            color: tokenColorRef.current,
+            shape: tokenShapeRef.current
+         }
+      });
+    }, 6500);
   };
 
   const handleEmote = (e: string) => {
@@ -447,8 +469,12 @@ export default function SnakeAndLadders() {
 
   const handleCustomizerComplete = () => {
     setShowCustomizer(false);
-    setActionMessage('Waiting for opponent to customize.');
-    // Emit once immediately, but the interval will keep emitting until opponent is ready
+    if (opponentReady) {
+      setActionMessage(turnId === user._id ? 'Your Turn! Roll the dice.' : `${opponentName}'s Turn.`);
+    } else {
+      setActionMessage('Waiting for opponent to customize.');
+    }
+    // Emit once immediately
     socket?.emit('sl2dReady', { roomId, color: tokenColor, shape: tokenShape });
   };
 
@@ -607,27 +633,7 @@ export default function SnakeAndLadders() {
             </div>
           </div>
 
-          {/* INVENTORY */}
-          <div className="w-full bg-black/40 p-2 sm:p-3 rounded-xl border border-purple-500/30 mb-3 sm:mb-4 flex flex-col items-center">
-             <span className="text-[10px] sm:text-xs text-purple-300 font-bold mb-1 sm:mb-2 uppercase tracking-wider">Your Inventory</span>
-             {inventory ? (
-               <button 
-                 onClick={usePower}
-                 disabled={isRolling}
-                 className="px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-lg transition-all border border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)] flex items-center gap-1 sm:gap-2 w-full justify-center disabled:opacity-50"
-               >
-                 {inventory === 'rocket_launcher' ? '🚀 Rocket Launcher' : 
-                  inventory === 'bomb' ? '💣 Bomb' : 
-                  inventory === 'gun' ? '🔫 Gun' : 
-                  inventory === 'shield' ? '🛡️ Shield' : '💨 Smoke'}
-                 <span className="text-[8px] sm:text-[10px] bg-black/30 px-1.5 py-0.5 rounded ml-1 sm:ml-2">USE</span>
-               </button>
-             ) : (
-               <div className="px-3 py-1.5 sm:px-4 sm:py-2 w-full text-center bg-slate-800 text-slate-500 font-bold text-xs sm:text-sm rounded-lg border border-slate-700">
-                 Empty (Land on ?)
-               </div>
-             )}
-          </div>
+
 
           <div className="bg-[#0F172A] p-2 sm:p-4 rounded-xl border border-slate-700 text-center mb-4 sm:mb-6 min-h-[40px] sm:min-h-[60px] flex items-center justify-center w-full">
             <span className="text-xs sm:text-sm font-medium text-slate-300">
@@ -646,7 +652,7 @@ export default function SnakeAndLadders() {
                 <motion.div
                   className="w-full h-full relative"
                   animate={diceRotation}
-                  transition={{ duration: 7.0, type: "spring", stiffness: 50, damping: 10 }}
+                  transition={{ duration: 6.0, ease: "easeOut" }}
                   style={{ transformStyle: 'preserve-3d' }}
                 >
                   {renderDiceFace(1, 'translateZ(64px)')}

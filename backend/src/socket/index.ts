@@ -158,6 +158,20 @@ export const setupSocket = (httpServer: HttpServer) => {
     // --- ROOM SYSTEM ---
     socket.on('joinRoom', ({ roomId }) => {
       socket.join(roomId);
+      
+      const room = rooms.get(roomId);
+      if (room) {
+        // Tell the joining player who is already ready
+        room.ready.forEach(readyUserId => {
+          socket.emit('playerReady', { userId: readyUserId });
+        });
+
+        // If the game already started, push them in immediately
+        if (room.ready.size === 2) {
+          socket.emit('gameStart', { starterId: room.players[0] });
+        }
+      }
+
       const ludoState = ludoManager.getGame(roomId);
       if (ludoState) {
         socket.emit('ludoGameState', ludoState);

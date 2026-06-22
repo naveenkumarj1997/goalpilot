@@ -24,6 +24,7 @@ import personalRoutes from './routes/personalRoutes';
 import manifestationRoutes from './routes/manifestationRoutes';
 import adminRoutes from './routes/adminRoutes';
 import supportRoutes from './routes/supportRoutes';
+import missionControlRoutes from './routes/missionControlRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -63,7 +64,10 @@ app.use('/api/yoga', checkModuleAccess('Yoga Coach'), yogaRoutes);
 app.use('/api/meditation', checkModuleAccess('Meditation'), meditationRoutes);
 app.use('/api/stoicism', checkModuleAccess('Stoicism'), stoicRoutes);
 app.use('/api/personal', checkModuleAccess('Personal Dev'), personalRoutes);
-app.use('/api/manifestation', checkModuleAccess('Manifestation'), manifestationRoutes);
+  app.use('/api/manifestation', checkModuleAccess('Manifestation'), manifestationRoutes);
+  
+  // Mission Control Route (Core Homepage, no specific module block unless desired)
+  app.use('/api/mission-control', missionControlRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

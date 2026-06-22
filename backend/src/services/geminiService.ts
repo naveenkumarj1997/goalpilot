@@ -149,3 +149,68 @@ export const chatSuccessCoach = async (message: string, context: any) => {
   const result = await generateWithRetry(model, prompt);
   return result.response.text().trim();
 };
+
+export const generateMissionControlPlan = async (aggregatedData: any, userName: string) => {
+  if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const prompt = `
+    You are Mission Control, an expert AI productivity coach and daily planner for ${userName}.
+    
+    Here is all the pending data for their day:
+    Tasks: ${JSON.stringify(aggregatedData.tasks)}
+    Habits: ${JSON.stringify(aggregatedData.habits)}
+    Goals: ${JSON.stringify(aggregatedData.goals)}
+    Workouts/Yoga/Meditation: ${JSON.stringify(aggregatedData.wellness)}
+    
+    Please generate an optimized daily schedule.
+    1. Organize the tasks into logical time slots between "06:00" and "22:00".
+    2. Assign priorities ('High', 'Medium', 'Low').
+    3. Generate a short (2-3 sentences) motivational morning coaching message.
+    
+    Respond EXACTLY with a JSON object in this format (no markdown, no backticks):
+    {
+      "aiCoaching": "Good morning! You have a busy day ahead...",
+      "tasks": [
+        {
+          "id": "original_id_or_random_id",
+          "title": "Task title",
+          "sourceModule": "Task|Habit|Workout|Yoga|Meditation|Goal",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "priority": "High"
+        }
+      ]
+    }
+  `;
+
+  try {
+    const result = await generateWithRetry(model, prompt);
+    let text = result.response.text().trim();
+    text = text.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+    return JSON.parse(text);
+  } catch (err: any) {
+    console.error("Failed to generate mission control plan via AI (likely quota exceeded):", err.message);
+    
+    // Combine all items for the fallback
+    const allItems = [
+      ...aggregatedData.tasks.map((t: any) => ({ ...t, sourceModule: "Task" })),
+      ...aggregatedData.habits.map((h: any) => ({ ...h, sourceModule: "Habit" })),
+      ...aggregatedData.goals.map((g: any) => ({ ...g, sourceModule: "Goal" })),
+      ...aggregatedData.wellness.map((w: any) => ({ ...w, sourceModule: "Workout" }))
+    ];
+
+    // Return a fallback plan so the app doesn't crash
+    return {
+      aiCoaching: "Focus on one task at a time. Your AI copilot is currently resting, but you've got this!",
+      isFallback: true,
+      tasks: allItems.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        sourceModule: item.sourceModule,
+        priority: "Medium"
+      }))
+    };
+  }
+};
