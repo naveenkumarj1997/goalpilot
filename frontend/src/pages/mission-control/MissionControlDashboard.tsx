@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getTodayPlan, updateTask, submitCheckIn, generatePlan } from '../../api/missionControl';
 import TimelineSchedule from './TimelineSchedule';

@@ -19,7 +19,6 @@ const SPECIAL_EVENTS: Record<number, { type: string, message: string, bonus: num
 
 const MYSTERY_BOXES = [20, 38, 55, 76];
 const POWERS = ['gun', 'bomb', 'shield', 'smoke', 'rocket_launcher'] as const;
-type Power = typeof POWERS[number];
 
 const CELL_COLORS = [
   'bg-blue-900/60 border-blue-500/30',
