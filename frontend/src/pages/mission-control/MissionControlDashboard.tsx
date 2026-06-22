@@ -24,7 +24,8 @@ export default function MissionControlDashboard() {
       setPlan(data); // data will be null if no plan exists
     } catch (err: any) {
       console.error(err);
-      setError('Failed to load Mission Control plan. Please try again.');
+      const serverMessage = err.response?.data?.message || err.message;
+      setError(`Failed to load Mission Control plan. Server says: ${serverMessage}`);
     } finally {
       setLoading(false);
     }
