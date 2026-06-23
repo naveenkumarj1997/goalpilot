@@ -81,6 +81,13 @@ import OpportunityTracker from './pages/manifestation/OpportunityTracker';
 import AISuccessCoach from './pages/manifestation/AISuccessCoach';
 import SuccessStories from './pages/manifestation/SuccessStories';
 import ManifestationProgress from './pages/manifestation/ManifestationProgress';
+
+import WatchDashboard from './pages/watch/WatchDashboard';
+import CreateRoom from './pages/watch/CreateRoom';
+import MyRooms from './pages/watch/MyRooms';
+import WatchHistory from './pages/watch/WatchHistory';
+import WatchRoom from './pages/watch/WatchRoom';
+
 import ModuleGuard from './components/layout/ModuleGuard';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
@@ -221,6 +228,15 @@ function App() {
                 <Route path="/manifestation/coach" element={<AISuccessCoach />} />
                 <Route path="/manifestation/stories" element={<SuccessStories />} />
                 <Route path="/manifestation/progress" element={<ManifestationProgress />} />
+              </Route>
+
+              {/* Watch Together Routes */}
+              <Route element={<ModuleGuard moduleName="Watch Together" />}>
+                <Route path="/watch" element={<WatchDashboard />} />
+                <Route path="/watch/create" element={<CreateRoom />} />
+                <Route path="/watch/my-rooms" element={<MyRooms />} />
+                <Route path="/watch/history" element={<WatchHistory />} />
+                <Route path="/watch/room/:id" element={<WatchRoom />} />
               </Route>
             </Route>
           </Route>

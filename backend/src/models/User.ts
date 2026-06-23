@@ -46,6 +46,15 @@ const userSchema = new mongoose.Schema({
   },
   lastActiveAt: {
     type: Date
+  },
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  watchTogetherStats: {
+    roomsHosted: { type: Number, default: 0 },
+    roomsJoined: { type: Number, default: 0 },
+    totalWatchTimeMinutes: { type: Number, default: 0 }
   }
 }, {
   timestamps: true,

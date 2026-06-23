@@ -30,7 +30,9 @@ import {
   Crown,
   Ban,
   LockKeyhole,
-  Rocket
+  Rocket,
+  MonitorPlay,
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -48,6 +50,7 @@ export default function DashboardLayout() {
   const [lockedModule, setLockedModule] = useState<{ isOpen: boolean; name: string; status: 'Premium' | 'Disabled' }>({ isOpen: false, name: '', status: 'Premium' });
   const [noFapLastCheckIn, setNoFapLastCheckIn] = useState<Date | null>(null);
   const [hasFetchedNoFap, setHasFetchedNoFap] = useState(false);
+  const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
   const location = useLocation();
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -158,6 +161,17 @@ export default function DashboardLayout() {
     { name: 'Stoicism', href: '/stoicism', icon: BookOpen },
     { name: 'Personal Dev', href: '/personal/dashboard', icon: User },
     { name: 'Manifestation', href: '/manifestation/dashboard', icon: Sparkles },
+    { 
+      name: 'Watch Together', 
+      href: '/watch', 
+      icon: MonitorPlay,
+      subMenus: [
+        { name: 'Dashboard', href: '/watch' },
+        { name: 'Create Room', href: '/watch/create' },
+        { name: 'My Rooms', href: '/watch/my-rooms' },
+        { name: 'Watch History', href: '/watch/history' }
+      ]
+    },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
@@ -237,6 +251,12 @@ export default function DashboardLayout() {
               const hasPurchasedPremium = isPremiumModule && !isLocked && !isGloballyDisabled && !isExplicitlyDenied;
 
               const handleModuleClick = (e: React.MouseEvent) => {
+                if ((item as any).subMenus) {
+                  e.preventDefault();
+                  setOpenMenus(prev => ({ ...prev, [item.name]: !prev[item.name] }));
+                  return;
+                }
+
                 if (isGloballyDisabled) {
                   e.preventDefault();
                   setLockedModule({ isOpen: true, name: item.name, status: 'Disabled' });
@@ -311,7 +331,40 @@ export default function DashboardLayout() {
                         {unreadCount}
                       </span>
                     )}
+                    {(item as any).subMenus && (
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ml-auto ${openMenus[item.name] ? 'rotate-180' : ''}`} />
+                    )}
                   </Link>
+
+                  {/* Submenus Render */}
+                  {(item as any).subMenus && !isLocked && (
+                    <AnimatePresence>
+                      {openMenus[item.name] && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden bg-slate-900/30 rounded-lg mt-1 ml-4 border-l border-emerald-500/20"
+                        >
+                          {(item as any).subMenus.map((subItem: any) => {
+                            const isSubActive = location.pathname === subItem.href;
+                            return (
+                              <Link
+                                key={subItem.name}
+                                to={subItem.href}
+                                onClick={() => setIsSidebarOpen(false)}
+                                className={`block px-4 py-2 text-xs font-medium transition-colors ${
+                                  isSubActive ? 'text-brand bg-brand/10' : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-800/50'
+                                }`}
+                              >
+                                {subItem.name}
+                              </Link>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
                 </motion.div>
               );
             })}

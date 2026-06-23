@@ -24,6 +24,7 @@ export const setupSocket = (httpServer: HttpServer) => {
 
   const onlineUsers = new Map<string, OnlineUser>(); // userId -> OnlineUser
   const rooms = new Map<string, { players: string[]; ready: Set<string>; rematchReady?: Set<string>; gameType: string; format?: string; rpsMoves?: Map<string, string>; bshipReady?: Set<string> }>();
+  const watchRooms = new Map<string, { hostId: string, participants: { socketId: string, userId: string, username: string }[] }>();
 
   io.use(async (socket: Socket, next) => {
     try {
@@ -63,6 +64,18 @@ export const setupSocket = (httpServer: HttpServer) => {
       if (activeUser && activeUser.socketId === socket.id) {
         onlineUsers.delete(user.id);
         io.emit('onlineUsers', Array.from(onlineUsers.values()));
+      }
+
+      // Cleanup Watch Together rooms
+      for (const [roomId, room] of watchRooms.entries()) {
+        const pIndex = room.participants.findIndex(p => p.socketId === socket.id);
+        if (pIndex !== -1) {
+          room.participants.splice(pIndex, 1);
+          socket.to(roomId).emit('wt-user-left', { userId: user.id, username: user.username, socketId: socket.id });
+          if (room.participants.length === 0) {
+            watchRooms.delete(roomId);
+          }
+        }
       }
     });
 
@@ -393,5 +406,107 @@ export const setupSocket = (httpServer: HttpServer) => {
         console.error('Error saving game stats', err);
       }
     });
+
+    // ==========================================
+    // WATCH TOGETHER (WebRTC & Chat)
+    // ==========================================
+
+    socket.on('wt-join-room', ({ roomId, isHost }) => {
+      socket.join(roomId);
+      
+      let room = watchRooms.get(roomId);
+      if (!room) {
+        room = { hostId: isHost ? user.id : '', participants: [] };
+        watchRooms.set(roomId, room);
+      }
+      
+      if (isHost && !room.hostId) {
+        room.hostId = user.id;
+      }
+
+      const participantInfo = { socketId: socket.id, userId: user.id, username: user.username };
+      room.participants.push(participantInfo);
+
+      // Tell others in the room
+      socket.to(roomId).emit('wt-user-joined', participantInfo);
+
+      // Send the current participant list to the joiner
+      socket.emit('wt-room-info', {
+        hostId: room.hostId,
+        participants: room.participants
+      });
+    });
+
+    socket.on('wt-leave-room', ({ roomId }) => {
+      socket.leave(roomId);
+      const room = watchRooms.get(roomId);
+      if (room) {
+        const pIndex = room.participants.findIndex(p => p.socketId === socket.id);
+        if (pIndex !== -1) {
+          room.participants.splice(pIndex, 1);
+          socket.to(roomId).emit('wt-user-left', { userId: user.id, username: user.username, socketId: socket.id });
+          if (room.participants.length === 0) {
+            watchRooms.delete(roomId);
+          }
+        }
+      }
+    });
+
+    socket.on('wt-offer', ({ targetSocketId, offer }) => {
+      io.to(targetSocketId).emit('wt-offer', {
+        senderSocketId: socket.id,
+        senderUserId: user.id,
+        offer
+      });
+    });
+
+    socket.on('wt-answer', ({ targetSocketId, answer }) => {
+      io.to(targetSocketId).emit('wt-answer', {
+        senderSocketId: socket.id,
+        senderUserId: user.id,
+        answer
+      });
+    });
+
+    socket.on('wt-ice-candidate', ({ targetSocketId, candidate }) => {
+      io.to(targetSocketId).emit('wt-ice-candidate', {
+        senderSocketId: socket.id,
+        candidate
+      });
+    });
+
+    socket.on('wt-chat-message', ({ roomId, text }) => {
+      io.to(roomId).emit('wt-chat-message', {
+        userId: user.id,
+        username: user.username,
+        text,
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    socket.on('wt-reaction', ({ roomId, emoji }) => {
+      io.to(roomId).emit('wt-reaction', {
+        userId: user.id,
+        username: user.username,
+        emoji
+      });
+    });
+
+    socket.on('wt-stream-status', ({ roomId, isStreaming }) => {
+      socket.to(roomId).emit('wt-stream-status', {
+        hostId: user.id,
+        isStreaming
+      });
+    });
+
+    socket.on('wt-request-offer', ({ roomId }) => {
+      socket.to(roomId).emit('wt-request-offer', { viewerSocketId: socket.id });
+    });
+
+    socket.on('wt-end-room', ({ roomId }) => {
+      socket.to(roomId).emit('wt-room-ended');
+      watchRooms.delete(roomId);
+    });
+
   });
 };
