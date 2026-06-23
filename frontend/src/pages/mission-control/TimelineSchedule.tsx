@@ -26,6 +26,7 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [isRescheduling, setIsRescheduling] = useState(false);
   const [customTaskTitle, setCustomTaskTitle] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -209,39 +210,74 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
 
       {/* Edit/Remove Task Modal */}
       {selectedTask && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedTask(null)}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => { setSelectedTask(null); setIsRescheduling(false); }}>
           <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-bold text-white mb-2">{selectedTask.title}</h3>
             <p className="text-sm text-slate-400 mb-6 uppercase tracking-wider">{selectedTask.sourceModule}</p>
             
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={() => {
-                  onTaskDrop(selectedTask.id, null);
-                  setSelectedTask(null);
-                }}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
-              >
-                Move to Inbox
-              </button>
-              
-              <button 
-                onClick={() => {
-                  onRemoveTask(selectedTask.id);
-                  setSelectedTask(null);
-                }}
-                className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold transition-colors"
-              >
-                Delete Completely
-              </button>
+            {isRescheduling ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-white font-bold mb-2">Select new time:</p>
+                <div className="grid grid-cols-4 gap-2 max-h-60 overflow-y-auto pr-1">
+                  {HOURS.map(h => (
+                    <button
+                      key={h}
+                      onClick={() => {
+                        const timeStr = `${h.toString().padStart(2, '0')}:00`;
+                        onTaskDrop(selectedTask.id, timeStr);
+                        setSelectedTask(null);
+                        setIsRescheduling(false);
+                      }}
+                      className="py-2 bg-slate-800 hover:bg-brand text-white text-xs font-bold rounded-lg transition-colors border border-white/5"
+                    >
+                      {h > 12 ? `${h - 12} PM` : h === 12 ? '12 PM' : `${h} AM`}
+                    </button>
+                  ))}
+                </div>
+                <button 
+                  onClick={() => setIsRescheduling(false)}
+                  className="w-full py-3 mt-4 bg-transparent hover:bg-slate-800 text-slate-400 rounded-xl font-bold transition-colors"
+                >
+                  Back
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => setIsRescheduling(true)}
+                  className="w-full py-3 bg-brand/20 hover:bg-brand/30 text-brand rounded-xl font-bold transition-colors border border-brand/20"
+                >
+                  Reschedule Time
+                </button>
 
-              <button 
-                onClick={() => setSelectedTask(null)}
-                className="w-full py-3 mt-4 bg-transparent hover:bg-slate-800 text-slate-400 rounded-xl font-bold transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
+                <button 
+                  onClick={() => {
+                    onTaskDrop(selectedTask.id, null);
+                    setSelectedTask(null);
+                  }}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
+                >
+                  Move to Inbox
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    onRemoveTask(selectedTask.id);
+                    setSelectedTask(null);
+                  }}
+                  className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold transition-colors"
+                >
+                  Delete Completely
+                </button>
+
+                <button 
+                  onClick={() => { setSelectedTask(null); setIsRescheduling(false); }}
+                  className="w-full py-3 mt-4 bg-transparent hover:bg-slate-800 text-slate-400 rounded-xl font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
