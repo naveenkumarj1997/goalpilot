@@ -148,6 +148,10 @@ export const useWebRTC = (roomId: string, isHost: boolean) => {
   const startScreenShare = async () => {
     if (!isHost) return;
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        throw new Error("Screen sharing is not supported on mobile browsers. Please use a desktop/laptop computer to host a stream.");
+      }
+
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           width: { ideal: 1920, max: 1920 },
@@ -167,15 +171,11 @@ export const useWebRTC = (roomId: string, isHost: boolean) => {
         stopStream();
       };
 
-      // Connect to all currently connected peers
-      // Note: We'd need to ask the server for current participants if we didn't track them, 
-      // but in this simplified mesh, we'll wait for viewers to request or we broadcast to known.
-      // A better way is: host tells room "I started streaming", viewers request offer.
-      // But for simplicity, we just say streaming started. Viewers will reconnect or we just rely on new joins.
-      // Wait, we need to send offers to all existing peers.
-      // Since we don't have the list of sockets readily available here, let's just trigger a reload or rely on socket events.
-      // For MVP, viewers who are already in room will need to refresh, OR we can emit 'wt-stream-started' and have viewers emit 'wt-request-offer'.
     } catch (err: any) {
+      console.error("Screen share error:", err);
+      if (err.name !== 'NotAllowedError') { // Don't alert if they just clicked 'Cancel'
+        alert(err.message || 'Failed to capture screen. Your device may not support screen sharing.');
+      }
       setError(err.message || 'Failed to capture screen');
     }
   };
