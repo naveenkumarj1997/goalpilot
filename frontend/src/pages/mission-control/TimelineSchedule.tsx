@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface PlannedTask {
@@ -27,6 +27,12 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [customTaskTitle, setCustomTaskTitle] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedTaskId(taskId);
@@ -83,6 +89,18 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
               {tasksInHour.length === 0 && (
                 <div className="absolute inset-0 flex items-center pl-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <span className="text-xs text-slate-500/70 font-medium tracking-wider bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50">Tap to schedule</span>
+                </div>
+              )}
+
+              {/* Current Time Indicator */}
+              {hour === currentTime.getHours() && (
+                <div 
+                  className="absolute left-0 right-0 z-50 flex items-center pointer-events-none"
+                  style={{ top: `${(currentTime.getMinutes() / 60) * 100}%` }}
+                >
+                  <div className="w-full h-[2px] bg-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.8)] relative">
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]"></div>
+                  </div>
                 </div>
               )}
               

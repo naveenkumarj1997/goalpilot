@@ -175,7 +175,10 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    plan.tasks = plan.tasks.filter(t => t.id !== taskId);
+    const taskIndex = plan.tasks.findIndex(t => t.id === taskId);
+    if (taskIndex !== -1) {
+      plan.tasks.splice(taskIndex, 1);
+    }
 
     // Update success score
     const totalTasks = plan.tasks.length;
