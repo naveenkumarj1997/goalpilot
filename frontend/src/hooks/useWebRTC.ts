@@ -34,7 +34,7 @@ export const useWebRTC = (roomId: string, isHost: boolean) => {
     // We join the room here
     socket.emit('wt-join-room', { roomId, isHost });
 
-    socket.on('wt-room-info', ({ hostId, participants }) => {
+    socket.on('wt-room-info', () => {
       // If we are host, we need to create peer connections for existing viewers? 
       // Actually, standard mesh is: Viewers wait for host to offer.
     });

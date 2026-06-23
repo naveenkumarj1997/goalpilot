@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getWatchHistory } from '../../api/watchTogether';
 import { History, Clock, Users } from 'lucide-react';
 
 export default function WatchHistory() {
   const { user } = useAuth();
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

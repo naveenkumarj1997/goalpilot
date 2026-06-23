@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getMyRooms } from '../../api/watchTogether';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { MonitorPlay, Lock, Unlock, PlayCircle } from 'lucide-react';
 export default function MyRooms() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,11 +73,11 @@ export default function MyRooms() {
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-bold text-white truncate pr-4">{room.name}</h3>
                   {room.type === 'Private' ? (
-                    <Lock className="w-4 h-4 text-red-400 flex-shrink-0" title="Private" />
+                    <Lock className="w-4 h-4 text-red-400 flex-shrink-0" />
                   ) : room.type === 'FriendsOnly' ? (
-                    <Lock className="w-4 h-4 text-yellow-400 flex-shrink-0" title="Friends Only" />
+                    <Lock className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                   ) : (
-                    <Unlock className="w-4 h-4 text-emerald-400 flex-shrink-0" title="Public" />
+                    <Unlock className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   )}
                 </div>
 

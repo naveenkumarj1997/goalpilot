@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getPublicRooms } from '../../api/watchTogether';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 export default function WatchDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
