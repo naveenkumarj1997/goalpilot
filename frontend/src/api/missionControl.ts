@@ -26,7 +26,10 @@ export const updateTask = async (
 };
 
 export const removeTask = async (token: string, taskId: string, date: string) => {
-  const config = { headers: { Authorization: `Bearer ${token}`, params: { date } } };
+  const config = { 
+    headers: { Authorization: `Bearer ${token}` },
+    params: { date }
+  };
   const response = await axios.delete(`${API_URL}/mission-control/task/${taskId}`, config);
   return response.data;
 };
