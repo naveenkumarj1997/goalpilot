@@ -17,10 +17,16 @@ export const generatePlan = async (token: string, mode: 'ai' | 'manual') => {
 export const updateTask = async (
   token: string, 
   taskId: string, 
-  updates: { startTime?: string; endTime?: string; completed?: boolean; priority?: string }
+  updates: { startTime?: string | null; endTime?: string; completed?: boolean; priority?: string }
 ) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
   const response = await axios.put(`${API_URL}/mission-control/task`, { taskId, ...updates }, config);
+  return response.data;
+};
+
+export const removeTask = async (token: string, taskId: string) => {
+  const config = { headers: { Authorization: `Bearer ${token}` } };
+  const response = await axios.delete(`${API_URL}/mission-control/task/${taskId}`, config);
   return response.data;
 };
 

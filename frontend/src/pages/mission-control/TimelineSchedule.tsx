@@ -14,16 +14,18 @@ interface PlannedTask {
 interface TimelineScheduleProps {
   tasks: PlannedTask[];
   unscheduledTasks: PlannedTask[];
-  onTaskDrop: (taskId: string, newStartTime: string) => void;
+  onTaskDrop: (taskId: string, newStartTime: string | null) => void;
   onTaskComplete: (taskId: string, completed: boolean) => void;
   onCreateCustomTask: (title: string, newStartTime: string) => void;
+  onRemoveTask: (taskId: string) => void;
 }
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 AM to 10 PM (22:00)
 
-export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, onTaskComplete, onCreateCustomTask }: TimelineScheduleProps) {
+export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, onTaskComplete, onCreateCustomTask, onRemoveTask }: TimelineScheduleProps) {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
   const [customTaskTitle, setCustomTaskTitle] = useState('');
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
@@ -92,7 +94,10 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
                     draggable
                     onDragStart={(e) => handleDragStart(e as any, task.id)}
                     onDragEnd={() => setDraggedTaskId(null)}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTask(task);
+                    }}
                     className={`p-3 rounded-xl border flex items-center justify-between cursor-grab active:cursor-grabbing backdrop-blur-sm shadow-lg ${getPriorityColor(task.priority)} ${task.completed ? 'opacity-50 grayscale' : ''} ${draggedTaskId === task.id ? 'opacity-50' : ''}`}
                   >
                     <div className="flex items-center gap-3">
@@ -180,6 +185,45 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Remove Task Modal */}
+      {selectedTask && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedTask(null)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-white mb-2">{selectedTask.title}</h3>
+            <p className="text-sm text-slate-400 mb-6 uppercase tracking-wider">{selectedTask.sourceModule}</p>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => {
+                  onTaskDrop(selectedTask.id, null);
+                  setSelectedTask(null);
+                }}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
+              >
+                Move to Inbox
+              </button>
+              
+              <button 
+                onClick={() => {
+                  onRemoveTask(selectedTask.id);
+                  setSelectedTask(null);
+                }}
+                className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold transition-colors"
+              >
+                Delete Completely
+              </button>
+
+              <button 
+                onClick={() => setSelectedTask(null)}
+                className="w-full py-3 mt-4 bg-transparent hover:bg-slate-800 text-slate-400 rounded-xl font-bold transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

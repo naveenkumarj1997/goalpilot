@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getTodayPlan, updateTask, submitCheckIn, generatePlan, addCustomTask } from '../../api/missionControl';
+import { getTodayPlan, updateTask, submitCheckIn, generatePlan, addCustomTask, removeTask } from '../../api/missionControl';
 import TimelineSchedule from './TimelineSchedule';
 import { motion } from 'framer-motion';
 import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle } from 'lucide-react';
@@ -49,7 +49,7 @@ export default function MissionControlDashboard() {
     fetchPlan();
   }, [user]);
 
-  const handleTaskDrop = async (taskId: string, newStartTime: string) => {
+  const handleTaskDrop = async (taskId: string, newStartTime: string | null) => {
     if (!user?.token || !plan) return;
     
     // Optimistic UI Update
@@ -103,6 +103,22 @@ export default function MissionControlDashboard() {
     try {
       const updatedPlan = await updateTask(user.token, taskId, { completed });
       setPlan(updatedPlan);
+    } catch (err) {
+      console.error(err);
+      fetchPlan();
+    }
+  };
+
+  const handleRemoveTask = async (taskId: string) => {
+    if (!user?.token || !plan) return;
+
+    // Optimistic UI Update
+    setPlan({ ...plan, tasks: plan.tasks.filter((t: any) => t.id !== taskId) });
+
+    // API Call
+    try {
+      const data = await removeTask(user.token, taskId);
+      setPlan(data);
     } catch (err) {
       console.error(err);
       fetchPlan();
@@ -276,6 +292,7 @@ export default function MissionControlDashboard() {
           onTaskDrop={handleTaskDrop}
           onTaskComplete={handleTaskComplete}
           onCreateCustomTask={handleCreateCustomTask}
+          onRemoveTask={handleRemoveTask}
         />
       </div>
 
