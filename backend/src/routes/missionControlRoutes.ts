@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTodayPlan, generatePlan, updateTask, submitCheckIn } from '../controllers/missionControlController';
+import { getTodayPlan, generatePlan, updateTask, addTask, submitCheckIn } from '../controllers/missionControlController';
 import { protect } from '../middleware/authMiddleware';
 import { checkModuleAccess } from '../middleware/rbacMiddleware';
 
@@ -11,6 +11,7 @@ router.use(checkModuleAccess('Mission Control'));
 router.get('/today', getTodayPlan);
 router.post('/generate', generatePlan);
 router.put('/task', updateTask);
+router.post('/task', addTask);
 router.post('/checkin', submitCheckIn);
 
 export default router;

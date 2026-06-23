@@ -24,6 +24,16 @@ export const updateTask = async (
   return response.data;
 };
 
+export const addCustomTask = async (
+  token: string,
+  title: string,
+  startTime: string
+) => {
+  const config = { headers: { Authorization: `Bearer ${token}` } };
+  const response = await axios.post(`${API_URL}/mission-control/task`, { title, startTime, priority: 'Medium' }, config);
+  return response.data;
+};
+
 export const submitCheckIn = async (
   token: string, 
   data: { type: 'morning' | 'evening'; mood?: string; intent?: string; reflection?: string; rating?: number }

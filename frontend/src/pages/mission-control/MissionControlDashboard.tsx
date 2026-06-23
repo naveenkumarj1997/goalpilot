@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getTodayPlan, updateTask, submitCheckIn, generatePlan } from '../../api/missionControl';
+import { getTodayPlan, updateTask, submitCheckIn, generatePlan, addCustomTask } from '../../api/missionControl';
 import TimelineSchedule from './TimelineSchedule';
 import { motion } from 'framer-motion';
 import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle } from 'lucide-react';
@@ -64,6 +64,30 @@ export default function MissionControlDashboard() {
     } catch (err) {
       console.error(err);
       fetchPlan(); // Revert on failure
+    }
+  };
+
+  const handleCreateCustomTask = async (title: string, newStartTime: string) => {
+    if (!user?.token || !plan) return;
+    
+    // Optimistic UI Update
+    const newTask = {
+      id: 'temp-' + Date.now(),
+      title,
+      sourceModule: 'Custom',
+      startTime: newStartTime,
+      completed: false,
+      priority: 'Medium'
+    };
+    setPlan({ ...plan, tasks: [...plan.tasks, newTask] });
+
+    // API Call
+    try {
+      const data = await addCustomTask(user.token, title, newStartTime);
+      setPlan(data);
+    } catch (err) {
+      console.error(err);
+      fetchPlan(); // revert
     }
   };
 
@@ -248,8 +272,10 @@ export default function MissionControlDashboard() {
 
         <TimelineSchedule 
           tasks={scheduledTasks} 
+          unscheduledTasks={unscheduledTasks}
           onTaskDrop={handleTaskDrop}
           onTaskComplete={handleTaskComplete}
+          onCreateCustomTask={handleCreateCustomTask}
         />
       </div>
 

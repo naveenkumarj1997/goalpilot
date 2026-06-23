@@ -127,6 +127,42 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+export const addTask = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    const { title, startTime, priority } = req.body;
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const plan = await DailyPlan.findOne({ user: user?._id, date: todayStr });
+    if (!plan) {
+      res.status(404).json({ message: 'Plan not found' });
+      return;
+    }
+
+    const newTask = {
+      id: 'custom-' + Date.now().toString(),
+      title,
+      sourceModule: 'Custom',
+      startTime,
+      completed: false,
+      priority: priority || 'Medium',
+    };
+
+    plan.tasks.push(newTask);
+
+    // Update success score
+    const totalTasks = plan.tasks.length;
+    const completedTasks = plan.tasks.filter(t => t.completed).length;
+    plan.successScore = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    await plan.save();
+    res.json(plan);
+  } catch (error: any) {
+    console.error('Error adding custom task:', error);
+    res.status(500).json({ message: 'Server error adding task' });
+  }
+};
+
 export const submitCheckIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
