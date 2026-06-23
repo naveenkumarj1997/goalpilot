@@ -6,7 +6,7 @@ import Goal from '../models/Goal';
 import WorkoutPlan from '../models/WorkoutPlan';
 import { generateMissionControlPlan } from '../services/geminiService';
 
-export const getTodayPlan = async (req: Request, res: Response): Promise<void> => {
+export const getPlan = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
     if (!user) {
@@ -14,8 +14,8 @@ export const getTodayPlan = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const plan = await DailyPlan.findOne({ user: user._id, date: todayStr });
+    const dateStr = (req.query.date as string) || new Date().toISOString().split('T')[0];
+    const plan = await DailyPlan.findOne({ user: user._id, date: dateStr });
     
     // Return the plan or null if not planned yet
     res.json(plan);
@@ -33,11 +33,11 @@ export const generatePlan = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const { mode } = req.body; // 'ai' or 'manual'
-    const todayStr = new Date().toISOString().split('T')[0];
+    const { mode, date } = req.body; // 'ai' or 'manual', date: 'YYYY-MM-DD'
+    const dateStr = date || new Date().toISOString().split('T')[0];
     
     // Check if plan already exists for today, delete it if regenerating
-    await DailyPlan.deleteOne({ user: user._id, date: todayStr });
+    await DailyPlan.deleteOne({ user: user._id, date: dateStr });
 
     // Aggregate data
     const tasks = await Task.find({ user: user._id, completed: false });
@@ -79,7 +79,7 @@ export const generatePlan = async (req: Request, res: Response): Promise<void> =
 
     const newPlan = new DailyPlan({
       user: user._id,
-      date: todayStr,
+      date: dateStr,
       tasks: generatedTasks,
       aiCoaching,
       isFallback
@@ -96,10 +96,10 @@ export const generatePlan = async (req: Request, res: Response): Promise<void> =
 export const updateTask = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    const { taskId, startTime, endTime, completed, priority } = req.body;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const { taskId, startTime, endTime, completed, priority, date } = req.body;
+    const dateStr = date || new Date().toISOString().split('T')[0];
 
-    const plan = await DailyPlan.findOne({ user: user?._id, date: todayStr });
+    const plan = await DailyPlan.findOne({ user: user?._id, date: dateStr });
     if (!plan) {
       res.status(404).json({ message: 'Plan not found' });
       return;
@@ -130,10 +130,10 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
 export const addTask = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    const { title, startTime, priority } = req.body;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const { title, startTime, priority, date } = req.body;
+    const dateStr = date || new Date().toISOString().split('T')[0];
 
-    const plan = await DailyPlan.findOne({ user: user?._id, date: todayStr });
+    const plan = await DailyPlan.findOne({ user: user?._id, date: dateStr });
     if (!plan) {
       res.status(404).json({ message: 'Plan not found' });
       return;
@@ -167,9 +167,9 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
   try {
     const user = (req as any).user;
     const { taskId } = req.params;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const dateStr = (req.query.date as string) || new Date().toISOString().split('T')[0];
 
-    const plan = await DailyPlan.findOne({ user: user?._id, date: todayStr });
+    const plan = await DailyPlan.findOne({ user: user?._id, date: dateStr });
     if (!plan) {
       res.status(404).json({ message: 'Plan not found' });
       return;
@@ -196,10 +196,10 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
 export const submitCheckIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    const { type, mood, intent, reflection, rating } = req.body; // type: 'morning' or 'evening'
-    const todayStr = new Date().toISOString().split('T')[0];
+    const { type, mood, intent, reflection, rating, date } = req.body; // type: 'morning' or 'evening'
+    const dateStr = date || new Date().toISOString().split('T')[0];
 
-    const plan = await DailyPlan.findOne({ user: user?._id, date: todayStr });
+    const plan = await DailyPlan.findOne({ user: user?._id, date: dateStr });
     if (!plan) {
       res.status(404).json({ message: 'Plan not found' });
       return;

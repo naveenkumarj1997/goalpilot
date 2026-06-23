@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTodayPlan, generatePlan, updateTask, addTask, deleteTask, submitCheckIn } from '../controllers/missionControlController';
+import { getPlan, generatePlan, updateTask, addTask, deleteTask, submitCheckIn } from '../controllers/missionControlController';
 import { protect } from '../middleware/authMiddleware';
 import { checkModuleAccess } from '../middleware/rbacMiddleware';
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(protect);
 router.use(checkModuleAccess('Mission Control'));
 
-router.get('/today', getTodayPlan);
+router.get('/plan', getPlan);
 router.post('/generate', generatePlan);
 router.put('/task', updateTask);
 router.post('/task', addTask);

@@ -2,30 +2,31 @@ import axios from 'axios';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`;
 
-export const getTodayPlan = async (token: string) => {
+export const getPlan = async (token: string, date: string) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
-  const response = await axios.get(`${API_URL}/mission-control/today`, config);
+  const response = await axios.get(`${API_URL}/mission-control/plan?date=${date}`, config);
   return response.data;
 };
 
-export const generatePlan = async (token: string, mode: 'ai' | 'manual') => {
+export const generatePlan = async (token: string, mode: 'ai' | 'manual', date: string) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
-  const response = await axios.post(`${API_URL}/mission-control/generate`, { mode }, config);
+  const response = await axios.post(`${API_URL}/mission-control/generate`, { mode, date }, config);
   return response.data;
 };
 
 export const updateTask = async (
   token: string, 
   taskId: string, 
-  updates: { startTime?: string | null; endTime?: string; completed?: boolean; priority?: string }
+  updates: { startTime?: string | null; endTime?: string; completed?: boolean; priority?: string },
+  date: string
 ) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
-  const response = await axios.put(`${API_URL}/mission-control/task`, { taskId, ...updates }, config);
+  const response = await axios.put(`${API_URL}/mission-control/task`, { taskId, ...updates, date }, config);
   return response.data;
 };
 
-export const removeTask = async (token: string, taskId: string) => {
-  const config = { headers: { Authorization: `Bearer ${token}` } };
+export const removeTask = async (token: string, taskId: string, date: string) => {
+  const config = { headers: { Authorization: `Bearer ${token}`, params: { date } } };
   const response = await axios.delete(`${API_URL}/mission-control/task/${taskId}`, config);
   return response.data;
 };
@@ -33,16 +34,17 @@ export const removeTask = async (token: string, taskId: string) => {
 export const addCustomTask = async (
   token: string,
   title: string,
-  startTime: string
+  startTime: string,
+  date: string
 ) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
-  const response = await axios.post(`${API_URL}/mission-control/task`, { title, startTime, priority: 'Medium' }, config);
+  const response = await axios.post(`${API_URL}/mission-control/task`, { title, startTime, priority: 'Medium', date }, config);
   return response.data;
 };
 
 export const submitCheckIn = async (
   token: string, 
-  data: { type: 'morning' | 'evening'; mood?: string; intent?: string; reflection?: string; rating?: number }
+  data: { type: 'morning' | 'evening'; mood?: string; intent?: string; reflection?: string; rating?: number; date: string }
 ) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
   const response = await axios.post(`${API_URL}/mission-control/checkin`, data, config);

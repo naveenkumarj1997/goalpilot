@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getTodayPlan, updateTask, submitCheckIn, generatePlan, addCustomTask, removeTask } from '../../api/missionControl';
+import { getPlan, updateTask, submitCheckIn, generatePlan, addCustomTask, removeTask } from '../../api/missionControl';
 import TimelineSchedule from './TimelineSchedule';
 import { motion } from 'framer-motion';
 import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle } from 'lucide-react';
@@ -9,7 +9,9 @@ export default function MissionControlDashboard() {
   const { user } = useAuth();
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMode, setLoadingMode] = useState<'fetching' | 'ai' | 'manual'>('fetching');
   const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // Check-in states
   const [morningMood, setMorningMood] = useState('');
@@ -19,8 +21,9 @@ export default function MissionControlDashboard() {
   const fetchPlan = async () => {
     if (!user?.token) return;
     try {
+      setLoadingMode('fetching');
       setLoading(true);
-      const data = await getTodayPlan(user.token);
+      const data = await getPlan(user.token, selectedDate);
       setPlan(data); // data will be null if no plan exists
     } catch (err: any) {
       console.error(err);
@@ -34,8 +37,9 @@ export default function MissionControlDashboard() {
   const handleGeneratePlan = async (mode: 'ai' | 'manual') => {
     if (!user?.token) return;
     try {
+      setLoadingMode(mode);
       setLoading(true);
-      const data = await generatePlan(user.token, mode);
+      const data = await generatePlan(user.token, mode, selectedDate);
       setPlan(data);
     } catch (err: any) {
       console.error(err);
@@ -47,7 +51,7 @@ export default function MissionControlDashboard() {
 
   useEffect(() => {
     fetchPlan();
-  }, [user]);
+  }, [user, selectedDate]);
 
   const handleTaskDrop = async (taskId: string, newStartTime: string | null) => {
     if (!user?.token || !plan) return;
@@ -59,7 +63,7 @@ export default function MissionControlDashboard() {
     setPlan({ ...plan, tasks: updatedTasks });
 
     try {
-      const updatedPlan = await updateTask(user.token, taskId, { startTime: newStartTime });
+      const updatedPlan = await updateTask(user.token, taskId, { startTime: newStartTime }, selectedDate);
       setPlan(updatedPlan);
     } catch (err) {
       console.error(err);
@@ -83,7 +87,7 @@ export default function MissionControlDashboard() {
 
     // API Call
     try {
-      const data = await addCustomTask(user.token, title, newStartTime);
+      const data = await addCustomTask(user.token, title, newStartTime, selectedDate);
       setPlan(data);
     } catch (err) {
       console.error(err);
@@ -101,7 +105,7 @@ export default function MissionControlDashboard() {
     setPlan({ ...plan, tasks: updatedTasks });
 
     try {
-      const updatedPlan = await updateTask(user.token, taskId, { completed });
+      const updatedPlan = await updateTask(user.token, taskId, { completed }, selectedDate);
       setPlan(updatedPlan);
     } catch (err) {
       console.error(err);
@@ -117,7 +121,7 @@ export default function MissionControlDashboard() {
 
     // API Call
     try {
-      const data = await removeTask(user.token, taskId);
+      const data = await removeTask(user.token, taskId, selectedDate);
       setPlan(data);
     } catch (err) {
       console.error(err);
@@ -130,7 +134,7 @@ export default function MissionControlDashboard() {
     try {
       const payload = type === 'morning' 
         ? { type, mood: morningMood }
-        : { type, reflection: eveningReflection, rating: eveningRating };
+        : { type, reflection: eveningReflection, rating: eveningRating, date: selectedDate };
       
       const updatedPlan = await submitCheckIn(user.token, payload as any);
       setPlan(updatedPlan);
@@ -140,15 +144,24 @@ export default function MissionControlDashboard() {
   };
 
   if (loading) {
+    const isAi = loadingMode === 'ai';
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
         <div className="relative w-24 h-24 mb-6">
           <div className="absolute inset-0 border-t-4 border-brand rounded-full animate-spin"></div>
           <div className="absolute inset-2 border-r-4 border-emerald-500 rounded-full animate-spin-slow"></div>
-          <Bot className="absolute inset-0 m-auto text-brand w-8 h-8 animate-pulse" />
+          {isAi ? (
+            <Bot className="absolute inset-0 m-auto text-brand w-8 h-8 animate-pulse" />
+          ) : (
+            <ListTodo className="absolute inset-0 m-auto text-emerald-400 w-8 h-8 animate-pulse" />
+          )}
         </div>
-        <h2 className="text-2xl font-black text-white tracking-widest neon-text-brand">AI IS PLANNING YOUR DAY</h2>
-        <p className="text-slate-400 mt-2 font-medium">Aggregating tasks, habits, and workouts...</p>
+        <h2 className={`text-2xl font-black text-white tracking-widest ${isAi ? 'neon-text-brand' : 'drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`}>
+          {isAi ? "AI IS PLANNING YOUR DAY" : "LOADING MISSION PLAN"}
+        </h2>
+        <p className="text-slate-400 mt-2 font-medium">
+          {isAi ? "Aggregating tasks, habits, and workouts..." : "Retrieving your data..."}
+        </p>
       </div>
     );
   }
@@ -172,7 +185,17 @@ export default function MissionControlDashboard() {
           <Bot className="w-10 h-10 text-brand" />
         </div>
         <h1 className="text-4xl font-black text-white mb-4 tracking-wide">START YOUR DAY</h1>
-        <p className="text-slate-400 text-lg mb-10">How would you like to plan your mission today?</p>
+        <p className="text-slate-400 text-lg mb-6">How would you like to plan your mission?</p>
+        
+        <div className="mb-8 flex items-center justify-center gap-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700 w-full max-w-md">
+          <label className="text-slate-300 font-bold">Select Date:</label>
+          <input 
+            type="date" 
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="bg-slate-900 border border-slate-600 text-white px-4 py-2 rounded-lg focus:border-brand outline-none flex-1"
+          />
+        </div>
         
         <div className="flex flex-col md:flex-row gap-6 w-full">
           {/* AI Auto-Plan */}
@@ -268,10 +291,15 @@ export default function MissionControlDashboard() {
           <div>
             <h2 className="text-2xl font-black text-white flex items-center gap-2">
               <Sun className="w-6 h-6 text-yellow-400" />
-              TODAY'S MISSION
+              {selectedDate === new Date().toISOString().split('T')[0] ? "TODAY'S MISSION" : "MISSION PLAN"}
             </h2>
-            <div className="flex items-center gap-4 mt-1">
-              <p className="text-sm text-slate-400 font-medium">{new Date(plan.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+            <div className="flex items-center gap-4 mt-2">
+              <input 
+                type="date" 
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-slate-800 border border-slate-600 text-white px-2 py-1 rounded text-sm focus:border-brand outline-none"
+              />
               <button 
                 onClick={() => setPlan(null)}
                 className="text-[10px] bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 px-2 py-1 rounded uppercase tracking-widest font-bold transition-colors"
