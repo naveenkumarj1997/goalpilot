@@ -124,13 +124,13 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
             
             <div className="mb-6">
               <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Create Custom Task</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input 
                   type="text"
                   value={customTaskTitle}
                   onChange={(e) => setCustomTaskTitle(e.target.value)}
                   placeholder="e.g. Call John, Read book..."
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand transition-colors"
+                  className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 sm:py-2 text-white focus:outline-none focus:border-brand transition-colors w-full min-w-0"
                 />
                 <button 
                   onClick={() => {
@@ -141,7 +141,7 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
                       setSelectedHour(null);
                     }
                   }}
-                  className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-xl font-bold transition-colors"
+                  className="bg-brand hover:bg-brand-hover text-white px-4 py-3 sm:py-2 rounded-xl font-bold transition-colors w-full sm:w-auto flex-shrink-0"
                 >
                   Add
                 </button>

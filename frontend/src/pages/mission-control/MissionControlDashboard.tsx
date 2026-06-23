@@ -183,7 +183,7 @@ export default function MissionControlDashboard() {
             </div>
             <div>
               <h3 className="text-xl font-bold text-white mb-2">Manual Plan</h3>
-              <p className="text-sm text-slate-400">Pull everything into your Inbox and drag-and-drop them into the timeline yourself.</p>
+              <p className="text-sm text-slate-400">Pull everything into your Inbox and tap the timeline slots to manually schedule them.</p>
             </div>
           </button>
         </div>
@@ -205,7 +205,7 @@ export default function MissionControlDashboard() {
             <div>
               <p className="text-sm font-bold text-yellow-400">AI Limit Exceeded</p>
               <p className="text-xs text-yellow-500/90 mt-1 leading-relaxed">
-                The AI couldn't generate your schedule right now. You can drag and drop these items manually, or click <strong>Reset Plan</strong> on the right to start over and select <strong>Manual Plan</strong>.
+                The AI couldn't generate your schedule right now. You can schedule these items manually by tapping the timeline slots, or click <strong>Reset Plan</strong> on the right to start over and select <strong>Manual Plan</strong>.
               </p>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function MissionControlDashboard() {
           <ListTodo className="w-5 h-5 text-emerald-400" />
           <h2 className="text-lg font-black text-white tracking-wider">TASK INBOX</h2>
         </div>
-        <p className="text-xs text-slate-400 font-medium mb-2 pb-2 border-b border-slate-700">Drag these into your schedule.</p>
+        <p className="text-xs text-slate-400 font-medium mb-2 pb-2 border-b border-slate-700">Tap the empty time slots in your timeline to schedule these tasks.</p>
         
         {unscheduledTasks.length === 0 ? (
           <div className="text-center p-6 text-slate-500 text-sm font-medium border border-dashed border-slate-700 rounded-xl">
