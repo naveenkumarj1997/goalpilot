@@ -92,6 +92,7 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
                     draggable
                     onDragStart={(e) => handleDragStart(e as any, task.id)}
                     onDragEnd={() => setDraggedTaskId(null)}
+                    onClick={(e) => e.stopPropagation()}
                     className={`p-3 rounded-xl border flex items-center justify-between cursor-grab active:cursor-grabbing backdrop-blur-sm shadow-lg ${getPriorityColor(task.priority)} ${task.completed ? 'opacity-50 grayscale' : ''} ${draggedTaskId === task.id ? 'opacity-50' : ''}`}
                   >
                     <div className="flex items-center gap-3">
