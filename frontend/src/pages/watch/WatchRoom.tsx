@@ -7,7 +7,7 @@ import { endRoom, getRoomById } from '../../api/watchTogether';
 import FloatingReactions from '../../components/watch/FloatingReactions';
 import { 
   MonitorPlay, Users, MessageCircle, X, 
-  PlayCircle, StopCircle, LogOut, ArrowLeft 
+  PlayCircle, StopCircle, LogOut, ArrowLeft, Maximize 
 } from 'lucide-react';
 
 const REACTIONS = ['😂', '😱', '🔥', '👏', '❤️', '🥳', '🤯'];
@@ -67,6 +67,7 @@ function ActiveWatchRoom({ initialRoom, isHost, roomId }: { initialRoom: any, is
   const [chatInput, setChatInput] = useState('');
   const [activeTab, setActiveTab] = useState<'chat' | 'participants'>('chat');
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
 
   const actualHostId = initialRoom?.hostId?._id || initialRoom?.hostId;
   
@@ -164,6 +165,16 @@ function ActiveWatchRoom({ initialRoom, isHost, roomId }: { initialRoom: any, is
     navigate('/watch');
   };
 
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      playerRef.current?.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
   return (
     <div className="w-full h-[calc(100vh-80px)] flex flex-col md:flex-row gap-4 relative">
       <FloatingReactions roomId={roomId} />
@@ -207,25 +218,36 @@ function ActiveWatchRoom({ initialRoom, isHost, roomId }: { initialRoom: any, is
           </div>
         </div>
 
-        <div className="flex-1 bg-black rounded-2xl border border-slate-800 overflow-hidden relative group shadow-2xl min-h-[300px]">
-          {(!isHost && !isStreaming) ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80 p-6 text-center">
-              <MonitorPlay className="w-16 h-16 text-slate-600 mb-4 animate-pulse" />
-              <p className="text-slate-400 font-medium">Waiting for Host to start streaming...</p>
-            </div>
-          ) : (
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted={isHost} 
-              className="w-full h-full object-contain"
-            />
-          )}
+        <div ref={playerRef} className="flex-1 bg-black rounded-2xl border border-slate-800 overflow-hidden relative group shadow-2xl min-h-[300px] flex flex-col">
+          <div className="flex-1 relative">
+            {(!isHost && !isStreaming) ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80 p-6 text-center">
+                <MonitorPlay className="w-16 h-16 text-slate-600 mb-4 animate-pulse" />
+                <p className="text-slate-400 font-medium">Waiting for Host to start streaming...</p>
+              </div>
+            ) : (
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted={isHost} 
+                className="w-full h-full object-contain"
+              />
+            )}
 
-          {/* Reaction Bar (Visible on Hover/Touch) */}
-          <div className="absolute bottom-6 inset-x-0 mx-auto px-4 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex justify-center w-full">
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 px-4 py-2 rounded-2xl sm:rounded-full flex flex-wrap justify-center items-center gap-2 sm:gap-3 shadow-2xl max-w-[280px] sm:max-w-none">
+            {/* Fullscreen Button */}
+            <button 
+              onClick={toggleFullScreen} 
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg transition-colors z-20 backdrop-blur-sm border border-white/10 opacity-100 sm:opacity-0 group-hover:opacity-100"
+              title="Toggle Fullscreen"
+            >
+              <Maximize className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Reaction Bar (Static on mobile, Floating on Desktop) */}
+          <div className="sm:absolute sm:bottom-6 sm:inset-x-0 mx-auto py-3 px-4 sm:p-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex justify-center w-full bg-slate-900 sm:bg-transparent border-t border-slate-800 sm:border-none">
+            <div className="bg-slate-800 sm:bg-slate-900/80 sm:backdrop-blur-md border border-slate-700/50 px-4 py-2 rounded-2xl sm:rounded-full flex flex-wrap justify-center items-center gap-2 sm:gap-3 shadow-2xl max-w-[280px] sm:max-w-none w-full sm:w-auto">
               {REACTIONS.map(emoji => (
                 <button 
                   key={emoji}
