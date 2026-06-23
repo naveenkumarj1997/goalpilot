@@ -123,6 +123,7 @@ export default function TimelineSchedule({ tasks, unscheduledTasks, onTaskDrop, 
                       <input 
                         type="checkbox"
                         checked={task.completed}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) => onTaskComplete(task.id, e.target.checked)}
                         className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-gray-900 cursor-pointer"
                       />
