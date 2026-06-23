@@ -18,6 +18,28 @@ export default function ActiveSession() {
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [earnedXP, setEarnedXP] = useState(0);
 
+  // Optional Set Timer
+  const [activeTimerLeft, setActiveTimerLeft] = useState<number | null>(null);
+  const [isActiveTimerRunning, setIsActiveTimerRunning] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isActiveTimerRunning && activeTimerLeft !== null && activeTimerLeft > 0) {
+      interval = setInterval(() => {
+        setActiveTimerLeft((prev) => (prev ? prev - 1 : 0));
+      }, 1000);
+    } else if (activeTimerLeft === 0) {
+      setIsActiveTimerRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isActiveTimerRunning, activeTimerLeft]);
+
+  // Reset optional timer when switching exercises or sets
+  useEffect(() => {
+    setActiveTimerLeft(null);
+    setIsActiveTimerRunning(false);
+  }, [currentExerciseIndex, currentSet]);
+
   const currentExerciseData = day?.exercises[currentExerciseIndex];
 
   const { timeLeft, start: startTimer, pause: pauseTimer, resume: resumeTimer, isActive: isTimerActive } = useRestTimer(
@@ -210,13 +232,63 @@ export default function ActiveSession() {
                 ))}
               </div>
               <h2 className="text-3xl font-black text-white mb-2">{exerciseDetails?.name || 'Unknown Exercise'}</h2>
-              <div className="flex gap-6 text-slate-400 font-bold mb-6">
-                <div className="bg-slate-800 px-4 py-2 rounded-lg">
-                  <span className="text-brand">Set</span> {currentSet} / {currentExerciseData.sets}
+              <div className="flex flex-wrap gap-4 text-slate-400 font-bold mb-6">
+                <div className="bg-slate-800 px-4 py-2 rounded-lg flex items-center justify-center">
+                  <span><span className="text-brand">Set</span> {currentSet} / {currentExerciseData.sets}</span>
                 </div>
-                <div className="bg-slate-800 px-4 py-2 rounded-lg">
-                  <span className="text-brand">Target</span> {currentExerciseData.reps} Reps
+                <div className="bg-slate-800 px-4 py-2 rounded-lg flex items-center justify-center">
+                  <span><span className="text-brand">Target</span> {currentExerciseData.reps} Reps</span>
                 </div>
+              </div>
+
+              {/* Optional Set Timer */}
+              <div className="bg-slate-800/80 rounded-2xl p-4 border border-brand/20 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Timer className="w-5 h-5 text-brand" />
+                    <span className="text-white font-bold text-sm">Optional Set Timer</span>
+                  </div>
+                  {activeTimerLeft !== null && (
+                    <span className={`font-black tabular-nums text-lg ${activeTimerLeft === 0 ? 'text-red-500 animate-pulse' : 'text-brand'}`}>
+                      {Math.floor(activeTimerLeft/60)}:{(activeTimerLeft%60).toString().padStart(2, '0')}
+                    </span>
+                  )}
+                </div>
+                
+                {activeTimerLeft === null ? (
+                  <div className="flex flex-wrap gap-2">
+                    {[30, 45, 60, 90, 120].map(secs => (
+                      <button 
+                        key={secs}
+                        onClick={() => {
+                          setActiveTimerLeft(secs);
+                          setIsActiveTimerRunning(true);
+                        }}
+                        className="flex-1 min-w-[60px] py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition-colors border border-white/5 shadow-sm"
+                      >
+                        {secs >= 60 ? (secs % 60 === 0 ? `${secs/60}m` : `${Math.floor(secs/60)}m ${secs%60}s`) : `${secs}s`}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setIsActiveTimerRunning(!isActiveTimerRunning)}
+                      className={`flex-1 py-2 ${isActiveTimerRunning ? 'bg-slate-700 text-white' : 'bg-brand text-white'} font-bold text-sm rounded-lg transition-colors border border-white/5`}
+                    >
+                      {isActiveTimerRunning ? 'Pause' : 'Resume'}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveTimerLeft(null);
+                        setIsActiveTimerRunning(false);
+                      }}
+                      className="flex-1 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold text-sm rounded-lg transition-colors border border-red-500/20"
+                    >
+                      Reset Timer
+                    </button>
+                  </div>
+                )}
               </div>
               
               {/* Form Instructions */}
