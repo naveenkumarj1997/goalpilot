@@ -10,7 +10,7 @@ interface ReactionData {
   xOffset: number;
 }
 
-export default function FloatingReactions({ roomId }: { roomId?: string }) {
+export default function FloatingReactions(_props: { roomId?: string }) {
   const { socket } = useSocket();
   const [reactions, setReactions] = useState<ReactionData[]>([]);
 
