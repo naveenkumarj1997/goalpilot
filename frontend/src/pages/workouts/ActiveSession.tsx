@@ -23,7 +23,7 @@ export default function ActiveSession() {
   const [isActiveTimerRunning, setIsActiveTimerRunning] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isActiveTimerRunning && activeTimerLeft !== null && activeTimerLeft > 0) {
       interval = setInterval(() => {
         setActiveTimerLeft((prev) => (prev ? prev - 1 : 0));
