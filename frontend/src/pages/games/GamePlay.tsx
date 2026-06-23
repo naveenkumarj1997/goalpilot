@@ -6,6 +6,7 @@ import Battleship from './Battleship';
 import SnakeAndLadders from './SnakeAndLadders';
 import KartRacer from './KartRacer';
 import Ludo from './Ludo/Ludo';
+import BattleArena from './BattleArena/BattleArena';
 
 export default function GamePlay() {
   const location = useLocation();
@@ -41,6 +42,10 @@ export default function GamePlay() {
 
   if (state.gameType === 'Ludo') {
     return <Ludo />;
+  }
+
+  if (state.gameType === 'BattleArena') {
+    return <BattleArena />;
   }
 
   return <Navigate to="/games" replace />;

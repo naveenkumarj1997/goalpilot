@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import GameStat from '../models/GameStat';
 import KartStats from '../models/KartStats';
-import { ludoManager } from './ludoManager';
+import { ludoManager, setupLudoSocket } from './ludoManager';
+import { setupBattleArenaSocket } from './battleArenaManager';
 import Match from '../models/Match';
 import Message from '../models/Message';
 import { Server as HttpServer } from 'http';
@@ -49,6 +50,10 @@ export const setupSocket = (httpServer: HttpServer) => {
   io.on('connection', (socket: Socket) => {
     const user = (socket as any).user;
     
+    // Register Game Managers
+    setupLudoSocket(io, socket);
+    setupBattleArenaSocket(io, socket);
+
     // Mark as online
     onlineUsers.set(user.id, {
       socketId: socket.id,
