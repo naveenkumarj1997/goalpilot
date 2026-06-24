@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getPlan, updateTask, submitCheckIn, generatePlan, addCustomTask, removeTask } from '../../api/missionControl';
 import TimelineSchedule from './TimelineSchedule';
 import { motion } from 'framer-motion';
-import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle, Bell } from 'lucide-react';
+import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle } from 'lucide-react';
 import { subscribeToPushNotifications } from '../../services/pushNotificationService';
 
 export default function MissionControlDashboard() {
