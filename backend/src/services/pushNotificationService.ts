@@ -29,11 +29,6 @@ export const checkAndSendUpcomingTaskNotifications = async () => {
     
     // Target time is exactly 5 minutes from now
     const targetTime = new Date(today.getTime() + 5 * 60000);
-    const targetHours = targetTime.getHours();
-    const targetMinutes = targetTime.getMinutes();
-    const formattedTargetTime = `${targetHours.toString().padStart(2, '0')}:${targetMinutes.toString().padStart(2, '0')}`;
-
-    console.log(`[PUSH CRON] Running at ${today.toLocaleTimeString()} | Target: ${formattedTargetTime} | Date: ${dateStr}`);
 
     // Find all daily plans for today
     const plans = await DailyPlan.find({ date: dateStr }).populate('user');
@@ -41,6 +36,17 @@ export const checkAndSendUpcomingTaskNotifications = async () => {
     for (const plan of plans) {
       const user = plan.user as any;
       if (!user || !user.pushSubscription) continue;
+
+      const userTz = user.timezone || 'Asia/Kolkata';
+      
+      // Calculate target time string in user's timezone (HH:mm)
+      const formatter = new Intl.DateTimeFormat('en-GB', { 
+        timeZone: userTz, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+      });
+      const formattedTargetTime = formatter.format(targetTime);
 
       // Find tasks that start EXACTLY at formattedTargetTime
       const upcomingTasks = plan.tasks.filter((t: any) => t.startTime === formattedTargetTime && !t.completed);

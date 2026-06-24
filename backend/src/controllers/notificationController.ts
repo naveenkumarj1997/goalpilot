@@ -9,15 +9,20 @@ export const subscribe = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { subscription } = req.body;
+    const { subscription, timezone } = req.body;
     
     if (!subscription || !subscription.endpoint) {
       res.status(400).json({ message: 'Invalid subscription object' });
       return;
     }
 
+    const updateData: any = { pushSubscription: subscription };
+    if (timezone) {
+      updateData.timezone = timezone;
+    }
+
     // Save subscription to user
-    await User.findByIdAndUpdate(user._id, { pushSubscription: subscription });
+    await User.findByIdAndUpdate(user._id, updateData);
 
     res.status(200).json({ message: 'Subscription saved successfully' });
   } catch (error: any) {

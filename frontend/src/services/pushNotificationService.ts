@@ -48,9 +48,11 @@ export const subscribeToPushNotifications = async (token: string) => {
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
     });
 
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     // Send subscription to backend
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    await axios.post(`${API_URL}/notifications/subscribe`, { subscription }, config);
+    await axios.post(`${API_URL}/notifications/subscribe`, { subscription, timezone }, config);
     console.log('Push subscription successfully sent to backend.');
   } catch (error) {
     console.error('Error subscribing to push notifications:', error);

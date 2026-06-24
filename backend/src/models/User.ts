@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
   pushSubscription: {
     type: mongoose.Schema.Types.Mixed,
     default: null
+  },
+  timezone: {
+    type: String,
+    default: 'Asia/Kolkata'
   }
 }, {
   timestamps: true,
