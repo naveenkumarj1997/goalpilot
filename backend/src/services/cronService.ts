@@ -1,11 +1,17 @@
 import cron from 'node-cron';
 import { runScrapers } from './scraperService';
 import Message from '../models/Message';
+import { checkAndSendUpcomingTaskNotifications } from './pushNotificationService';
 
 let cronTask: any = null;
 
 export const initCronJobs = () => {
-  console.log('Initializing Job Discovery Cron...');
+  console.log('Initializing Cron Jobs...');
+
+  // Run every minute for push notifications
+  cron.schedule('* * * * *', async () => {
+    await checkAndSendUpcomingTaskNotifications();
+  });
 
   // Run every 30 minutes
   cronTask = cron.schedule('*/30 * * * *', async () => {

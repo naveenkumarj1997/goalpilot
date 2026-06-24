@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema({
     roomsHosted: { type: Number, default: 0 },
     roomsJoined: { type: Number, default: 0 },
     totalWatchTimeMinutes: { type: Number, default: 0 }
+  },
+  pushSubscription: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   }
 }, {
   timestamps: true,

@@ -17,7 +17,7 @@ export const generatePlan = async (token: string, mode: 'ai' | 'manual', date: s
 export const updateTask = async (
   token: string, 
   taskId: string, 
-  updates: { startTime?: string | null; endTime?: string; completed?: boolean; priority?: string },
+  updates: { startTime?: string | null; endTime?: string; completed?: boolean; priority?: string; color?: string },
   date: string
 ) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -38,10 +38,12 @@ export const addCustomTask = async (
   token: string,
   title: string,
   startTime: string,
+  endTime: string | undefined,
+  color: string,
   date: string
 ) => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
-  const response = await axios.post(`${API_URL}/mission-control/task`, { title, startTime, priority: 'Medium', date }, config);
+  const response = await axios.post(`${API_URL}/mission-control/task`, { title, startTime, endTime, priority: 'Medium', color, date }, config);
   return response.data;
 };
 

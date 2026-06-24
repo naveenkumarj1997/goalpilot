@@ -3,7 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getPlan, updateTask, submitCheckIn, generatePlan, addCustomTask, removeTask } from '../../api/missionControl';
 import TimelineSchedule from './TimelineSchedule';
 import { motion } from 'framer-motion';
-import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle } from 'lucide-react';
+import { Bot, Sun, Moon, Flame, Trophy, ListTodo, AlertCircle, Bell } from 'lucide-react';
+import { subscribeToPushNotifications } from '../../services/pushNotificationService';
 
 export default function MissionControlDashboard() {
   const { user } = useAuth();
@@ -51,19 +52,30 @@ export default function MissionControlDashboard() {
 
   useEffect(() => {
     fetchPlan();
+    if (user?.token) {
+      // Small delay to not block initial render
+      setTimeout(() => {
+        subscribeToPushNotifications(user.token);
+      }, 2000);
+    }
   }, [user, selectedDate]);
 
-  const handleTaskDrop = async (taskId: string, newStartTime: string | null) => {
+  const handleTaskDrop = async (taskId: string, newStartTime: string | null, newEndTime?: string, color?: string) => {
     if (!user?.token || !plan) return;
     
     // Optimistic UI Update
     const updatedTasks = plan.tasks.map((t: any) => 
-      t.id === taskId ? { ...t, startTime: newStartTime } : t
+      t.id === taskId ? { ...t, ...(newStartTime !== undefined && { startTime: newStartTime }), ...(newEndTime !== undefined && { endTime: newEndTime }), ...(color && { color }) } : t
     );
     setPlan({ ...plan, tasks: updatedTasks });
 
     try {
-      const updatedPlan = await updateTask(user.token, taskId, { startTime: newStartTime }, selectedDate);
+      const updates: any = {};
+      if (newStartTime !== undefined) updates.startTime = newStartTime;
+      if (newEndTime !== undefined) updates.endTime = newEndTime;
+      if (color) updates.color = color;
+
+      const updatedPlan = await updateTask(user.token, taskId, updates, selectedDate);
       setPlan(updatedPlan);
     } catch (err) {
       console.error(err);
@@ -71,7 +83,7 @@ export default function MissionControlDashboard() {
     }
   };
 
-  const handleCreateCustomTask = async (title: string, newStartTime: string) => {
+  const handleCreateCustomTask = async (title: string, newStartTime: string, newEndTime: string | undefined, color: string) => {
     if (!user?.token || !plan) return;
     
     // Optimistic UI Update
@@ -80,14 +92,16 @@ export default function MissionControlDashboard() {
       title,
       sourceModule: 'Custom',
       startTime: newStartTime,
+      endTime: newEndTime,
       completed: false,
-      priority: 'Medium'
+      priority: 'Medium',
+      color
     };
     setPlan({ ...plan, tasks: [...plan.tasks, newTask] });
 
     // API Call
     try {
-      const data = await addCustomTask(user.token, title, newStartTime, selectedDate);
+      const data = await addCustomTask(user.token, title, newStartTime, newEndTime, color, selectedDate);
       setPlan(data);
     } catch (err) {
       console.error(err);
@@ -237,7 +251,7 @@ export default function MissionControlDashboard() {
     <div className="w-full flex flex-col lg:flex-row gap-6 lg:h-[calc(100vh-120px)] pb-20 lg:pb-0">
       
       {/* LEFT COLUMN: INBOX */}
-      <div className="w-full lg:w-1/4 flex flex-col gap-4 overflow-y-auto custom-scrollbar bg-slate-900/40 backdrop-blur-md rounded-2xl p-4 border border-slate-700/50 shadow-xl shrink-0">
+      <div className={`w-full lg:w-1/4 flex flex-col gap-4 overflow-y-auto custom-scrollbar bg-slate-900/40 backdrop-blur-md rounded-2xl p-4 border border-slate-700/50 shadow-xl shrink-0 ${unscheduledTasks.length === 0 ? 'hidden lg:flex' : 'max-h-[35vh] lg:max-h-none'}`}>
         {plan.isFallback && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 flex items-start gap-2 mb-2">
             <AlertCircle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
@@ -254,7 +268,8 @@ export default function MissionControlDashboard() {
           <ListTodo className="w-5 h-5 text-emerald-400" />
           <h2 className="text-lg font-black text-white tracking-wider">TASK INBOX</h2>
         </div>
-        <p className="text-xs text-slate-400 font-medium mb-2 pb-2 border-b border-slate-700">Tap the empty time slots in your timeline to schedule these tasks.</p>
+        <p className="text-xs text-slate-400 font-medium mb-2 pb-2 border-b border-slate-700 hidden lg:block">Drag tasks to the timeline or tap a timeline slot on mobile.</p>
+        <p className="text-xs text-slate-400 font-medium mb-2 pb-2 border-b border-slate-700 lg:hidden">Tap an empty timeline slot below to schedule these tasks.</p>
         
         {unscheduledTasks.length === 0 ? (
           <div className="text-center p-6 text-slate-500 text-sm font-medium border border-dashed border-slate-700 rounded-xl">

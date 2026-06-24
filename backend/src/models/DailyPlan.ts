@@ -7,7 +7,8 @@ const plannedTaskSchema = new mongoose.Schema({
   startTime: { type: String }, // e.g., '09:00'
   endTime: { type: String }, // e.g., '10:00'
   completed: { type: Boolean, default: false },
-  priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' }
+  priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
+  color: { type: String, default: 'blue' }
 });
 
 const dailyPlanSchema = new mongoose.Schema({

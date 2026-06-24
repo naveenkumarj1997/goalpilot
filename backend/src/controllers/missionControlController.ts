@@ -96,7 +96,7 @@ export const generatePlan = async (req: Request, res: Response): Promise<void> =
 export const updateTask = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    const { taskId, startTime, endTime, completed, priority, date } = req.body;
+    const { taskId, startTime, endTime, completed, priority, color, date } = req.body;
     const dateStr = date || new Date().toISOString().split('T')[0];
 
     const plan = await DailyPlan.findOne({ user: user?._id, date: dateStr });
@@ -111,6 +111,7 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
       if (endTime !== undefined) plan.tasks[taskIndex].endTime = endTime;
       if (completed !== undefined) plan.tasks[taskIndex].completed = completed;
       if (priority !== undefined) plan.tasks[taskIndex].priority = priority;
+      if (color !== undefined) (plan.tasks[taskIndex] as any).color = color;
 
       // Update success score
       const totalTasks = plan.tasks.length;
@@ -130,7 +131,7 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
 export const addTask = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    const { title, startTime, priority, date } = req.body;
+    const { title, startTime, endTime, priority, color, date } = req.body;
     const dateStr = date || new Date().toISOString().split('T')[0];
 
     const plan = await DailyPlan.findOne({ user: user?._id, date: dateStr });
@@ -144,8 +145,10 @@ export const addTask = async (req: Request, res: Response): Promise<void> => {
       title,
       sourceModule: 'Custom',
       startTime,
+      endTime,
       completed: false,
       priority: priority || 'Medium',
+      color: color || 'blue',
     };
 
     plan.tasks.push(newTask);
