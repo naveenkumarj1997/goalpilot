@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api/market';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/market`;
 
 export const getMarketOverview = async (token: string) => {
   const response = await fetch(`${API_URL}/overview`, {
