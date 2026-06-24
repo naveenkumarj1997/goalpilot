@@ -27,6 +27,7 @@ import supportRoutes from './routes/supportRoutes';
 import missionControlRoutes from './routes/missionControlRoutes';
 import watchRoutes from './routes/watchRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import dateTrackerRoutes from './routes/dateTrackerRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -72,6 +73,7 @@ app.use('/api/watch', checkModuleAccess('Watch Together'), watchRoutes);
 // Mission Control Route (Core Homepage, no specific module block unless desired)
 app.use('/api/mission-control', missionControlRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/dates', dateTrackerRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

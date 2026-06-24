@@ -6,5 +6,6 @@ export const DEFAULT_UNLOCKED_MODULES = [
   'Habits',
   'Stoicism',
   'Settings',
-  'Mission Control'
+  'Mission Control',
+  'Tools'
 ];

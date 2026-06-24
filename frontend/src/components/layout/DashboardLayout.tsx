@@ -32,7 +32,8 @@ import {
   LockKeyhole,
   Rocket,
   MonitorPlay,
-  ChevronDown
+  ChevronDown,
+  Calculator
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -172,6 +173,7 @@ export default function DashboardLayout() {
         { name: 'Watch History', href: '/watch/history' }
       ]
     },
+    { name: 'Tools', href: '/tools/date-tracker', icon: Calculator },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

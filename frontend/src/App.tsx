@@ -88,6 +88,8 @@ import MyRooms from './pages/watch/MyRooms';
 import WatchHistory from './pages/watch/WatchHistory';
 import WatchRoom from './pages/watch/WatchRoom';
 
+import DateTracker from './pages/tools/DateTracker';
+
 import ModuleGuard from './components/layout/ModuleGuard';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
@@ -138,6 +140,11 @@ function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="upgrade" element={<PremiumUpgrade />} />
+              
+              <Route element={<ModuleGuard moduleName="Tools" />}>
+                <Route path="/tools/date-tracker" element={<DateTracker />} />
+              </Route>
+
               <Route element={<ModuleGuard moduleName="Chat" />}>
                 <Route path="/chat" element={<ChatDashboard />} />
               </Route>
