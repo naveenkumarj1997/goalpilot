@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Trash2, Plus, Clock, Info, CalendarDays, Search, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, Clock, CalendarDays, Search, ChevronUp, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
