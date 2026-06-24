@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     'Dashboard', 'Goals', 'Update Hours', 'Tasks', 'Habits', 
     'Gaming Lounge', 'Chat', 'Resume Builder', 'Home Coach', 
     'Discipline', 'Yoga Coach', 'Meditation', 'Stoicism', 
-    'Personal Dev', 'Manifestation', 'Job Discovery', 'Watch Together', 'Tools'
+    'Personal Dev', 'Manifestation', 'Job Discovery', 'Watch Together', 'Tools', 'Intelligence Hub'
   ];
 
   // Users List State

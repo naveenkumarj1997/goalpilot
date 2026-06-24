@@ -7,5 +7,7 @@ export const DEFAULT_UNLOCKED_MODULES = [
   'Stoicism',
   'Settings',
   'Mission Control',
-  'Tools'
+  'Tools',
+  'Intelligence Hub',
+  'Market Intelligence'
 ];

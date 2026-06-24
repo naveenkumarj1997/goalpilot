@@ -31,8 +31,10 @@
     "node-telegram-bot-api": "^0.67.0",
     "nodemailer": "^8.0.10",
     "playwright": "^1.60.0",
+    "rss-parser": "^3.13.0",
     "socket.io": "^4.8.3",
     "web-push": "^3.6.7",
+    "yahoo-finance2": "^3.15.3",
     "yt-search": "^2.13.1"
   },
   "devDependencies": {

@@ -33,7 +33,8 @@ import {
   Rocket,
   MonitorPlay,
   ChevronDown,
-  Calculator
+  Calculator,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -171,6 +172,20 @@ export default function DashboardLayout() {
         { name: 'Create Room', href: '/watch/create' },
         { name: 'My Rooms', href: '/watch/my-rooms' },
         { name: 'Watch History', href: '/watch/history' }
+      ]
+    },
+    { name: 'Intelligence Hub', href: '/intelligence', icon: Globe },
+    { 
+      name: 'Market Intelligence', 
+      href: '/market', 
+      icon: Activity,
+      subMenus: [
+        { name: 'Dashboard', href: '/market' },
+        { name: 'Market Overview', href: '/market/overview' },
+        { name: 'Breaking News', href: '/market/news' },
+        { name: 'Portfolio Tracker', href: '/market/portfolio' },
+        { name: 'AI Market Analyst', href: '/market/analyst' },
+        { name: 'Learning Center', href: '/market/learning' }
       ]
     },
     { name: 'Tools', href: '/tools/date-tracker', icon: Calculator },

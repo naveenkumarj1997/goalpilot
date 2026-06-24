@@ -28,6 +28,8 @@ import missionControlRoutes from './routes/missionControlRoutes';
 import watchRoutes from './routes/watchRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import dateTrackerRoutes from './routes/dateTrackerRoutes';
+import intelligenceRoutes from './routes/intelligenceRoutes';
+import marketRoutes from './routes/marketRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -74,6 +76,8 @@ app.use('/api/watch', checkModuleAccess('Watch Together'), watchRoutes);
 app.use('/api/mission-control', missionControlRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dates', dateTrackerRoutes);
+app.use('/api/intelligence', checkModuleAccess('Intelligence Hub'), intelligenceRoutes);
+app.use('/api/market', checkModuleAccess('Market Intelligence'), marketRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

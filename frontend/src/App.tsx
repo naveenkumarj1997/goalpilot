@@ -8,6 +8,7 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Dashboard from './pages/dashboard/Dashboard';
 import MissionControlDashboard from './pages/mission-control/MissionControlDashboard';
+import IntelligenceDashboard from './pages/intelligence/IntelligenceDashboard';
 import GoalList from './pages/goals/GoalList';
 import CreateGoal from './pages/goals/CreateGoal';
 import EditGoal from './pages/goals/EditGoal';
@@ -86,6 +87,12 @@ import WatchDashboard from './pages/watch/WatchDashboard';
 import CreateRoom from './pages/watch/CreateRoom';
 import MyRooms from './pages/watch/MyRooms';
 import WatchHistory from './pages/watch/WatchHistory';
+import MarketDashboard from './pages/market/MarketDashboard';
+import MarketOverview from './pages/market/MarketOverview';
+import MarketNewsFeed from './pages/market/MarketNewsFeed';
+import VirtualPortfolioUI from './pages/market/VirtualPortfolioUI';
+import AIMarketAnalyst from './pages/market/AIMarketAnalyst';
+import LearningCenter from './pages/market/LearningCenter';
 import WatchRoom from './pages/watch/WatchRoom';
 
 import DateTracker from './pages/tools/DateTracker';
@@ -145,6 +152,10 @@ function App() {
                 <Route path="/tools/date-tracker" element={<DateTracker />} />
               </Route>
 
+              <Route element={<ModuleGuard moduleName="Intelligence Hub" />}>
+                <Route path="/intelligence" element={<IntelligenceDashboard />} />
+              </Route>
+
               <Route element={<ModuleGuard moduleName="Chat" />}>
                 <Route path="/chat" element={<ChatDashboard />} />
               </Route>
@@ -193,7 +204,15 @@ function App() {
                 <Route path="/meditation/session/:id" element={<MeditationSession />} />
               </Route>
 
-              {/* Stoicism Routes */}
+              {/* Market Intelligence Hub */}
+              <Route element={<ModuleGuard moduleName="Market Intelligence" />}>
+                <Route path="/market" element={<MarketDashboard />} />
+                <Route path="/market/overview" element={<MarketOverview />} />
+                <Route path="/market/news" element={<MarketNewsFeed />} />
+                <Route path="/market/portfolio" element={<VirtualPortfolioUI />} />
+                <Route path="/market/analyst" element={<AIMarketAnalyst />} />
+                <Route path="/market/learning" element={<LearningCenter />} />
+              </Route>
               <Route element={<ModuleGuard moduleName="Stoicism" />}>
                 <Route path="/stoicism" element={<StoicDashboard />} />
                 <Route path="/stoicism/learn" element={<LearnStoicism />} />
