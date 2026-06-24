@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getVirtualPortfolio, addPortfolioItem } from '../../api/market';
-import { Briefcase, Plus, TrendingUp, TrendingDown, ShieldAlert, AlertCircle } from 'lucide-react';
+import { Briefcase, Plus, ShieldAlert } from 'lucide-react';
 
 const VirtualPortfolioUI: React.FC = () => {
   const { user } = useAuth();

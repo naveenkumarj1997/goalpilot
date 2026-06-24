@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getMarketOverview } from '../../api/market';
-import { TrendingUp, TrendingDown, Activity, AlertTriangle, ShieldAlert, LayoutDashboard } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, ShieldAlert, LayoutDashboard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const MarketDashboard: React.FC = () => {
