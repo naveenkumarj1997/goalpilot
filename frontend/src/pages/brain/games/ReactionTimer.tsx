@@ -9,7 +9,7 @@ const ReactionTimer = ({ onBack }: { onBack: () => void }) => {
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [history, setHistory] = useState<number[]>([]);
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(0);
 
   const handleClick = () => {

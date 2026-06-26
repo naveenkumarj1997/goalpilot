@@ -28,7 +28,7 @@ const ChimpTest = ({ onBack }: { onBack: () => void }) => {
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: number | ReturnType<typeof setTimeout>;
     if (gameState === 'MEMORIZE' && timeLeft > 0) {
       timer = setTimeout(() => setTimeLeft(t => t - 1), 1000);
     } else if (gameState === 'MEMORIZE' && timeLeft === 0) {

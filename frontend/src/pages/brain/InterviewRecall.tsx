@@ -90,7 +90,7 @@ const InterviewRecall = () => {
     const matched: string[] = [];
     const missed: string[] = [];
 
-    currentQ.keywords.forEach(kw => {
+    currentQ.keywords.forEach((kw: string) => {
       if (answerLower.includes(kw)) {
         matched.push(kw);
       } else {

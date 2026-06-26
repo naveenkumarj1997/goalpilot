@@ -101,7 +101,7 @@ const ShadowBoxing = () => {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number | ReturnType<typeof setInterval>;
 
     if (isActive) {
       interval = setInterval(() => {

@@ -44,7 +44,7 @@ const StroopTest = ({ onBack }: { onBack: () => void }) => {
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: number | ReturnType<typeof setTimeout>;
     if (gameState === 'PLAYING') {
       // Decrease time by 2% every 40ms -> 100% takes ~2000ms
       timer = setInterval(() => {

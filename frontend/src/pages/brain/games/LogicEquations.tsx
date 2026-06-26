@@ -59,7 +59,7 @@ const LogicEquations = ({ onBack }: { onBack: () => void }) => {
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: number | ReturnType<typeof setTimeout>;
     if (gameState === 'PLAYING') {
       // 10 seconds total. 100% / 100 steps = 1 step per 100ms
       timer = setInterval(() => {

@@ -9,7 +9,7 @@ const Focus17 = ({ onBack }: { onBack: () => void }) => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
 
   const startFocus = () => {
     if (!goal.trim()) return;

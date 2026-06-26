@@ -78,7 +78,7 @@ const BrainGames = () => {
   const handleBack = () => setActiveGame(null);
 
   if (activeGame) {
-    let ActiveComponent = null;
+    let ActiveComponent: any = null;
     let categoryColor = 'purple';
     
     GAMES_CATALOG.forEach(cat => {
