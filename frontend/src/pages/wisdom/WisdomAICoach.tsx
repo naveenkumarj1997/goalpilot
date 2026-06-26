@@ -40,7 +40,7 @@ const WisdomAICoach: React.FC<WisdomAICoachProps> = ({ onClose, bookTitle, curre
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/intelligence/chat',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/intelligence/chat`,
         {
           message: userMessage,
           context: `You are an elite Wisdom Book Coach on the GoalPilot platform. 
