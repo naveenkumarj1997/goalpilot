@@ -20,7 +20,8 @@ import {
   getDailyActiveUsers,
   getPremiumPurchases
 } from '../../services/adminService';
-import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, ArrowLeft, Clock } from 'lucide-react';
+import { Users, Shield, Settings, Activity, List, CheckCircle, XCircle, CreditCard, MessageCircle, Send, Crown, ArrowLeft, Clock, BookOpen } from 'lucide-react';
+import AdminWisdomLibrary from './AdminWisdomLibrary';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -291,6 +292,7 @@ export default function AdminDashboard() {
           { id: 'upgrades', label: 'Premium Requests', icon: Shield },
           { id: 'pricing', label: 'Premium & Pricing', icon: CreditCard },
           { id: 'features', label: 'Feature Flags', icon: Settings },
+          { id: 'wisdom', label: 'Wisdom Library', icon: BookOpen },
           { id: 'support', label: 'Support Chat', icon: MessageCircle },
           { id: 'audit', label: 'Audit Logs', icon: List }
         ].map(tab => (
@@ -645,6 +647,11 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* WISDOM LIBRARY ADMIN TAB */}
+          {activeTab === 'wisdom' && (
+            <AdminWisdomLibrary />
           )}
 
           {/* PRICING TAB */}

@@ -1,0 +1,50 @@
+import mongoose, { Document, Schema } from 'mongoose';
+
+export interface IBrainProfile extends Document {
+  user: mongoose.Types.ObjectId;
+  age: number;
+  profession: 'Student' | 'Professional';
+  learningGoals: string[];
+  examPreparation: boolean;
+  interviewPreparation: boolean;
+  dailyStudyHours: number;
+  preferredSubjects: string[];
+  stats: {
+    xp: number;
+    currentStreak: number;
+    longestStreak: number;
+    flashcardsReviewed: number;
+    recallAccuracy: number;
+    studyTimeMinutes: number;
+  };
+  lastActive: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const brainProfileSchema = new Schema<IBrainProfile>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    age: { type: Number, required: true },
+    profession: { type: String, enum: ['Student', 'Professional'], required: true },
+    learningGoals: [{ type: String }],
+    examPreparation: { type: Boolean, default: false },
+    interviewPreparation: { type: Boolean, default: false },
+    dailyStudyHours: { type: Number, required: true },
+    preferredSubjects: [{ type: String }],
+    stats: {
+      xp: { type: Number, default: 0 },
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+      flashcardsReviewed: { type: Number, default: 0 },
+      recallAccuracy: { type: Number, default: 0 }, // percentage 0-100
+      studyTimeMinutes: { type: Number, default: 0 },
+    },
+    lastActive: { type: Date, default: Date.now },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export default mongoose.model<IBrainProfile>('BrainProfile', brainProfileSchema);

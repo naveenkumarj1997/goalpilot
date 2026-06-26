@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { WisdomProvider } from './context/WisdomContext';
 import AuthLayout from './components/layout/AuthLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Login from './pages/auth/Login';
@@ -97,6 +98,25 @@ import WatchRoom from './pages/watch/WatchRoom';
 
 import DateTracker from './pages/tools/DateTracker';
 
+import CombatOnboarding from './pages/combat/CombatOnboarding';
+import CombatDashboard from './pages/combat/CombatDashboard';
+import AcademyView from './pages/combat/AcademyView';
+import ShadowBoxing from './pages/combat/ShadowBoxing';
+import PunchLibrary from './pages/combat/PunchLibrary';
+import ProgressTracker from './pages/combat/ProgressTracker';
+
+import BrainOnboarding from './pages/brain/BrainOnboarding';
+import BrainDashboard from './pages/brain/BrainDashboard';
+import Flashcards from './pages/brain/Flashcards';
+import ActiveRecall from './pages/brain/ActiveRecall';
+import AIMemoryCoach from './pages/brain/AIMemoryCoach';
+import InterviewRecall from './pages/brain/InterviewRecall';
+import StudyPlanner from './pages/brain/StudyPlanner';
+import BrainGames from './pages/brain/BrainGames';
+
+import WisdomDashboard from './pages/wisdom/WisdomDashboard';
+import WisdomReader from './pages/wisdom/WisdomReader';
+
 import ModuleGuard from './components/layout/ModuleGuard';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
@@ -104,9 +124,10 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <SocketProvider>
-          <Routes>
+      <WisdomProvider>
+        <BrowserRouter>
+          <SocketProvider>
+            <Routes>
           <Route path="/" element={<Navigate to="/mission-control" replace />} />
           
           {/* Auth Routes */}
@@ -213,6 +234,42 @@ function App() {
                 <Route path="/market/analyst" element={<AIMarketAnalyst />} />
                 <Route path="/market/learning" element={<LearningCenter />} />
               </Route>
+              
+              {/* Combat Academy */}
+              <Route element={<ModuleGuard moduleName="Combat Academy" />}>
+                <Route path="/combat/onboarding" element={<CombatOnboarding />} />
+                <Route path="/combat/dashboard" element={<CombatDashboard />} />
+                <Route path="/combat/boxing" element={<AcademyView discipline="Boxing" description="Learn the sweet science. Footwork, head movement, and devastating combinations." />} />
+                <Route path="/combat/kickboxing" element={<AcademyView discipline="Kickboxing" description="Master distance, angles, and explosive kicks combined with western boxing." />} />
+                <Route path="/combat/muay-thai" element={<AcademyView discipline="Muay Thai" description="Learn the art of eight limbs. Devastating strikes using fists, elbows, knees, and shins." />} />
+                <Route path="/combat/mma" element={<AcademyView discipline="MMA" description="Blend striking, wrestling, and grappling for complete self-defense." />} />
+                <Route path="/combat/self-defense" element={<AcademyView discipline="Self Defense" description="Practical, no-nonsense techniques for real-world scenarios." />} />
+                <Route path="/combat/shadow-boxing" element={<ShadowBoxing />} />
+                <Route path="/combat/punches" element={<PunchLibrary />} />
+                <Route path="/combat/progress" element={<ProgressTracker />} />
+              </Route>
+
+              {/* Brain Academy */}
+              <Route element={<ModuleGuard moduleName="Brain Academy" />}>
+                <Route path="/brain" element={<Navigate to="/brain/dashboard" replace />} />
+                <Route path="/brain/onboarding" element={<BrainOnboarding />} />
+                <Route path="/brain/dashboard" element={<BrainDashboard />} />
+                <Route path="/brain/flashcards" element={<Flashcards />} />
+                <Route path="/brain/active-recall" element={<ActiveRecall />} />
+                <Route path="/brain/coach" element={<AIMemoryCoach />} />
+                <Route path="/brain/interview" element={<InterviewRecall />} />
+                <Route path="/brain/planner" element={<StudyPlanner />} />
+                <Route path="/brain/games" element={<BrainGames />} />
+                {/* Remaining routes pointing to Dashboard as placeholders for future expansions */}
+                <Route path="/brain/memory" element={<BrainDashboard />} />
+                <Route path="/brain/focus" element={<BrainDashboard />} />
+                <Route path="/brain/spaced-repetition" element={<Flashcards />} />
+                <Route path="/brain/memory-palace" element={<BrainDashboard />} />
+                <Route path="/brain/progress" element={<BrainDashboard />} />
+                <Route path="/brain/analytics" element={<BrainDashboard />} />
+                <Route path="/brain/achievements" element={<BrainDashboard />} />
+              </Route>
+
               <Route element={<ModuleGuard moduleName="Stoicism" />}>
                 <Route path="/stoicism" element={<StoicDashboard />} />
                 <Route path="/stoicism/learn" element={<LearnStoicism />} />
@@ -264,11 +321,18 @@ function App() {
                 <Route path="/watch/history" element={<WatchHistory />} />
                 <Route path="/watch/room/:id" element={<WatchRoom />} />
               </Route>
+
+              {/* Wisdom Library Routes */}
+              <Route element={<ModuleGuard moduleName="Wisdom Library" />}>
+                <Route path="/wisdom" element={<WisdomDashboard />} />
+                <Route path="/wisdom/book/:id" element={<WisdomReader />} />
+              </Route>
             </Route>
           </Route>
           </Routes>
         </SocketProvider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </WisdomProvider>
     </AuthProvider>
   );
 }

@@ -9,5 +9,8 @@ export const DEFAULT_UNLOCKED_MODULES = [
   'Mission Control',
   'Tools',
   'Intelligence Hub',
-  'Market Intelligence'
+  'Market Intelligence',
+  'Combat Academy',
+  'Brain Academy',
+  'Wisdom Library'
 ];

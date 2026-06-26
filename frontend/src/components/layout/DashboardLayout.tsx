@@ -34,7 +34,9 @@ import {
   MonitorPlay,
   ChevronDown,
   Calculator,
-  Globe
+  Globe,
+  Brain,
+  Library
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -176,6 +178,22 @@ export default function DashboardLayout() {
     },
     { name: 'Intelligence Hub', href: '/intelligence', icon: Globe },
     { 
+      name: 'Combat Academy', 
+      href: '/combat', 
+      icon: Shield,
+      subMenus: [
+        { name: 'Dashboard', href: '/combat/dashboard' },
+        { name: 'Choose Your Path', href: '/combat/onboarding' },
+        { name: 'Boxing Academy', href: '/combat/boxing' },
+        { name: 'Kickboxing Academy', href: '/combat/kickboxing' },
+        { name: 'MMA Fundamentals', href: '/combat/mma' },
+        { name: 'Self Defense', href: '/combat/self-defense' },
+        { name: 'Shadow Boxing', href: '/combat/shadow-boxing' },
+        { name: 'Punch Library', href: '/combat/punches' },
+        { name: 'Progress Tracker', href: '/combat/progress' },
+      ]
+    },
+    { 
       name: 'Market Intelligence', 
       href: '/market', 
       icon: Activity,
@@ -186,6 +204,40 @@ export default function DashboardLayout() {
         { name: 'Portfolio Tracker', href: '/market/portfolio' },
         { name: 'AI Market Analyst', href: '/market/analyst' },
         { name: 'Learning Center', href: '/market/learning' }
+      ]
+    },
+    { 
+      name: 'Brain Academy', 
+      href: '/brain', 
+      icon: Brain,
+      subMenus: [
+        { name: 'Dashboard', href: '/brain/dashboard' },
+        { name: 'Memory Training', href: '/brain/memory' },
+        { name: 'Focus Training', href: '/brain/focus' },
+        { name: 'Active Recall', href: '/brain/active-recall' },
+        { name: 'Spaced Repetition', href: '/brain/spaced-repetition' },
+        { name: 'Memory Palace', href: '/brain/memory-palace' },
+        { name: 'Study Planner', href: '/brain/planner' },
+        { name: 'Interview Recall', href: '/brain/interview' },
+        { name: 'Brain Games', href: '/brain/games' },
+        { name: 'Flashcards', href: '/brain/flashcards' },
+        { name: 'AI Memory Coach', href: '/brain/coach' },
+        { name: 'Progress Tracker', href: '/brain/progress' },
+        { name: 'Analytics', href: '/brain/analytics' },
+        { name: 'Achievements', href: '/brain/achievements' },
+      ]
+    },
+    { 
+      name: 'Wisdom Library', 
+      href: '/wisdom', 
+      icon: Library,
+      subMenus: [
+        { name: 'Dashboard', href: '/wisdom' },
+        { name: 'Bookshelf', href: '/wisdom' },
+        { name: 'Daily Wisdom', href: '/wisdom' },
+        { name: 'AI Book Coach', href: '/wisdom' },
+        { name: 'My Notes', href: '/wisdom' },
+        { name: 'Progress', href: '/wisdom' }
       ]
     },
     { name: 'Tools', href: '/tools/date-tracker', icon: Calculator },
@@ -200,10 +252,11 @@ export default function DashboardLayout() {
   }
 
   const getThemeVars = (path: string) => {
+    if (path.includes('/combat')) return { bg: '/images/combat/combat_bg.png', color: '#EF4444' }; // Red for Combat
     if (path.includes('/goals') || path.includes('/workouts')) return { bg: '/images/fire_bg.png', color: '#EF4444' }; // Red
     if (path.includes('/meditation') || path.includes('/yoga') || path.includes('/personal')) return { bg: '/images/air_bg.png', color: '#38BDF8' }; // Sky Blue
     if (path.includes('/habits') || path.includes('/tasks') || path.includes('/stoicism') || path.includes('/nofap')) return { bg: '/images/earth_bg.png', color: '#10B981' }; // Emerald Green
-    if (path.includes('/chat') || path.includes('/games') || path.includes('/manifestation')) return { bg: '/images/water_bg.png', color: '#3B82F6' }; // Deep Blue
+    if (path.includes('/chat') || path.includes('/games') || path.includes('/manifestation') || path.includes('/brain')) return { bg: '/images/water_bg.png', color: '#3B82F6' }; // Deep Blue
     if (path.includes('/mission-control')) return { bg: '/images/space_bg.png', color: '#F59E0B' }; // Amber
     return { bg: '/images/login_bg.png', color: '#8B5CF6' }; // Avatar Violet (Dashboard)
   };

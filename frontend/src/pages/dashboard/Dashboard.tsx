@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Target, CheckCircle, TrendingUp, CalendarDays, CheckSquare, Activity } from 'lucide-react';
+import { Target, CheckCircle, TrendingUp, CalendarDays, CheckSquare, Activity, Gift } from 'lucide-react';
 import StatCard from '../../components/dashboard/StatCard';
 import GoalMatrixCard from '../../components/dashboard/GoalMatrixCard';
 import goalService from '../../services/goalService';
 import taskService from '../../services/taskService';
 import habitService from '../../services/habitService';
+import dateService, { type SavedDate } from '../../services/dateService';
 import type { Goal } from '../../types/goal';
 import type { Task } from '../../types/task';
 import type { Habit } from '../../types/habit';
@@ -14,19 +15,22 @@ export default function Dashboard() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
+  const [dates, setDates] = useState<SavedDate[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [goalsData, tasksData, habitsData] = await Promise.all([
+      const [goalsData, tasksData, habitsData, datesData] = await Promise.all([
         goalService.getGoals(),
         taskService.getTasks(),
-        habitService.getHabits()
+        habitService.getHabits(),
+        dateService.getDates()
       ]);
       setGoals(goalsData);
       setTasks(tasksData);
       setHabits(habitsData);
+      setDates(datesData);
     } catch (error) {
       console.error('Failed to fetch dashboard data', error);
     } finally {
@@ -70,6 +74,12 @@ export default function Dashboard() {
   ];
 
   const todayStr = new Date().toISOString().split('T')[0];
+  const currentMonth = new Date().getMonth();
+  const birthdaysThisMonth = dates.filter(d => {
+    if (d.type !== 'Age' && !d.title.toLowerCase().includes('birthday')) return false;
+    const dateMonth = new Date(d.targetDate).getMonth();
+    return dateMonth === currentMonth;
+  }).sort((a, b) => new Date(a.targetDate).getDate() - new Date(b.targetDate).getDate());
 
   return (
     <div className="space-y-6 animate-slide-up-fade">
@@ -168,6 +178,35 @@ export default function Dashboard() {
                       >
                         <CheckCircle className="w-4 h-4" />
                       </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {/* Upcoming Birthdays */}
+          <div className="glass p-6 rounded-2xl shadow-sm border border-pink-500/30 hover:border-pink-500/70 neon-border-pink transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-text-primary flex items-center text-pink-100" style={{ textShadow: '0 0 5px rgba(236,72,153,0.8), 0 0 15px rgba(236,72,153,0.5)' }}>
+                <Gift className="mr-2 h-5 w-5 text-pink-400" /> Birthdays This Month
+              </h3>
+              <Link to="/tools/date-tracker" className="text-sm text-brand hover:underline">View All</Link>
+            </div>
+            {loading ? (
+              <p className="text-sm text-text-secondary">Loading...</p>
+            ) : birthdaysThisMonth.length === 0 ? (
+              <p className="text-sm text-text-secondary italic">No birthdays this month.</p>
+            ) : (
+              <ul className="space-y-3">
+                {birthdaysThisMonth.map(date => {
+                  const bdayDate = new Date(date.targetDate);
+                  return (
+                    <li key={date._id} className="flex items-center justify-between gap-3 p-2 bg-pink-500/10 rounded-lg border border-pink-500/20">
+                      <span className="text-sm text-text-primary font-medium">{date.title}</span>
+                      <span className="text-xs text-pink-300 font-bold bg-pink-500/20 px-2 py-1 rounded">
+                        {bdayDate.getDate()} {bdayDate.toLocaleString('default', { month: 'short' })}
+                      </span>
                     </li>
                   );
                 })}

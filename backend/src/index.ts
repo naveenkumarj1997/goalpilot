@@ -30,6 +30,9 @@ import notificationRoutes from './routes/notificationRoutes';
 import dateTrackerRoutes from './routes/dateTrackerRoutes';
 import intelligenceRoutes from './routes/intelligenceRoutes';
 import marketRoutes from './routes/marketRoutes';
+import combatRoutes from './routes/combatRoutes';
+import brainRoutes from './routes/brainRoutes';
+import wisdomRoutes from './routes/wisdomRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -78,6 +81,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/dates', dateTrackerRoutes);
 app.use('/api/intelligence', checkModuleAccess('Intelligence Hub'), intelligenceRoutes);
 app.use('/api/market', checkModuleAccess('Market Intelligence'), marketRoutes);
+app.use('/api/combat', checkModuleAccess('Combat Academy'), combatRoutes);
+app.use('/api/brain', checkModuleAccess('Brain Academy'), brainRoutes);
+app.use('/api/wisdom', checkModuleAccess('Wisdom Library'), wisdomRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');
