@@ -54,7 +54,7 @@ const AdminWisdomLibrary = () => {
     // Assuming we can fetch the full book data:
     if (user?.token) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/wisdom/books/${book._id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/wisdom/books/${book._id}`, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const fullBook = await res.json();

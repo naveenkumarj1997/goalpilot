@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import React, { useEffect, useState } from 'react';
 import { getJournalEntries, addJournalEntry } from '../../api/nofap';
 import { BookOpen, Plus, Send } from 'lucide-react';
@@ -50,7 +51,7 @@ export default function NoFapJournal() {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin h-8 w-8 border-b-2 border-brand rounded-full"></div></div>;
+  if (loading) return <AvatarLoader />;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">

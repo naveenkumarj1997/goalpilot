@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getWatchHistory } from '../../api/watchTogether';
@@ -39,7 +40,7 @@ export default function WatchHistory() {
       <div className="bg-slate-900/50 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-xl">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+            <AvatarLoader />
           </div>
         ) : !Array.isArray(history) || history.length === 0 ? (
           <div className="text-center py-12">

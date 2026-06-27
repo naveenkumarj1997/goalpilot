@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -37,7 +38,7 @@ export default function WatchRoom() {
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+        <AvatarLoader />
       </div>
     );
   }

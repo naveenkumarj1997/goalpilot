@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/auth/`;
 
 const register = async (userData: any) => {
   const response = await axios.post(API_URL + 'register', userData);
@@ -40,7 +40,7 @@ const updateSettings = async (settingsData: any) => {
   if (!userStr) return null;
   const user = JSON.parse(userStr);
   
-  const response = await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users/settings`, settingsData, {
+  const response = await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/users/settings`, settingsData, {
     headers: { Authorization: `Bearer ${user.token}` }
   });
   

@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -49,7 +50,7 @@ const WisdomReader = () => {
     alert(language === 'ta' ? 'செயல் திட்டம் மிஷன் கண்ட்ரோலில் சேர்க்கப்பட்டது!' : 'Action Step pushed to Mission Control!');
   };
 
-  if (loading) return <div className="flex justify-center items-center h-full min-h-[500px]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div></div>;
+  if (loading) return <AvatarLoader />;
   if (!book) return <div className="text-center text-white">Book not found.</div>;
 
   const totalPages = book.lessons.length;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Goal, GoalFormData } from '../types/goal';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/goals/`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/goals/`;
 
 // Helper to get auth header
 const getAuthHeader = () => {

@@ -39,7 +39,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const fetchUnreadCount = useCallback(async () => {
     if (!user?.token) return;
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/chat/unread`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/chat/unread`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setUnreadCount(data.total);
@@ -55,7 +55,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (user && user.token) {
-      const newSocket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}`, {
+      const newSocket = io(`${import.meta.env.VITE_API_URL || ''}`, {
         auth: { token: user.token },
       });
 

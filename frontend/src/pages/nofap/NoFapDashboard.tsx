@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -49,7 +50,7 @@ export default function NoFapDashboard() {
   }, []);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div></div>;
+    return <AvatarLoader />;
   }
 
   const currentStreak = profile?.currentStreak || 0;

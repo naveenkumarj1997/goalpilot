@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Habit, HabitFormData } from '../types/habit';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/habits/`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/habits/`;
 
 const getAuthHeaders = () => {
   const userStr = localStorage.getItem('user');

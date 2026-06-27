@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { GameStat, MatchHistory } from '../types/game';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/games/`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/games/`;
 
 const getAuthHeaders = () => {
   const userStr = localStorage.getItem('user');

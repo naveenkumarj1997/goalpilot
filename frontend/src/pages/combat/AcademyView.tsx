@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import React, { useEffect, useState } from 'react';
 import { PlayCircle, CheckCircle, Info, Lock } from 'lucide-react';
 import { getLessons } from '../../api/combat';
@@ -60,9 +61,7 @@ const AcademyView: React.FC<AcademyViewProps> = ({ discipline, description }) =>
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
-      </div>
+      <AvatarLoader />
     );
   }
 

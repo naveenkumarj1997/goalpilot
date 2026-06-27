@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -29,7 +30,7 @@ const WisdomDashboard = () => {
   }, [user]);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-full min-h-[500px]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div></div>;
+    return <AvatarLoader />;
   }
 
   const TEXT = {

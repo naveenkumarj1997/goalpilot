@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import React, { useEffect, useState } from 'react';
 import { Shield, PlayCircle, Trophy, Clock, Target, Flame } from 'lucide-react';
 import { getProfile, getRoadmap } from '../../api/combat';
@@ -26,9 +27,7 @@ const CombatDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
-      </div>
+      <AvatarLoader />
     );
   }
 

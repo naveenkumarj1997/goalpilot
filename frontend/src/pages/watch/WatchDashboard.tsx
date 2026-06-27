@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getPublicRooms } from '../../api/watchTogether';
@@ -65,7 +66,7 @@ export default function WatchDashboard() {
         
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+            <AvatarLoader />
           </div>
         ) : !Array.isArray(rooms) || rooms.length === 0 ? (
           <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-700/50">

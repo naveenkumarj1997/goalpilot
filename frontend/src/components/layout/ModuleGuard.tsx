@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { DEFAULT_UNLOCKED_MODULES } from '../../utils/modules';
+import AvatarLoader from '../ui/AvatarLoader';
 
 export default function ModuleGuard({ moduleName }: { moduleName: string }) {
   const { user, featureFlags, isFlagsLoading } = useAuth();
@@ -8,7 +9,7 @@ export default function ModuleGuard({ moduleName }: { moduleName: string }) {
   if (isFlagsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
+        <AvatarLoader size="xl" />
       </div>
     );
   }

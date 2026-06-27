@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useEffect, useState } from 'react';
 import { getLogs } from '../../api/nofap';
 import { Calendar as CalendarIcon, CheckCircle, XCircle } from 'lucide-react';
@@ -24,7 +25,7 @@ export default function NoFapCalendar() {
     fetchLogs();
   }, []);
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin h-8 w-8 border-b-2 border-brand rounded-full"></div></div>;
+  if (loading) return <AvatarLoader />;
 
   // Simple grid for now, could use a real calendar component
   return (

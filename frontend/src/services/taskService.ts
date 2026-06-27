@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Task, TaskFormData } from '../types/task';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tasks/`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/tasks/`;
 
 const getAuthHeaders = () => {
   const userStr = localStorage.getItem('user');

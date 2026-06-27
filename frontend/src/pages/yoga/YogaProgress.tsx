@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useState, useEffect } from 'react';
 
 import { Award, Zap, Activity, Flame } from 'lucide-react';
@@ -33,7 +34,7 @@ export default function YogaProgress() {
   }, []);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>;
+    return <AvatarLoader />;
   }
 
   return (

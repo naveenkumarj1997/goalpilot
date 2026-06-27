@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -88,7 +89,7 @@ export default function YogaLibrary() {
   const difficulties = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>;
+    return <AvatarLoader />;
   }
 
   return (

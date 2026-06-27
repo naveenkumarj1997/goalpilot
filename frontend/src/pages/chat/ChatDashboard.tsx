@@ -17,7 +17,7 @@ export default function ChatDashboard() {
 
   const fetchFriends = async () => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/friends`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/friends`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setFriends(data);
@@ -28,7 +28,7 @@ export default function ChatDashboard() {
 
   const fetchRequests = async () => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/friends/requests`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/friends/requests`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setPendingRequests(data);
@@ -72,7 +72,7 @@ export default function ChatDashboard() {
 
   const fetchMessages = async (friendId: string) => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/chat/${friendId}`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/chat/${friendId}`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setMessages(data);
@@ -119,7 +119,7 @@ export default function ChatDashboard() {
 
   const sendFriendRequest = async (receiverId: string) => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/friends/request`, { receiverId }, {
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/friends/request`, { receiverId }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       if (socket) {
@@ -134,7 +134,7 @@ export default function ChatDashboard() {
   const handleRequestResponse = async (requestId: string, accept: boolean, senderId: string) => {
     try {
       const endpoint = accept ? 'accept' : 'decline';
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/friends/${endpoint}`, { requestId }, {
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/friends/${endpoint}`, { requestId }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       

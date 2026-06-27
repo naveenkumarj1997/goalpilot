@@ -1,3 +1,4 @@
+import AvatarLoader from '../../components/ui/AvatarLoader';
 import { useEffect, useState } from 'react';
 import { getProfile, getLogs } from '../../api/nofap';
 import { BarChart2, TrendingUp, Activity, PieChart } from 'lucide-react';
@@ -30,7 +31,7 @@ export default function NoFapAnalytics() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="flex justify-center p-12"><div className="animate-spin h-8 w-8 border-b-2 border-brand rounded-full"></div></div>;
+  if (loading) return <AvatarLoader />;
 
   const totalDays = logs.length;
   const successfulDays = logs.filter(l => l.success).length;

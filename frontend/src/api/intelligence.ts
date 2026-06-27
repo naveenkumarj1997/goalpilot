@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/intelligence`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/intelligence`;
 
 export const getIntelligenceItems = async (token: string, category: string, search: string, page: number) => {
   const { data } = await axios.get(`${API_URL}?category=${encodeURIComponent(category)}&search=${encodeURIComponent(search)}&page=${page}`, {
