@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { useWealth } from '../../context/WealthContext';
 import { DEFAULT_UNLOCKED_MODULES } from '../../utils/modules';
 import { 
   LayoutDashboard, 
@@ -50,6 +51,7 @@ import { getProfile as getNoFapProfile } from '../../api/nofap';
 export default function DashboardLayout() {
   const { user, logout, featureFlags, refreshUser } = useAuth();
   const { unreadCount } = useSocket();
+  const { dreams } = useWealth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showNoFapCheckInModal, setShowNoFapCheckInModal] = useState(false);
@@ -151,7 +153,9 @@ export default function DashboardLayout() {
         lastDreamCheckIn.getMonth() === today.getMonth() &&
         lastDreamCheckIn.getFullYear() === today.getFullYear();
       
-      if (!isTodayDream) {
+      const activeDreams = dreams.filter(d => d.savedAmount < d.targetCost && d.status !== 'Achieved');
+      
+      if (!isTodayDream && activeDreams.length > 0) {
         const dreamTimeStr = user.dreamCheckInTime || '20:00';
         if (currentTimeStr >= dreamTimeStr) {
           setShowDreamCheckInModal(true);
@@ -166,7 +170,7 @@ export default function DashboardLayout() {
     // Check every minute in case they leave the app open
     const interval = setInterval(checkShouldShowModal, 60000);
     return () => clearInterval(interval);
-  }, [user, noFapLastCheckIn, hasFetchedNoFap]);
+  }, [user, noFapLastCheckIn, hasFetchedNoFap, dreams]);
 
   const baseNavigation = [
     { name: 'Mission Control', href: '/mission-control', icon: Rocket },
