@@ -3,6 +3,9 @@ export interface Habit {
   name: string;
   frequency: string;
   color?: string;
+  badge?: string;
+  duration?: number;
+  startDate?: string;
   logs: string[]; // ISO Date strings
   user: string;
   createdAt: string;
@@ -13,4 +16,7 @@ export interface HabitFormData {
   name: string;
   frequency?: string;
   color?: string;
+  badge?: string;
+  duration?: number;
+  startDate?: string;
 }

@@ -4,6 +4,9 @@ export interface IHabit extends Document {
   name: string;
   frequency: string;
   color?: string;
+  badge?: string;
+  duration?: number;
+  startDate?: Date;
   logs: Date[]; // Array of dates when the habit was completed
   user: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -24,6 +27,18 @@ const habitSchema = new Schema<IHabit>(
     color: {
       type: String,
       default: '#10b981',
+    },
+    badge: {
+      type: String,
+      default: '⭐',
+    },
+    duration: {
+      type: Number,
+      default: 30, // Default 30-day challenge
+    },
+    startDate: {
+      type: Date,
+      default: Date.now,
     },
     logs: [
       {
