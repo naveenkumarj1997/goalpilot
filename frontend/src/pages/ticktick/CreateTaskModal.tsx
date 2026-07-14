@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, Repeat, Tag, AlignLeft, Bookmark } from 'lucide-react';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ interface CreateTaskModalProps {
 export default function CreateTaskModal({ isOpen, onClose, onSubmit, defaultDate, initialData }: CreateTaskModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState(defaultDate || new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(defaultDate || getLocalDateString());
   const [time, setTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [badge, setBadge] = useState('');
@@ -25,7 +26,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, defaultDate
       if (initialData) {
         setTitle(initialData.title || '');
         setDescription(initialData.description || '');
-        setDate(initialData.date || defaultDate || new Date().toISOString().split('T')[0]);
+        setDate(initialData.date || defaultDate || getLocalDateString());
         setTime(initialData.time || '');
         setEndTime(initialData.endTime || '');
         setBadge(initialData.badge || '');
@@ -39,7 +40,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, defaultDate
       } else {
         setTitle('');
         setDescription('');
-        setDate(defaultDate || new Date().toISOString().split('T')[0]);
+        setDate(defaultDate || getLocalDateString());
         setTime('');
         setEndTime('');
         setBadge('');

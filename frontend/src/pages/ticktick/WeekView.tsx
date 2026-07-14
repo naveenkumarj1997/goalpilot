@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export default function WeekView({ currentDate, tasks, onCreateTask, onUpdateTask, onDateClick }: any) {
   const [addingTaskDate, setAddingTaskDate] = useState<string | null>(null);
@@ -17,7 +18,7 @@ export default function WeekView({ currentDate, tasks, onCreateTask, onUpdateTas
     d.setDate(startOfWeek.getDate() + i);
     return {
       dateObj: d,
-      dateStr: d.toISOString().split('T')[0],
+      dateStr: getLocalDateString(d),
       dayName: d.toLocaleDateString(undefined, { weekday: 'short' }),
       dayNum: d.getDate(),
       isToday: d.toDateString() === new Date().toDateString()

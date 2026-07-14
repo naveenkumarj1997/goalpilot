@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Plus, Check, Calendar, Tag, Undo2, Bookmark, Pencil, Trash2, Bell } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import CreateTaskModal from './CreateTaskModal';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export default function DayView({ currentDate, tasks, onCreateTask, onUpdateTask, onDeleteTask }: any) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<any>(null);
 
-  const dateStr = currentDate.toISOString().split('T')[0];
+  const dateStr = getLocalDateString(currentDate);
   const dayOfWeek = currentDate.getDay();
 
   const isTaskCompletedOnDate = (t: any) => {

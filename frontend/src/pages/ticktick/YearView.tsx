@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export default function YearView({ currentDate, tasks, onMonthClick }: any) {
   const year = currentDate.getFullYear();
@@ -54,9 +55,9 @@ export default function YearView({ currentDate, tasks, onMonthClick }: any) {
               return <div key={i} className="aspect-square"></div>;
             }
             
-            const dateStr = new Date(year, monthIndex, day).toISOString().split('T')[0];
+            const dateStr = getLocalDateString(new Date(year, monthIndex, day));
             const count = taskCounts[dateStr] || 0;
-            const isToday = new Date().toISOString().split('T')[0] === dateStr;
+            const isToday = getLocalDateString(new Date()) === dateStr;
             
             return (
               <div 

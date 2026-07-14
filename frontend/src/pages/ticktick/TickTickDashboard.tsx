@@ -8,6 +8,7 @@ import MonthView from './MonthView';
 import YearView from './YearView';
 import { motion } from 'framer-motion';
 import { useTaskNotifications } from '../../hooks/useTaskNotifications';
+import { getLocalDateString } from '../../utils/dateUtils';
 
 export default function TickTickDashboard() {
   const { user } = useAuth();
@@ -30,22 +31,23 @@ export default function TickTickDashboard() {
       const month = currentDate.getMonth();
 
       if (activeTab === 'day') {
-        startDateStr = currentDate.toISOString().split('T')[0];
+        startDateStr = getLocalDateString(currentDate);
         endDateStr = startDateStr;
       } else if (activeTab === 'week') {
-        const day = currentDate.getDay();
-        const diff = currentDate.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        const startOfWeek = new Date(currentDate.setDate(diff));
+        const dayOfWeek = currentDate.getDay();
+        const diff = currentDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // adjust when day is sunday
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(diff);
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         
-        startDateStr = startOfWeek.toISOString().split('T')[0];
-        endDateStr = endOfWeek.toISOString().split('T')[0];
+        startDateStr = getLocalDateString(startOfWeek);
+        endDateStr = getLocalDateString(endOfWeek);
       } else if (activeTab === 'month') {
         const startOfMonth = new Date(year, month, 1);
-        const endOfMonth = new Date(year, month + 1, 0);
-        startDateStr = startOfMonth.toISOString().split('T')[0];
-        endDateStr = endOfMonth.toISOString().split('T')[0];
+        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        startDateStr = getLocalDateString(startOfMonth);
+        endDateStr = getLocalDateString(endOfMonth);
       } else if (activeTab === 'year') {
         startDateStr = `${year}-01-01`;
         endDateStr = `${year}-12-31`;
