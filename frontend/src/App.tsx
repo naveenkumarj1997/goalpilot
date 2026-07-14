@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { WisdomProvider } from './context/WisdomContext';
+import { WealthProvider } from './context/WealthContext';
 import AuthLayout from './components/layout/AuthLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Login from './pages/auth/Login';
@@ -10,6 +11,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import Dashboard from './pages/dashboard/Dashboard';
 import MissionControlDashboard from './pages/mission-control/MissionControlDashboard';
 import IntelligenceDashboard from './pages/intelligence/IntelligenceDashboard';
+import TickTickDashboard from './pages/ticktick/TickTickDashboard';
 import GoalList from './pages/goals/GoalList';
 import CreateGoal from './pages/goals/CreateGoal';
 import EditGoal from './pages/goals/EditGoal';
@@ -117,6 +119,12 @@ import BrainGames from './pages/brain/BrainGames';
 import WisdomDashboard from './pages/wisdom/WisdomDashboard';
 import WisdomReader from './pages/wisdom/WisdomReader';
 
+import WealthDashboard from './pages/wealth/WealthDashboard';
+import DreamPlanner from './pages/wealth/DreamPlanner';
+
+import AIDreamAdvisor from './pages/wealth/AIDreamAdvisor';
+import FinancialForecast from './pages/wealth/FinancialForecast';
+
 import ModuleGuard from './components/layout/ModuleGuard';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './App.css';
@@ -125,8 +133,9 @@ function App() {
   return (
     <AuthProvider>
       <WisdomProvider>
-        <BrowserRouter>
-          <SocketProvider>
+        <WealthProvider>
+          <BrowserRouter>
+            <SocketProvider>
             <Routes>
           <Route path="/" element={<Navigate to="/mission-control" replace />} />
           
@@ -141,6 +150,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/mission-control" element={<MissionControlDashboard />} />
+              <Route path="/ticktick" element={<TickTickDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route element={<ModuleGuard moduleName="Goals" />}>
                 <Route path="/goals" element={<GoalList />} />
@@ -327,11 +337,24 @@ function App() {
                 <Route path="/wisdom" element={<WisdomDashboard />} />
                 <Route path="/wisdom/book/:id" element={<WisdomReader />} />
               </Route>
+
+              {/* Wealth & Dream OS */}
+              <Route element={<ModuleGuard moduleName="Life Wealth & Dream OS" />}>
+                <Route path="/wealth" element={<WealthDashboard />} />
+                <Route path="/wealth/dreams" element={<DreamPlanner />} />
+
+
+                <Route path="/wealth/advisor" element={<AIDreamAdvisor />} />
+                <Route path="/wealth/forecast" element={<FinancialForecast />} />
+                {/* Fallback to dashboard for unbuilt submenus */}
+                <Route path="/wealth/*" element={<WealthDashboard />} />
+              </Route>
             </Route>
           </Route>
           </Routes>
-        </SocketProvider>
-        </BrowserRouter>
+            </SocketProvider>
+          </BrowserRouter>
+        </WealthProvider>
       </WisdomProvider>
     </AuthProvider>
   );

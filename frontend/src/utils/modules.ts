@@ -7,10 +7,12 @@ export const DEFAULT_UNLOCKED_MODULES = [
   'Stoicism',
   'Settings',
   'Mission Control',
+  'TickTick Planner',
   'Tools',
   'Intelligence Hub',
   'Market Intelligence',
   'Combat Academy',
   'Brain Academy',
-  'Wisdom Library'
+  'Wisdom Library',
+  'Life Wealth & Dream OS'
 ];

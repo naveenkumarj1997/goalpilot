@@ -33,6 +33,8 @@ import marketRoutes from './routes/marketRoutes';
 import combatRoutes from './routes/combatRoutes';
 import brainRoutes from './routes/brainRoutes';
 import wisdomRoutes from './routes/wisdomRoutes';
+import wealthRoutes from './routes/wealthRoutes';
+import ticktickRoutes from './routes/ticktickRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -77,13 +79,15 @@ app.use('/api/watch', checkModuleAccess('Watch Together'), watchRoutes);
   
 // Mission Control Route (Core Homepage, no specific module block unless desired)
 app.use('/api/mission-control', missionControlRoutes);
+app.use('/api/ticktick', ticktickRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dates', dateTrackerRoutes);
 app.use('/api/intelligence', checkModuleAccess('Intelligence Hub'), intelligenceRoutes);
 app.use('/api/market', checkModuleAccess('Market Intelligence'), marketRoutes);
-app.use('/api/combat', checkModuleAccess('Combat Academy'), combatRoutes);
-app.use('/api/brain', checkModuleAccess('Brain Academy'), brainRoutes);
-app.use('/api/wisdom', checkModuleAccess('Wisdom Library'), wisdomRoutes);
+app.use('/api/combat', protect, blockCheck, checkModuleAccess('Combat Academy'), combatRoutes);
+app.use('/api/brain', protect, blockCheck, checkModuleAccess('Brain Academy'), brainRoutes);
+app.use('/api/wisdom', protect, blockCheck, checkModuleAccess('Wisdom Library'), wisdomRoutes);
+app.use('/api/wealth', protect, blockCheck, checkModuleAccess('Life Wealth & Dream OS'), wealthRoutes);
 
 app.get('/', (req, res) => {
   res.send('GoalPilot Backend API is running!');

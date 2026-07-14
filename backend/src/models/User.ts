@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "20:00", // 24-hour HH:MM format
   },
+  dreamCheckInTime: {
+    type: String,
+    default: "20:00", // 24-hour HH:MM format
+  },
   role: {
     type: String,
     enum: ['Standard', 'Premium', 'Admin', 'SuperAdmin'],

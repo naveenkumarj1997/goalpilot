@@ -36,13 +36,15 @@ import {
   Calculator,
   Globe,
   Brain,
-  Library
+  Library,
+  Landmark
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
 import NoFapCheckInModal from '../nofap/NoFapCheckInModal';
 import LockedModuleModal from '../LockedModuleModal';
 import SupportChatWidget from '../SupportChatWidget';
+import DreamDailyCheckInModal from '../wealth/DreamDailyCheckInModal';
 import { getProfile as getNoFapProfile } from '../../api/nofap';
 
 export default function DashboardLayout() {
@@ -51,6 +53,7 @@ export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showNoFapCheckInModal, setShowNoFapCheckInModal] = useState(false);
+  const [showDreamCheckInModal, setShowDreamCheckInModal] = useState(false);
   const [lockedModule, setLockedModule] = useState<{ isOpen: boolean; name: string; status: 'Premium' | 'Disabled' }>({ isOpen: false, name: '', status: 'Premium' });
   const [noFapLastCheckIn, setNoFapLastCheckIn] = useState<Date | null>(null);
   const [hasFetchedNoFap, setHasFetchedNoFap] = useState(false);
@@ -139,6 +142,23 @@ export default function DashboardLayout() {
           setShowNoFapCheckInModal(false);
         }
       }
+
+      // Dream Daily Check-in Modal Logic
+      const lastDreamCheckInStr = localStorage.getItem('lastDreamCheckInDate');
+      const lastDreamCheckIn = lastDreamCheckInStr ? new Date(lastDreamCheckInStr) : null;
+      const isTodayDream = lastDreamCheckIn && 
+        lastDreamCheckIn.getDate() === today.getDate() &&
+        lastDreamCheckIn.getMonth() === today.getMonth() &&
+        lastDreamCheckIn.getFullYear() === today.getFullYear();
+      
+      if (!isTodayDream) {
+        const dreamTimeStr = user.dreamCheckInTime || '20:00';
+        if (currentTimeStr >= dreamTimeStr) {
+          setShowDreamCheckInModal(true);
+        }
+      } else {
+        setShowDreamCheckInModal(false);
+      }
     };
 
     checkShouldShowModal();
@@ -150,6 +170,7 @@ export default function DashboardLayout() {
 
   const baseNavigation = [
     { name: 'Mission Control', href: '/mission-control', icon: Rocket },
+    { name: 'TickTick Planner', href: '/ticktick', icon: CheckCircle },
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Goals', href: '/goals', icon: Target },
     { name: 'Update Hours', href: '/goals/update-hours', icon: Clock },
@@ -240,6 +261,18 @@ export default function DashboardLayout() {
         { name: 'Progress', href: '/wisdom' }
       ]
     },
+    { 
+      name: 'Life Wealth & Dream OS', 
+      href: '/wealth', 
+      icon: Landmark,
+      subMenus: [
+        { name: 'Dashboard', href: '/wealth' },
+        { name: 'Dream Planner', href: '/wealth/dreams' },
+        { name: 'Bucket List', href: '/wealth/bucket-list' },
+        { name: 'Financial Forecast', href: '/wealth/forecast' },
+        { name: 'AI Dream Advisor', href: '/wealth/advisor' }
+      ]
+    },
     { name: 'Tools', href: '/tools/date-tracker', icon: Calculator },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
@@ -252,12 +285,13 @@ export default function DashboardLayout() {
   }
 
   const getThemeVars = (path: string) => {
+    if (path.includes('/wealth')) return { bg: '/images/earth_bg.png', color: '#10B981' }; // Emerald Green
     if (path.includes('/combat')) return { bg: '/images/combat/combat_bg.png', color: '#EF4444' }; // Red for Combat
     if (path.includes('/goals') || path.includes('/workouts')) return { bg: '/images/fire_bg.png', color: '#EF4444' }; // Red
     if (path.includes('/meditation') || path.includes('/yoga') || path.includes('/personal')) return { bg: '/images/air_bg.png', color: '#38BDF8' }; // Sky Blue
     if (path.includes('/habits') || path.includes('/tasks') || path.includes('/stoicism') || path.includes('/nofap')) return { bg: '/images/earth_bg.png', color: '#10B981' }; // Emerald Green
     if (path.includes('/chat') || path.includes('/games') || path.includes('/manifestation') || path.includes('/brain')) return { bg: '/images/water_bg.png', color: '#3B82F6' }; // Deep Blue
-    if (path.includes('/mission-control')) return { bg: '/images/space_bg.png', color: '#F59E0B' }; // Amber
+    if (path.includes('/mission-control') || path.includes('/ticktick')) return { bg: '/images/space_bg.png', color: '#F59E0B' }; // Amber
     return { bg: '/images/login_bg.png', color: '#8B5CF6' }; // Avatar Violet (Dashboard)
   };
 
@@ -670,6 +704,14 @@ export default function DashboardLayout() {
           setNoFapLastCheckIn(new Date());
           window.dispatchEvent(new Event('nofapCheckedIn'));
         }} 
+      />
+
+      <DreamDailyCheckInModal 
+        isOpen={showDreamCheckInModal}
+        onClose={() => setShowDreamCheckInModal(false)}
+        onSuccess={() => {
+          localStorage.setItem('lastDreamCheckInDate', new Date().toISOString());
+        }}
       />
 
       <LockedModuleModal

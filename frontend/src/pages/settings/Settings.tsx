@@ -8,6 +8,7 @@ export default function Settings() {
   const { updateUser } = useAuth();
   const [dailyCheckInTime, setDailyCheckInTime] = useState('20:00');
   const [nofapCheckInTime, setNofapCheckInTime] = useState('20:00');
+  const [dreamCheckInTime, setDreamCheckInTime] = useState('20:00');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -21,6 +22,9 @@ export default function Settings() {
       if (user.nofapCheckInTime) {
         setNofapCheckInTime(user.nofapCheckInTime);
       }
+      if (user.dreamCheckInTime) {
+        setDreamCheckInTime(user.dreamCheckInTime);
+      }
     }
   }, []);
 
@@ -30,7 +34,7 @@ export default function Settings() {
     setMessage('');
 
     try {
-      const updatedUser = await authService.updateSettings({ dailyCheckInTime, nofapCheckInTime });
+      const updatedUser = await authService.updateSettings({ dailyCheckInTime, nofapCheckInTime, dreamCheckInTime });
       if (updatedUser) {
         updateUser(updatedUser);
       }
@@ -101,6 +105,32 @@ export default function Settings() {
                   id="nofapCheckInTime"
                   value={nofapCheckInTime}
                   onChange={(e) => setNofapCheckInTime(e.target.value)}
+                  className="w-full pl-10 px-4 py-2 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand transition-shadow bg-white/50"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary mb-4">Dream Savings Check-In</h2>
+            <p className="text-sm text-text-secondary mb-4">
+              Choose the time of day you would like to be prompted to log your daily dream & bucket list savings.
+            </p>
+            
+            <div className="max-w-xs">
+              <label htmlFor="dreamCheckInTime" className="block text-sm font-medium text-text-primary mb-1">
+                Check-In Time
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Clock className="h-5 w-5 text-emerald-500" />
+                </div>
+                <input
+                  type="time"
+                  id="dreamCheckInTime"
+                  value={dreamCheckInTime}
+                  onChange={(e) => setDreamCheckInTime(e.target.value)}
                   className="w-full pl-10 px-4 py-2 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand transition-shadow bg-white/50"
                   required
                 />
