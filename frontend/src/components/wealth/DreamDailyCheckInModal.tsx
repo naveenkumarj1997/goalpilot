@@ -170,21 +170,34 @@ export default function DreamDailyCheckInModal({ isOpen, onClose, onSuccess }: D
             </div>
 
             <div className="p-6 border-t border-emerald-500/20 bg-emerald-900/10 shrink-0">
-              <button
-                type="submit"
-                form="dream-checkin-form"
-                disabled={isSubmitting || activeDreams.length === 0}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl flex items-center justify-center transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-              >
-                {isSubmitting ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5 mr-2" />
-                    Log Today's Savings
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSuccess();
+                    onClose();
+                  }}
+                  disabled={isSubmitting || activeDreams.length === 0}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold rounded-xl flex items-center justify-center transition-all"
+                >
+                  No Savings Today
+                </button>
+                <button
+                  type="submit"
+                  form="dream-checkin-form"
+                  disabled={isSubmitting || activeDreams.length === 0}
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl flex items-center justify-center transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                >
+                  {isSubmitting ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5 mr-2" />
+                      Log Today's Savings
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </motion.div>
         </>

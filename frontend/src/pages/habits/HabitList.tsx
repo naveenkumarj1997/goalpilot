@@ -240,11 +240,11 @@ export default function HabitList() {
                     return (
                       <button
                         key={i}
-                        disabled={isFuture}
+                        disabled={isFuture || isLogged}
                         onClick={() => handleToggleLog(habit._id, date)}
                         className={`
                           relative aspect-square rounded-lg flex items-center justify-center transition-all text-xs font-bold
-                          ${isFuture ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:scale-110'}
+                          ${isFuture ? 'opacity-30 cursor-not-allowed' : isLogged ? 'cursor-default opacity-80' : 'cursor-pointer hover:scale-110'}
                           ${isLogged ? 'text-white' : 'text-slate-500'}
                           ${!isLogged && isToday ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900' : ''}
                         `}
@@ -253,7 +253,7 @@ export default function HabitList() {
                         }}
                         title={date.toDateString()}
                       >
-                        {isLogged ? <Check className="w-3 h-3" /> : i + 1}
+                        {isLogged ? <Check className="w-4 h-4 text-white" /> : i + 1}
                       </button>
                     );
                   })}
