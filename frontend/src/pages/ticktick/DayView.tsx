@@ -216,10 +216,10 @@ export default function DayView({ currentDate, tasks, onCreateTask, onUpdateTask
     );
   };
 
-  const allDayTasks = dayTasks.filter(t => !t.time);
+  const allDayTasks = dayTasks.filter((t: any) => !t.time);
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  const timeTasks = dayTasks.filter(t => t.time).map(task => {
+  const timeTasks = dayTasks.filter((t: any) => t.time).map((task: any) => {
     const [sh, sm] = task.time.split(':').map(Number);
     const startMinutes = sh * 60 + sm;
     
@@ -231,7 +231,7 @@ export default function DayView({ currentDate, tasks, onCreateTask, onUpdateTask
       durationMinutes = endMinutes - startMinutes;
     }
     return { ...task, startMinutes, durationMinutes, endMinutes: startMinutes + durationMinutes };
-  }).sort((a, b) => a.startMinutes - b.startMinutes || b.durationMinutes - a.durationMinutes);
+  }).sort((a: any, b: any) => a.startMinutes - b.startMinutes || b.durationMinutes - a.durationMinutes);
 
   const clusters: any[][] = [];
   let currentCluster: any[] = [];

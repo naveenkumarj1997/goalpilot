@@ -117,7 +117,7 @@ export default function FinancialForecast() {
                 <YAxis stroke="#94A3B8" tickLine={false} tickFormatter={(value) => `$${(value/1000000).toFixed(1)}M`} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#0F172A', borderColor: '#10B981', borderRadius: '12px' }}
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value: any) => formatCurrency(value)}
                 />
                 <Legend />
                 <Line type="monotone" dataKey="netWorth" name="Projected Net Worth" stroke="#10B981" strokeWidth={4} dot={false} />

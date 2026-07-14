@@ -148,8 +148,8 @@ export default function TickTickDashboard() {
           >
             {activeTab === 'day' && <DayView currentDate={currentDate} tasks={tasks} onCreateTask={handleCreateTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteTask} />}
             {activeTab === 'week' && <WeekView currentDate={currentDate} tasks={tasks} onCreateTask={handleCreateTask} onUpdateTask={handleUpdateTask} onDateClick={(d: any) => { setActiveTab('day'); setCurrentDate(d); }} />}
-            {activeTab === 'month' && <MonthView currentDate={currentDate} tasks={tasks} onDateClick={(d) => { setActiveTab('day'); setCurrentDate(d); }} />}
-            {activeTab === 'year' && <YearView currentDate={currentDate} tasks={tasks} onMonthClick={(m) => { const d = new Date(currentDate); d.setMonth(m); setActiveTab('month'); setCurrentDate(d); }} />}
+            {activeTab === 'month' && <MonthView currentDate={currentDate} tasks={tasks} onDateClick={(d: any) => { setActiveTab('day'); setCurrentDate(d); }} />}
+            {activeTab === 'year' && <YearView currentDate={currentDate} tasks={tasks} onMonthClick={(m: any) => { const d = new Date(currentDate); d.setMonth(m); setActiveTab('month'); setCurrentDate(d); }} />}
           </motion.div>
         )}
       </div>
