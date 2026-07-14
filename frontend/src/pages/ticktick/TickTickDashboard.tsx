@@ -7,6 +7,7 @@ import WeekView from './WeekView';
 import MonthView from './MonthView';
 import YearView from './YearView';
 import { motion } from 'framer-motion';
+import { useTaskNotifications } from '../../hooks/useTaskNotifications';
 
 export default function TickTickDashboard() {
   const { user } = useAuth();
@@ -14,6 +15,9 @@ export default function TickTickDashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Initialize the automatic notification scheduler
+  useTaskNotifications(tasks);
 
   const fetchTasks = async () => {
     if (!user?.token) return;
