@@ -8,6 +8,11 @@ export default function MonthView({ currentDate, tasks, onDateClick }: any) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
 
+  const getLocalDateString = (y: number, m: number, d: number) => {
+    const date = new Date(y, m, d);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
   const days = [];
   
   // Previous month days
@@ -15,7 +20,7 @@ export default function MonthView({ currentDate, tasks, onDateClick }: any) {
     days.push({
       dayNum: daysInPrevMonth - i,
       isCurrentMonth: false,
-      dateStr: new Date(year, month - 1, daysInPrevMonth - i).toISOString().split('T')[0]
+      dateStr: getLocalDateString(year, month - 1, daysInPrevMonth - i)
     });
   }
   
@@ -25,7 +30,7 @@ export default function MonthView({ currentDate, tasks, onDateClick }: any) {
     days.push({
       dayNum: i,
       isCurrentMonth: true,
-      dateStr: d.toISOString().split('T')[0],
+      dateStr: getLocalDateString(year, month, i),
       isToday: d.toDateString() === new Date().toDateString(),
       dateObj: d
     });
@@ -37,7 +42,7 @@ export default function MonthView({ currentDate, tasks, onDateClick }: any) {
     days.push({
       dayNum: i,
       isCurrentMonth: false,
-      dateStr: new Date(year, month + 1, i).toISOString().split('T')[0]
+      dateStr: getLocalDateString(year, month + 1, i)
     });
   }
 
