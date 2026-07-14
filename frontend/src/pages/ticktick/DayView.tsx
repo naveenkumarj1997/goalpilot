@@ -120,7 +120,20 @@ export default function DayView({ currentDate, tasks, onCreateTask, onUpdateTask
           // Add a fallback alert just so the user knows the code executed successfully!
           alert('Notification was sent to your OS! If you do not see a popup, please check your Windows Notifications tray (bottom right corner) or ensure Chrome notifications are enabled in Windows Settings.');
         } catch (err: any) {
-          alert('Native notification failed. On Android, this might require a full PWA installation. Error: ' + err.message);
+          if (err.message && err.message.includes('Illegal constructor')) {
+            // Android Chrome requires a Service Worker to show notifications
+            try {
+              const registration = await navigator.serviceWorker.register('/sw.js');
+              await registration.showNotification('Goal Pilot', {
+                body: 'Notifications are working perfectly on Mobile!',
+                icon: '/favicon.svg'
+              });
+            } catch (swErr: any) {
+              alert('Service Worker registration failed: ' + swErr.message);
+            }
+          } else {
+            alert('Native notification failed. Error: ' + err.message);
+          }
         }
       } else {
         alert('Please allow notifications in your browser settings.');

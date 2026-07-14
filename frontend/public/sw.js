@@ -1,42 +1,18 @@
-self.addEventListener('push', function(event) {
-  if (event.data) {
-    try {
-      const data = event.data.json();
-      
-      const options = {
-        body: data.body || 'You have a new notification.',
-        icon: data.icon || '/vite.svg',
-        badge: '/vite.svg',
-        vibrate: [200, 100, 200, 100, 200, 100, 200],
-        data: {
-          dateOfArrival: Date.now(),
-          primaryKey: '2'
-        }
-      };
-      
-      event.waitUntil(
-        self.registration.showNotification(data.title || 'GoalPilot', options)
-      );
-    } catch (err) {
-      console.error('Push event data was not JSON:', err);
-    }
-  }
+self.addEventListener('install', () => {
+  self.skipWaiting();
 });
 
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-  // Attempt to open the web app when notification is clicked
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
+
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data ? event.data.text() : 'You have a new GoalPilot notification!',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg'
+  };
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then(windowClients => {
-      for (let i = 0; i < windowClients.length; i++) {
-        const client = windowClients[i];
-        if (client.url === '/' && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow('/');
-      }
-    })
+    self.registration.showNotification('GoalPilot', options)
   );
 });
