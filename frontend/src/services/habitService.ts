@@ -36,11 +36,17 @@ const toggleLogHabit = async (id: string, date: string): Promise<Habit> => {
   return response.data;
 };
 
+const updateHabit = async (id: string, habitData: HabitFormData): Promise<Habit> => {
+  const response = await axios.put(API_URL + id, habitData, getAuthHeaders());
+  return response.data;
+};
+
 const habitService = {
   getHabits,
   createHabit,
   deleteHabit,
-  toggleLogHabit
+  toggleLogHabit,
+  updateHabit
 };
 
 export default habitService;

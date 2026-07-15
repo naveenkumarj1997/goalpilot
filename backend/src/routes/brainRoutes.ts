@@ -8,7 +8,10 @@ import {
   addFlashcard,
   autoGenerateCards,
   getDueCards,
-  reviewCard
+  reviewCard,
+  saveGameScore,
+  saveGauntletScore,
+  toggleSavedWord
 } from '../controllers/brainController';
 
 const router = express.Router();
@@ -29,5 +32,12 @@ router.post('/flashcards', addFlashcard);
 router.post('/flashcards/auto-generate', autoGenerateCards);
 router.get('/flashcards/due/:deckId', getDueCards);
 router.post('/flashcards/:cardId/review', reviewCard);
+
+// Games routes
+router.post('/score', saveGameScore);
+router.post('/gauntlet', saveGauntletScore);
+
+// Vocabulary routes
+router.post('/words/toggle', toggleSavedWord);
 
 export default router;

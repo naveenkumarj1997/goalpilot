@@ -2,9 +2,13 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const getBrainProfile = async (token: string) => {
   const response = await fetch(`${API_URL}/brain/profile`, {
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
     },
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -75,5 +79,35 @@ export const reviewCard = async (token: string, cardId: string, quality: number)
     body: JSON.stringify({ quality }),
   });
   if (!response.ok) throw new Error('Failed to review card');
+  return response.json();
+};
+
+export const saveGameScore = async (token: string, category: string, gameId: string, score: number) => {
+  const response = await fetch(`${API_URL}/brain/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ category, gameId, score }),
+  });
+  if (!response.ok) throw new Error('Failed to save game score');
+  return response.json();
+};
+
+export const saveGauntletScore = async (token: string, totalScore: number, breakdown: any[]) => {
+  const response = await fetch(`${API_URL}/brain/gauntlet`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ totalScore, breakdown }),
+  });
+  if (!response.ok) throw new Error('Failed to save gauntlet score');
+  return response.json();
+};
+
+export const toggleSavedWord = async (token: string, wordId: string) => {
+  const response = await fetch(`${API_URL}/brain/words/toggle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ wordId }),
+  });
+  if (!response.ok) throw new Error('Failed to toggle word save status');
   return response.json();
 };

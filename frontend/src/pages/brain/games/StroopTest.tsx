@@ -9,7 +9,7 @@ const COLORS = [
   { name: 'YELLOW', class: 'text-yellow-500' }
 ];
 
-const StroopTest = ({ onBack }: { onBack: () => void }) => {
+const StroopTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(100); // represents percentage of 2 seconds
@@ -72,9 +72,15 @@ const StroopTest = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
+  useEffect(() => {
+    if (gameState === 'GAMEOVER') {
+      onGameOver?.(score);
+    }
+  }, [gameState]);
+
   return (
-    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-8 border border-yellow-500/30 shadow-[0_0_40px_rgba(234,179,8,0.15)] text-center">
-      <div className="flex justify-between items-center mb-8 text-slate-300">
+    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-4 sm:p-8 border border-yellow-500/30 shadow-[0_0_40px_rgba(234,179,8,0.15)] text-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-8 gap-4 text-slate-300">
         <div className="flex items-center">
           <Zap className="w-5 h-5 text-yellow-400 mr-2" />
           <span className="font-bold text-yellow-400">Score: {score}</span>
@@ -84,12 +90,12 @@ const StroopTest = ({ onBack }: { onBack: () => void }) => {
       <div className="min-h-[300px] flex flex-col justify-center items-center">
         {gameState === 'START' && (
           <div className="animate-slide-up-fade">
-            <h2 className="text-3xl font-bold text-white mb-4">Stroop Effect</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Stroop Effect</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
               Does the meaning of the word match its ink color? You have 2 seconds per word.
             </p>
             
-            <div className="flex gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
               <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
               <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
               <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>

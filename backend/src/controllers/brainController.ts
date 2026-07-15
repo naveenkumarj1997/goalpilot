@@ -11,18 +11,21 @@ import { calculateSRS, generateProgrammaticFlashcards } from '../services/brainS
 
 export const getProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    const profile = await BrainProfile.findOneAndUpdate(
+      { user: req.user?._id },
+      { $set: { lastActive: new Date() } },
+      { new: true }
+    );
+
     if (!profile) {
       res.status(404).json({ message: 'Profile not found' });
       return;
     }
     
-    profile.lastActive = new Date();
-    await profile.save();
-    
     res.json(profile);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error in getProfile:', error);
+    res.status(500).json({ message: 'Server Error', error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -182,6 +185,84 @@ export const reviewCard = async (req: AuthRequest, res: Response): Promise<void>
     );
 
     res.json(card);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// ==========================
+// GAMES ROUTES
+// ==========================
+
+export const saveGameScore = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { category, gameId, score } = req.body;
+    
+    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    if (!profile) {
+      res.status(404).json({ message: 'Profile not found' });
+      return;
+    }
+
+    profile.gameScores.push({ category, gameId, score, date: new Date() });
+    profile.stats.xp += Math.floor(score / 100);
+    profile.lastActive = new Date();
+    await profile.save();
+
+    res.json({ message: 'Score saved successfully', xpEarned: Math.floor(score / 100) });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+export const saveGauntletScore = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { totalScore, breakdown } = req.body;
+    
+    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    if (!profile) {
+      res.status(404).json({ message: 'Profile not found' });
+      return;
+    }
+
+    profile.gauntletScores.push({ totalScore, breakdown, date: new Date() });
+    profile.stats.xp += Math.floor(totalScore / 50); // bonus XP for gauntlet
+    profile.lastActive = new Date();
+    await profile.save();
+
+    res.json({ message: 'Gauntlet score saved successfully', xpEarned: Math.floor(totalScore / 50) });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// ==========================
+// VOCABULARY ROUTES
+// ==========================
+
+export const toggleSavedWord = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { wordId } = req.body;
+    
+    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    if (!profile) {
+      res.status(404).json({ message: 'Profile not found' });
+      return;
+    }
+
+    const existingIndex = profile.savedWords.findIndex(w => w.wordId === wordId);
+    
+    if (existingIndex >= 0) {
+      // Unsave
+      profile.savedWords.splice(existingIndex, 1);
+      await profile.save();
+      res.json({ message: 'Word unsaved', saved: false });
+    } else {
+      // Save
+      profile.savedWords.push({ wordId, savedAt: new Date() });
+      await profile.save();
+      res.json({ message: 'Word saved', saved: true });
+    }
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
   }

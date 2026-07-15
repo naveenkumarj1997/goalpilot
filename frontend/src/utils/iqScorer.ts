@@ -53,7 +53,7 @@ export const getIQRank = (gameId: string, score: number): IQRank => {
       ratio = Math.min(score / 3000, 1.0); // Default for new games
       break;
     default:
-      ratio = 0;
+      ratio = Math.min(score / 3000, 1.0); // Default for all new/unknown games
   }
 
   for (const rank of RANKS) {

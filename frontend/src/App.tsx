@@ -115,6 +115,7 @@ import AIMemoryCoach from './pages/brain/AIMemoryCoach';
 import InterviewRecall from './pages/brain/InterviewRecall';
 import StudyPlanner from './pages/brain/StudyPlanner';
 import BrainGames from './pages/brain/BrainGames';
+import VocabularyBuilder from './pages/brain/VocabularyBuilder';
 
 import WisdomDashboard from './pages/wisdom/WisdomDashboard';
 import WisdomReader from './pages/wisdom/WisdomReader';
@@ -278,6 +279,11 @@ function App() {
                 <Route path="/brain/progress" element={<BrainDashboard />} />
                 <Route path="/brain/analytics" element={<BrainDashboard />} />
                 <Route path="/brain/achievements" element={<BrainDashboard />} />
+              </Route>
+
+              {/* Vocabulary Builder (Free & Unlocked) */}
+              <Route element={<ModuleGuard moduleName="Vocabulary Builder" />}>
+                <Route path="/brain/vocabulary" element={<VocabularyBuilder />} />
               </Route>
 
               <Route element={<ModuleGuard moduleName="Stoicism" />}>

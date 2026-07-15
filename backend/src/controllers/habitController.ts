@@ -110,3 +110,39 @@ export const toggleLogHabit = async (req: AuthRequest, res: Response): Promise<v
     res.status(500).json({ message: 'Server error', error });
   }
 };
+
+export const updateHabit = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const habit = await Habit.findById(req.params.id);
+
+    if (!habit) {
+      res.status(404).json({ message: 'Habit not found' });
+      return;
+    }
+
+    if (habit.user.toString() !== req.user.id) {
+      res.status(401).json({ message: 'User not authorized' });
+      return;
+    }
+
+    // Only allow updating specific fields
+    const { name, frequency, color, badge, duration, startDate } = req.body;
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (frequency !== undefined) updateData.frequency = frequency;
+    if (color !== undefined) updateData.color = color;
+    if (badge !== undefined) updateData.badge = badge;
+    if (duration !== undefined) updateData.duration = duration;
+    if (startDate !== undefined) updateData.startDate = startDate;
+
+    const updatedHabit = await Habit.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json(updatedHabit);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};

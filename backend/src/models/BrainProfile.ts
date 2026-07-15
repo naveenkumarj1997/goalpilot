@@ -17,6 +17,21 @@ export interface IBrainProfile extends Document {
     recallAccuracy: number;
     studyTimeMinutes: number;
   };
+  gameScores: {
+    category: string;
+    gameId: string;
+    score: number;
+    date: Date;
+  }[];
+  gauntletScores: {
+    totalScore: number;
+    breakdown: { category: string; score: number }[];
+    date: Date;
+  }[];
+  savedWords: {
+    wordId: string;
+    savedAt: Date;
+  }[];
   lastActive: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +55,24 @@ const brainProfileSchema = new Schema<IBrainProfile>(
       recallAccuracy: { type: Number, default: 0 }, // percentage 0-100
       studyTimeMinutes: { type: Number, default: 0 },
     },
+    gameScores: [{
+      category: { type: String, required: true },
+      gameId: { type: String, required: true },
+      score: { type: Number, required: true },
+      date: { type: Date, default: Date.now }
+    }],
+    gauntletScores: [{
+      totalScore: { type: Number, required: true },
+      breakdown: [{
+        category: String,
+        score: Number
+      }],
+      date: { type: Date, default: Date.now }
+    }],
+    savedWords: [{
+      wordId: { type: String, required: true },
+      savedAt: { type: Date, default: Date.now }
+    }],
     lastActive: { type: Date, default: Date.now },
   },
   {

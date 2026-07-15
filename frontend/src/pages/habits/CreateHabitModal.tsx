@@ -1,45 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Activity, Tag, Type } from 'lucide-react';
-import type { HabitFormData } from '../../types/habit';
+import type { HabitFormData, Habit } from '../../types/habit';
 
 interface CreateHabitModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: HabitFormData) => void;
+  initialData?: Habit | null;
 }
 
 const BADGES = ['⭐', '💧', '🏃', '📚', '🧘', '🥗', '🏋️', '💻', '🎸', '🎨', '🔥', '🌱'];
-const DURATIONS = [7, 14, 21, 30, 60, 90];
+const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#14b8a6', '#6366f1'];
 
-export default function CreateHabitModal({ isOpen, onClose, onSubmit }: CreateHabitModalProps) {
+export default function CreateHabitModal({ isOpen, onClose, onSubmit, initialData }: CreateHabitModalProps) {
+  const getTodayStr = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
   const [name, setName] = useState('');
   const [badge, setBadge] = useState('⭐');
-  const [duration, setDuration] = useState(30);
+  const [startDate, setStartDate] = useState(getTodayStr());
+  const [endDate, setEndDate] = useState('');
   const [color, setColor] = useState('#10b981'); // default emerald
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setName(initialData.name);
+        setBadge(initialData.badge || '⭐');
+        setColor(initialData.color || '#10b981');
+        
+        const startD = new Date(initialData.startDate || initialData.createdAt);
+        setStartDate(`${startD.getFullYear()}-${String(startD.getMonth() + 1).padStart(2, '0')}-${String(startD.getDate()).padStart(2, '0')}`);
+        
+        if (initialData.duration) {
+          const endD = new Date(startD);
+          endD.setDate(startD.getDate() + initialData.duration - 1);
+          setEndDate(`${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, '0')}-${String(endD.getDate()).padStart(2, '0')}`);
+        } else {
+          setEndDate('');
+        }
+      } else {
+        setStartDate(getTodayStr());
+        setEndDate('');
+        setName('');
+        setBadge('⭐');
+        setColor('#10b981');
+      }
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    
-    // Auto-generate start date to local today
-    const now = new Date();
-    const startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    let computedDuration = 30; // default 1 month
+
+    if (endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      computedDuration = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both days
+    }
 
     onSubmit({
       name: name.trim(),
       badge,
-      duration,
+      duration: computedDuration,
       color,
       startDate,
       frequency: 'Daily'
     });
-    
-    setName('');
-    setBadge('⭐');
-    setDuration(30);
   };
 
   return (
@@ -62,7 +97,7 @@ export default function CreateHabitModal({ isOpen, onClose, onSubmit }: CreateHa
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <Activity className="w-5 h-5 text-blue-400" />
-                New Habit Challenge
+                {initialData ? 'Edit Habit' : 'New Habit Challenge'}
               </h2>
               <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
                 <X className="w-5 h-5" />
@@ -109,24 +144,51 @@ export default function CreateHabitModal({ isOpen, onClose, onSubmit }: CreateHa
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                Challenge Duration
+                <Tag className="w-4 h-4 text-slate-400" />
+                Select Color
               </label>
-              <div className="flex flex-wrap gap-2">
-                {DURATIONS.map((d) => (
+              <div className="flex gap-2">
+                {COLORS.map((c) => (
                   <button
-                    key={d}
+                    key={c}
                     type="button"
-                    onClick={() => setDuration(d)}
-                    className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                      duration === d 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    onClick={() => setColor(c)}
+                    className={`w-8 h-8 rounded-full transition-all ${
+                      color === c ? 'scale-125 ring-2 ring-white shadow-lg' : 'hover:scale-110 opacity-70 hover:opacity-100'
                     }`}
-                  >
-                    {d} Days
-                  </button>
+                    style={{ backgroundColor: c }}
+                  />
                 ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  placeholder="Optional"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+                <p className="text-xs text-slate-500 mt-1 pl-1">Leave empty for 1 month default</p>
               </div>
             </div>
 
@@ -135,7 +197,7 @@ export default function CreateHabitModal({ isOpen, onClose, onSubmit }: CreateHa
               disabled={!name.trim()}
               className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl px-4 py-3 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Start Challenge
+              {initialData ? 'Save Changes' : 'Start Challenge'}
             </button>
           </form>
         </motion.div>

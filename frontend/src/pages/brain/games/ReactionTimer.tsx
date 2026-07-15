@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Zap, RotateCcw, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const ReactionTimer = ({ onBack }: { onBack: () => void }) => {
+const ReactionTimer = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'WAITING' | 'CLICK' | 'RESULT'>('START');
   const [message, setMessage] = useState('Click to Start');
   const [bgColor, setBgColor] = useState('bg-slate-800');
@@ -53,6 +53,12 @@ const ReactionTimer = ({ onBack }: { onBack: () => void }) => {
   const average = history.length > 0 
     ? Math.round(history.reduce((a, b) => a + b, 0) / history.length) 
     : 0;
+
+  useEffect(() => {
+    if (gameState === 'GAMEOVER') {
+      onGameOver?.(score);
+    }
+  }, [gameState]);
 
   return (
     <div className="max-w-2xl mx-auto w-full text-center animate-slide-up-fade">

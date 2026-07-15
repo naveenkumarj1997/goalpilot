@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Eye, RotateCcw, Activity, XCircle, Trophy } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const Focus17 = ({ onBack }: { onBack: () => void }) => {
+const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'FOCUSING' | 'SUCCESS' | 'GAMEOVER'>('START');
   const [goal, setGoal] = useState('');
   const [progress, setProgress] = useState(0); // 0 to 100
@@ -62,9 +62,15 @@ const Focus17 = ({ onBack }: { onBack: () => void }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (gameState === 'GAMEOVER') {
+      onGameOver?.(score);
+    }
+  }, [gameState]);
+
   return (
-    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-8 border border-pink-500/30 shadow-[0_0_40px_rgba(236,72,153,0.15)] text-center">
-      <div className="flex justify-between items-center mb-8 text-slate-300">
+    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-4 sm:p-8 border border-pink-500/30 shadow-[0_0_40px_rgba(236,72,153,0.15)] text-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-8 gap-4 text-slate-300">
         <div className="flex items-center">
           <Eye className="w-5 h-5 text-pink-400 mr-2" />
           <span className="font-bold text-pink-400">Vibration Score: {score}</span>
@@ -77,7 +83,7 @@ const Focus17 = ({ onBack }: { onBack: () => void }) => {
       <div className="min-h-[400px] flex flex-col justify-center items-center">
         {gameState === 'START' && (
           <div className="animate-slide-up-fade w-full max-w-md mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">17-Second Focus</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">17-Second Focus</h2>
             <p className="text-slate-400 mb-8">
               According to Abraham Hicks, holding a pure thought for 17 seconds aligns your vibration with it. Type your goal and hold your focus.
             </p>

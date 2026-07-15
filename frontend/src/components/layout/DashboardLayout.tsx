@@ -38,7 +38,8 @@ import {
   Globe,
   Brain,
   Library,
-  Landmark
+  Landmark,
+  BookA
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -252,6 +253,7 @@ export default function DashboardLayout() {
         { name: 'Achievements', href: '/brain/achievements' },
       ]
     },
+    { name: 'Vocabulary Builder', href: '/brain/vocabulary', icon: BookA },
     { 
       name: 'Wisdom Library', 
       href: '/wisdom', 

@@ -10,7 +10,7 @@ type Person = {
   color: string;
 };
 
-const FaceNameRecall = ({ onBack }: { onBack: () => void }) => {
+const FaceNameRecall = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'MEMORIZE' | 'QUESTION' | 'GAMEOVER'>('START');
   const [people, setPeople] = useState<Person[]>([]);
   const [targetPerson, setTargetPerson] = useState<Person | null>(null);
@@ -83,9 +83,15 @@ const FaceNameRecall = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
+  useEffect(() => {
+    if (gameState === 'GAMEOVER') {
+      onGameOver?.(score);
+    }
+  }, [gameState]);
+
   return (
-    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-8 border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] text-center">
-      <div className="flex justify-between items-center mb-8 text-slate-300">
+    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-4 sm:p-8 border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] text-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-8 gap-4 text-slate-300">
         <div className="flex items-center">
           <Users className="w-5 h-5 text-cyan-400 mr-2" />
           <span className="font-bold text-cyan-400">Score: {score}</span>
@@ -95,12 +101,12 @@ const FaceNameRecall = ({ onBack }: { onBack: () => void }) => {
       <div className="min-h-[400px] flex flex-col justify-center items-center">
         {gameState === 'START' && (
           <div className="animate-slide-up-fade">
-            <h2 className="text-3xl font-bold text-white mb-4">Face-Name Recall</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Face-Name Recall</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
               Memorize the faces and their names. When they vanish, you must identify one of them.
             </p>
             
-            <div className="flex gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
               <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (3 Faces)</button>
               <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (5 Faces)</button>
               <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (8 Faces)</button>

@@ -14,5 +14,6 @@ export const DEFAULT_UNLOCKED_MODULES = [
   'Combat Academy',
   'Brain Academy',
   'Wisdom Library',
-  'Life Wealth & Dream OS'
+  'Life Wealth & Dream OS',
+  'Vocabulary Builder'
 ];

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, RotateCcw, Timer, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const LogicEquations = ({ onBack }: { onBack: () => void }) => {
+const LogicEquations = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [statement, setStatement] = useState('');
   const [question, setQuestion] = useState('');
@@ -87,9 +87,15 @@ const LogicEquations = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
+  useEffect(() => {
+    if (gameState === 'GAMEOVER') {
+      onGameOver?.(score);
+    }
+  }, [gameState]);
+
   return (
-    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-8 border border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.15)] text-center">
-      <div className="flex justify-between items-center mb-8 text-slate-300">
+    <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-4 sm:p-8 border border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.15)] text-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-8 gap-4 text-slate-300">
         <div className="flex items-center">
           <Search className="w-5 h-5 text-blue-400 mr-2" />
           <span className="font-bold text-blue-400">Score: {score}</span>
@@ -99,12 +105,12 @@ const LogicEquations = ({ onBack }: { onBack: () => void }) => {
       <div className="min-h-[300px] flex flex-col justify-center items-center">
         {gameState === 'START' && (
           <div className="animate-slide-up-fade">
-            <h2 className="text-3xl font-bold text-white mb-4">Logic Equations</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Logic Equations</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
               Read the premise and quickly deduce if the conclusion is True or False.
             </p>
             
-            <div className="flex gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
               <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
               <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
               <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
@@ -133,7 +139,7 @@ const LogicEquations = ({ onBack }: { onBack: () => void }) => {
 
             <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8 max-w-lg mx-auto">
               <p className="text-slate-400 text-lg mb-4">Premise:</p>
-              <h3 className="text-2xl md:text-3xl font-bold text-white leading-relaxed">{statement}</h3>
+              <h3 className="text-2xl md:text-2xl sm:text-3xl font-bold text-white leading-relaxed">{statement}</h3>
             </div>
 
             <h4 className="text-xl md:text-2xl font-bold text-blue-400 mb-12">{question}</h4>
