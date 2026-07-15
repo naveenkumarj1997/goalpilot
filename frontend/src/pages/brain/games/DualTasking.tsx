@@ -15,8 +15,8 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
   const [targetPos, setTargetPos] = useState({ x: 50, y: 50 });
   const [isHovering, setIsHovering] = useState(false);
 
-  const targetInterval = useRef<NodeJS.Timeout>();
-  const gameTimer = useRef<NodeJS.Timeout>();
+  const targetInterval = useRef<any>(null);
+  const gameTimer = useRef<any>(null);
 
   const startGame = () => {
     setScore(0);

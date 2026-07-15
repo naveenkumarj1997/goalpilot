@@ -21,7 +21,7 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
   const [lives, setLives] = useState(3);
   const [words, setWords] = useState<FallingWord[]>([]);
   
-  const requestRef = useRef<number>();
+  const requestRef = useRef<any>(null);
   const lastSpawnTime = useRef<number>(0);
   const wordsRef = useRef<FallingWord[]>([]);
   const stateRef = useRef(gameState);

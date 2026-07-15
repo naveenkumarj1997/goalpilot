@@ -14,7 +14,7 @@ const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
   const [isMatch, setIsMatch] = useState<boolean | null>(null); // To flash green/red
   const [timeRemaining, setTimeRemaining] = useState(20); // 20 letters per round
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any>(null);
 
   const startGame = () => {
     setScore(0);

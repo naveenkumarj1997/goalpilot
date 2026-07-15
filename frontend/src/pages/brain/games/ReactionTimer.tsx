@@ -3,11 +3,17 @@ import { Zap, RotateCcw, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
 const ReactionTimer = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
-  const [gameState, setGameState] = useState<'START' | 'WAITING' | 'CLICK' | 'RESULT'>('START');
+  const [gameState, setGameState] = useState<'START' | 'WAITING' | 'CLICK' | 'RESULT' | 'GAMEOVER'>('START');
   const [message, setMessage] = useState('Click to Start');
   const [bgColor, setBgColor] = useState('bg-slate-800');
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [history, setHistory] = useState<number[]>([]);
+  
+  const average = history.length > 0 
+    ? Math.round(history.reduce((a, b) => a + b, 0) / history.length) 
+    : 0;
+  
+  const score = Math.max(0, 1000 - average);
 
   const timeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -50,9 +56,6 @@ const ReactionTimer = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
     };
   }, []);
 
-  const average = history.length > 0 
-    ? Math.round(history.reduce((a, b) => a + b, 0) / history.length) 
-    : 0;
 
   useEffect(() => {
     if (gameState === 'GAMEOVER') {

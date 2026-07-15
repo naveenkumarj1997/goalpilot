@@ -22,7 +22,7 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
   const [rightSide, setRightSide] = useState<{ text: string, colorClass: string }>({ text: 'Blue', colorClass: 'text-green-500' });
   const [correctSide, setCorrectSide] = useState<'LEFT' | 'RIGHT'>('LEFT');
 
-  const gameTimer = useRef<NodeJS.Timeout>();
+  const gameTimer = useRef<any>(null);
 
   const startGame = () => {
     setScore(0);

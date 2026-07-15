@@ -83,7 +83,7 @@ const WeightBalance = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: any;
     if (gameState === 'PLAYING') {
       timer = setInterval(() => {
         setTimeRemaining(t => {

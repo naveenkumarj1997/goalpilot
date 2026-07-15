@@ -12,8 +12,8 @@ const SpeedMatch = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
   const [isMatchStatus, setIsMatchStatus] = useState<boolean | null>(null); 
   const [timeRemaining, setTimeRemaining] = useState(30); 
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const roundTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any>(null);
+  const roundTimerRef = useRef<any>(null);
 
   const startGame = () => {
     setScore(0);
