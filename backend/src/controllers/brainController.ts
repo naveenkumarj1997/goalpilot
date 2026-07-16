@@ -18,8 +18,12 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
     );
 
     if (!profile) {
-      res.status(404).json({ message: 'Profile not found' });
-      return;
+      profile = await BrainProfile.create({
+        user: req.user?._id,
+        age: 25,
+        profession: 'Professional',
+        dailyStudyHours: 1,
+      });
     }
     
     res.json(profile);
@@ -198,10 +202,14 @@ export const saveGameScore = async (req: AuthRequest, res: Response): Promise<vo
   try {
     const { category, gameId, score } = req.body;
     
-    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    let profile = await BrainProfile.findOne({ user: req.user?._id });
     if (!profile) {
-      res.status(404).json({ message: 'Profile not found' });
-      return;
+      profile = await BrainProfile.create({
+        user: req.user?._id,
+        age: 25,
+        profession: 'Professional',
+        dailyStudyHours: 1,
+      });
     }
 
     profile.gameScores.push({ category, gameId, score, date: new Date() });
@@ -219,10 +227,14 @@ export const saveGauntletScore = async (req: AuthRequest, res: Response): Promis
   try {
     const { totalScore, breakdown } = req.body;
     
-    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    let profile = await BrainProfile.findOne({ user: req.user?._id });
     if (!profile) {
-      res.status(404).json({ message: 'Profile not found' });
-      return;
+      profile = await BrainProfile.create({
+        user: req.user?._id,
+        age: 25,
+        profession: 'Professional',
+        dailyStudyHours: 1,
+      });
     }
 
     profile.gauntletScores.push({ totalScore, breakdown, date: new Date() });
@@ -246,8 +258,12 @@ export const toggleSavedWord = async (req: AuthRequest, res: Response): Promise<
     
     const profile = await BrainProfile.findOne({ user: req.user?._id });
     if (!profile) {
-      res.status(404).json({ message: 'Profile not found' });
-      return;
+      profile = await BrainProfile.create({
+        user: req.user?._id,
+        age: 25,
+        profession: 'Professional',
+        dailyStudyHours: 1,
+      });
     }
 
     const existingIndex = profile.savedWords.findIndex(w => w.wordId === wordId);
