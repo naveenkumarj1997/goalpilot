@@ -166,6 +166,10 @@ const WordCard = ({ word, isSaved, onToggleSave, onSpeak, compact = false }: { w
           <button 
             type="button"
             onClick={onToggleSave}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              onToggleSave();
+            }}
             style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             className={`relative z-10 w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-3 rounded-xl font-bold transition-all ${isSaved ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white hover:bg-slate-700'}`}
           >
