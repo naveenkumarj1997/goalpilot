@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api`;
 
 const VAPID_PUBLIC_KEY = 'BO38oDaARDCR1BVssxNuVngF5S6LZDMTlGmUetKQFte6Aq8oH1XipufJVhLNea4r_Rj7j14ZnlI9l4E6WtyGwGY';
 
