@@ -149,7 +149,12 @@ const WordCard = ({ word, isSaved, onToggleSave, onSpeak, compact = false }: { w
           <div className="w-full sm:w-auto">
             <h2 className={`${compact ? 'text-3xl' : 'text-4xl sm:text-5xl'} font-black text-white mb-2 flex items-center flex-wrap gap-2`}>
               <span className="break-all">{word.word}</span>
-              <button onClick={onSpeak} className="ml-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-cyan-400 transition-colors">
+              <button 
+                type="button"
+                onClick={onSpeak} 
+                style={{ touchAction: 'manipulation' }}
+                className="ml-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-cyan-400 transition-colors z-10 relative"
+              >
                 <Volume2 className="w-5 h-5" />
               </button>
             </h2>
@@ -159,8 +164,10 @@ const WordCard = ({ word, isSaved, onToggleSave, onSpeak, compact = false }: { w
             </div>
           </div>
           <button 
+            type="button"
             onClick={onToggleSave}
-            className={`w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-3 rounded-xl font-bold transition-all ${isSaved ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white hover:bg-slate-700'}`}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            className={`relative z-10 w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-3 rounded-xl font-bold transition-all ${isSaved ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white hover:bg-slate-700'}`}
           >
             {isSaved ? (
               <>
