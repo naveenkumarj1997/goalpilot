@@ -11,7 +11,7 @@ import { calculateSRS, generateProgrammaticFlashcards } from '../services/brainS
 
 export const getProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const profile = await BrainProfile.findOneAndUpdate(
+    let profile = await BrainProfile.findOneAndUpdate(
       { user: req.user?._id },
       { $set: { lastActive: new Date() } },
       { new: true }
@@ -256,7 +256,7 @@ export const toggleSavedWord = async (req: AuthRequest, res: Response): Promise<
   try {
     const { wordId } = req.body;
     
-    const profile = await BrainProfile.findOne({ user: req.user?._id });
+    let profile = await BrainProfile.findOne({ user: req.user?._id });
     if (!profile) {
       profile = await BrainProfile.create({
         user: req.user?._id,
