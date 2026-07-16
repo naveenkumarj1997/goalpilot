@@ -31,10 +31,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setIsLoading(false);
 
-    // Global fetch interceptor for blocked accounts
+    // Global fetch interceptor for 401 and 403
     const originalFetch = window.fetch;
     window.fetch = async function () {
       const response = await originalFetch.apply(this, arguments as any);
+      if (response.status === 401) {
+        authService.logout();
+        setUser(null);
+        window.location.href = '/login';
+        return response;
+      }
       if (response.status === 403) {
         const cloned = response.clone();
         try {
@@ -49,6 +55,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return response;
     };
+
+    // Global axios interceptor for 401
+    import('axios').then(({ default: axios }) => {
+      axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response && error.response.status === 401) {
+            authService.logout();
+            setUser(null);
+            window.location.href = '/login';
+          }
+          return Promise.reject(error);
+        }
+      );
+    });
   }, []);
 
   const refreshFlags = async () => {

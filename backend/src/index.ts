@@ -101,6 +101,6 @@ setupSocket(server);
 // Initialize Cron Jobs
 initCronJobs();
 
-server.listen(PORT, () => {
+server.listen(PORT as number, '127.0.0.1', () => {
   console.log(`Server running on port ${PORT}`);
 });
