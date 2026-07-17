@@ -11,6 +11,9 @@ const VocabularyBuilder = () => {
   const [activeTab, setActiveTab] = useState<'daily' | 'saved'>('daily');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWord, setSelectedWord] = useState<VocabularyWord | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
+  const itemsPerPage = 5;
   
   // Calculate today's word deterministically
   // Get days since epoch to avoid repeating words
@@ -47,7 +50,19 @@ const VocabularyBuilder = () => {
     w.word.toLowerCase().includes(searchQuery.toLowerCase()) || 
     w.meaningEnglish.toLowerCase().includes(searchQuery.toLowerCase()) ||
     w.meaningTamil.includes(searchQuery)
-  );
+  ).sort((a, b) => {
+    if (sortOrder === 'asc') return a.word.localeCompare(b.word);
+    if (sortOrder === 'desc') return b.word.localeCompare(a.word);
+    return 0;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredSavedWords.length / itemsPerPage));
+  const paginatedWords = filteredSavedWords.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Reset page when search or sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortOrder]);
 
   const speak = (text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -129,15 +144,28 @@ const VocabularyBuilder = () => {
             </div>
           ) : (
             <>
-              <div className="relative max-w-md mx-auto mb-6">
-                <input 
-                  type="text" 
-                  placeholder="Search saved words in English or Tamil..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
-                />
-                <Search className="w-6 h-6 text-slate-500 absolute left-4 top-4" />
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <input 
+                    type="text" 
+                    placeholder="Search saved words in English or Tamil..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                  />
+                  <Search className="w-6 h-6 text-slate-500 absolute left-4 top-4" />
+                </div>
+                <div className="w-full sm:w-48 shrink-0">
+                  <select 
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as any)}
+                    className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer"
+                  >
+                    <option value="default">Sort: Date Added</option>
+                    <option value="asc">Sort: A to Z</option>
+                    <option value="desc">Sort: Z to A</option>
+                  </select>
+                </div>
               </div>
 
               {filteredSavedWords.length === 0 ? (
@@ -158,7 +186,7 @@ const VocabularyBuilder = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredSavedWords.map(word => (
+                      {paginatedWords.map(word => (
                         <tr key={word.id} className="border-b border-slate-700/30 hover:bg-slate-800/20 transition-colors group">
                           <td className="p-4">
                             <div className="flex flex-col">
@@ -204,8 +232,31 @@ const VocabularyBuilder = () => {
                     </tbody>
                   </table>
                 </div>
-              )}
-            </>
+                {/* Pagination Controls */}
+                {filteredSavedWords.length > 0 && (
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2">
+                    <span className="text-sm text-slate-400">
+                      Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredSavedWords.length)} of {filteredSavedWords.length} words
+                    </span>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                      >
+                        Prev
+                      </button>
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
           )}
         </div>
       )}
