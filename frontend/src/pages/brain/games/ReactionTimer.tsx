@@ -8,37 +8,82 @@ const ReactionTimer = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
   const [bgColor, setBgColor] = useState('bg-slate-800');
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [history, setHistory] = useState<number[]>([]);
+  const [difficulty, setDifficulty] = useState(1);
   
   const average = history.length > 0 
     ? Math.round(history.reduce((a, b) => a + b, 0) / history.length) 
     : 0;
   
-  const score = Math.max(0, 1000 - average);
+  const score = Math.max(0, (1000 - average) * difficulty);
 
   const timeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(0);
+  const isFakeFlashRef = useRef<boolean>(false);
 
-  const handleClick = () => {
-    if (gameState === 'START' || gameState === 'RESULT') {
-      setGameState('WAITING');
-      setMessage('Wait for Green...');
-      setBgColor('bg-red-500');
-      
-      // Random time between 2 to 5 seconds
-      const waitTime = Math.floor(Math.random() * 3000) + 2000;
-      
-      timeoutRef.current = setTimeout(() => {
+  const getWaitParams = () => {
+    switch(difficulty) {
+      case 1: return { min: 1000, max: 3000, fakeChance: 0 };
+      case 2: return { min: 2000, max: 5000, fakeChance: 0 };
+      case 3: return { min: 2000, max: 5000, fakeChance: 0.4 };
+      default: return { min: 2000, max: 5000, fakeChance: 0 };
+    }
+  };
+
+  const scheduleNextEvent = () => {
+    const params = getWaitParams();
+    const waitTime = Math.floor(Math.random() * (params.max - params.min)) + params.min;
+    
+    // Will it be a fake flash?
+    const isFake = Math.random() < params.fakeChance;
+    
+    timeoutRef.current = setTimeout(() => {
+      if (isFake) {
+        // Fake flash (Yellow)
+        isFakeFlashRef.current = true;
+        setBgColor('bg-yellow-500');
+        setMessage('WAIT...');
+        
+        // Return to red after 500ms and schedule real one
+        setTimeout(() => {
+          if (gameState === 'WAITING' && isFakeFlashRef.current) {
+            setBgColor('bg-red-500');
+            isFakeFlashRef.current = false;
+            scheduleNextEvent(); // Recursively schedule next (real or fake)
+          }
+        }, 500);
+      } else {
+        // Real flash (Green)
+        isFakeFlashRef.current = false;
         setGameState('CLICK');
         setMessage('CLICK!');
         setBgColor('bg-emerald-500');
         startTimeRef.current = Date.now();
-      }, waitTime);
+      }
+    }, waitTime);
+  };
+
+  const handleClick = (e: React.MouseEvent | React.PointerEvent) => {
+    e.preventDefault();
+    if (gameState === 'START' || gameState === 'RESULT') {
+      setGameState('WAITING');
+      setMessage('Wait for Green...');
+      setBgColor('bg-red-500');
+      isFakeFlashRef.current = false;
+      scheduleNextEvent();
     } 
     else if (gameState === 'WAITING') {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setGameState('RESULT');
-      setMessage('Too Soon!');
-      setBgColor('bg-orange-500');
+      
+      if (isFakeFlashRef.current) {
+        setGameState('RESULT');
+        setMessage('Fell for the trick!');
+        setBgColor('bg-orange-500');
+        isFakeFlashRef.current = false;
+      } else {
+        setGameState('RESULT');
+        setMessage('Too Soon!');
+        setBgColor('bg-orange-500');
+      }
     } 
     else if (gameState === 'CLICK') {
       const time = Date.now() - startTimeRef.current;
@@ -64,19 +109,25 @@ const ReactionTimer = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
   }, [gameState]);
 
   return (
-    <div className="max-w-2xl mx-auto w-full text-center animate-slide-up-fade">
-      <div className="flex justify-between items-center mb-6 text-slate-300 px-4">
+    <div className="max-w-2xl mx-auto w-full text-center animate-slide-up-fade p-4">
+      <div className="flex justify-between items-center mb-6 text-slate-300">
         <div className="flex items-center">
           <Zap className="w-5 h-5 text-yellow-400 mr-2" />
           <span className="font-bold">Avg: {average > 0 ? `${average} ms` : '-'}</span>
         </div>
+        <div className="flex items-center gap-2">
+           <span className="text-sm text-slate-400 font-bold">Difficulty:</span>
+           <button onClick={() => setDifficulty(1)} className={`px-3 py-1 rounded-lg font-bold text-xs ${difficulty === 1 ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+           <button onClick={() => setDifficulty(2)} className={`px-3 py-1 rounded-lg font-bold text-xs ${difficulty === 2 ? 'bg-yellow-500 text-white' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+           <button onClick={() => setDifficulty(3)} className={`px-3 py-1 rounded-lg font-bold text-xs ${difficulty === 3 ? 'bg-red-500 text-white' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
+        </div>
       </div>
 
       <div 
-        onClick={handleClick}
-        className={`w-full aspect-[4/3] rounded-3xl cursor-pointer flex flex-col items-center justify-center transition-colors duration-200 border border-white/10 shadow-2xl ${bgColor}`}
+        onPointerDown={handleClick}
+        className={`w-full aspect-[4/3] rounded-3xl cursor-pointer flex flex-col items-center justify-center transition-colors duration-200 border border-white/10 shadow-2xl ${bgColor} touch-manipulation`}
       >
-        <h2 className="text-4xl md:text-6xl font-black text-white select-none pointer-events-none drop-shadow-md">
+        <h2 className="text-4xl md:text-6xl font-black text-white select-none pointer-events-none drop-shadow-md px-4">
           {message}
         </h2>
         {gameState === 'RESULT' && reactionTime !== null && (
@@ -89,11 +140,11 @@ const ReactionTimer = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
                 </span>
               </div>
             </div>
-            <p className="text-white/80 mt-6 select-none">Click to try again</p>
+            <p className="text-white/80 mt-6 select-none">Tap to try again</p>
           </div>
         )}
         {gameState === 'RESULT' && reactionTime === null && (
-          <p className="text-white/80 mt-4 select-none pointer-events-none">You clicked before it turned green.</p>
+          <p className="text-white/80 mt-4 select-none pointer-events-none">Tap to try again</p>
         )}
       </div>
 

@@ -20,9 +20,11 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [words, setWords] = useState<FallingWord[]>([]);
+  const [difficulty, setDifficulty] = useState(2);
   
   const requestRef = useRef<any>(null);
   const lastSpawnTime = useRef<number>(0);
+  const lastSpawnedWord = useRef<string>('');
   const wordsRef = useRef<FallingWord[]>([]);
   const stateRef = useRef(gameState);
   
@@ -30,11 +32,21 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
     stateRef.current = gameState;
   }, [gameState]);
 
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { baseSpeed: 0.1, maxSpawn: 2500, minSpawn: 1200 };
+      case 2: return { baseSpeed: 0.2, maxSpawn: 2000, minSpawn: 800 };
+      case 3: return { baseSpeed: 0.35, maxSpawn: 1200, minSpawn: 500 };
+      default: return { baseSpeed: 0.2, maxSpawn: 2000, minSpawn: 800 };
+    }
+  };
+
   const startGame = () => {
     setScore(0);
     setLives(3);
     setWords([]);
     wordsRef.current = [];
+    lastSpawnedWord.current = '';
     setGameState('PLAYING');
     lastSpawnTime.current = Date.now();
     requestRef.current = requestAnimationFrame(gameLoop);
@@ -48,10 +60,17 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
   const spawnWord = () => {
     const isPositive = Math.random() > 0.4; // 60% positive
     const textList = isPositive ? POSITIVE_WORDS : NEGATIVE_WORDS;
-    const text = textList[Math.floor(Math.random() * textList.length)];
     
-    // speed increases slightly with score
-    const baseSpeed = 0.2;
+    let text = '';
+    let attempts = 0;
+    do {
+      text = textList[Math.floor(Math.random() * textList.length)];
+      attempts++;
+    } while (text === lastSpawnedWord.current && attempts < 5);
+
+    lastSpawnedWord.current = text;
+    
+    const params = getGameParams();
     const speedMult = 1 + (score / 1000);
     
     const newWord: FallingWord = {
@@ -60,7 +79,7 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
       isPositive,
       x: 10 + Math.random() * 80,
       y: -10,
-      speed: (baseSpeed + Math.random() * 0.2) * speedMult,
+      speed: (params.baseSpeed + Math.random() * 0.15) * speedMult,
       clicked: false
     };
     
@@ -71,9 +90,11 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
     if (stateRef.current !== 'PLAYING') return;
 
     const now = Date.now();
+    const params = getGameParams();
     
     // Spawn rate increases with score
-    const spawnRate = Math.max(800, 2000 - (score * 2));
+    const scoreFactor = difficulty === 3 ? score * 3 : score * 2;
+    const spawnRate = Math.max(params.minSpawn, params.maxSpawn - scoreFactor);
     
     if (now - lastSpawnTime.current > spawnRate) {
       spawnWord();
@@ -119,7 +140,7 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
     word.clicked = true;
 
     if (isPositive) {
-      setScore(s => s + 50);
+      setScore(s => s + (50 * difficulty));
     } else {
       // Clicked a negative word
       setLives(l => l - 1);
@@ -157,8 +178,15 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
           <div className="animate-slide-up-fade">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Gratitude Catcher</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-              Click the <span className="text-pink-400 font-bold">Positive</span> words to catch them. Let the <span className="text-slate-500 font-bold">Negative</span> words fall away. Don't let positive words hit the ground!
+              Tap the <span className="text-pink-400 font-bold">Positive</span> words to catch them. Let the <span className="text-slate-500 font-bold">Negative</span> words fall away. Don't let positive words hit the ground!
             </p>
+            
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
+            </div>
+
             <button 
               onClick={startGame}
               className="px-8 py-4 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-2xl text-xl transition-all shadow-lg hover:scale-105"
@@ -173,8 +201,8 @@ const GratitudeCatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOv
             {words.map(w => (
               <div 
                 key={w.id} 
-                onClick={() => handleWordClick(w.id, w.isPositive)}
-                className={`absolute px-6 py-3 rounded-xl text-lg font-bold shadow-lg transition-transform hover:scale-110 active:scale-95 select-none
+                onPointerDown={(e) => { e.preventDefault(); handleWordClick(w.id, w.isPositive); }}
+                className={`absolute px-6 py-3 rounded-xl text-lg font-bold shadow-lg transition-transform hover:scale-110 active:scale-95 select-none touch-manipulation
                   ${w.isPositive ? 'bg-pink-500/20 text-pink-300 border border-pink-500/50' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}
                 style={{ top: `${w.y}%`, left: `${w.x}%`, transform: 'translate(-50%, -50%)' }}
               >

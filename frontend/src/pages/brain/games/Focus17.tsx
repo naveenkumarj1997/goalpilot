@@ -8,8 +8,18 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
   const [progress, setProgress] = useState(0); // 0 to 100
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [difficulty, setDifficulty] = useState(2);
   
   const timerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { timeSec: 10 };
+      case 2: return { timeSec: 17 };
+      case 3: return { timeSec: 30 };
+      default: return { timeSec: 17 };
+    }
+  };
 
   const startFocus = () => {
     if (!goal.trim()) return;
@@ -17,10 +27,14 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
     setProgress(0);
   };
 
-  const handlePointerDown = () => {
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
     if (gameState !== 'FOCUSING') return;
 
-    // 17 seconds total. Update every 170ms to get 1% increase. 100 * 170ms = 17000ms.
+    const params = getGameParams();
+    // Update every (timeSec * 10) ms to get 1% increase. 100 * ms = totalTime.
+    const msPerStep = params.timeSec * 10;
+    
     timerRef.current = setInterval(() => {
       setProgress(p => {
         if (p >= 99) {
@@ -30,24 +44,25 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
         }
         return p + 1;
       });
-    }, 170);
+    }, msPerStep);
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
+    e.preventDefault();
     if (gameState !== 'FOCUSING' || progress >= 100) return;
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
     
-    // They let go before 17 seconds
+    // They let go before the required time
     setStreak(0);
     setGameState('GAMEOVER');
   };
 
   const handleSuccess = () => {
     setGameState('SUCCESS');
-    setScore(s => s + 500 + (streak * 100));
+    setScore(s => s + (500 * difficulty) + (streak * 100));
     setStreak(s => s + 1);
   };
 
@@ -83,11 +98,17 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
       <div className="min-h-[400px] flex flex-col justify-center items-center">
         {gameState === 'START' && (
           <div className="animate-slide-up-fade w-full max-w-md mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">17-Second Focus</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Magnetic Focus</h2>
             <p className="text-slate-400 mb-8">
-              According to Abraham Hicks, holding a pure thought for 17 seconds aligns your vibration with it. Type your goal and hold your focus.
+              Holding a pure thought aligns your vibration with it. Type your goal and hold your focus for the entire duration.
             </p>
             
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (10s)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (17s)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (30s)</button>
+            </div>
+
             <input 
               type="text" 
               placeholder="e.g. I am running a successful business"
@@ -115,7 +136,8 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
-              className="w-48 h-48 mx-auto rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center cursor-pointer relative overflow-hidden group transition-all"
+              onPointerCancel={handlePointerUp}
+              className="w-48 h-48 mx-auto rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center cursor-pointer relative overflow-hidden group transition-all touch-manipulation touch-none"
             >
               <div 
                 className="absolute bottom-0 left-0 w-full bg-pink-500/50 transition-all duration-200"
@@ -123,10 +145,10 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
               ></div>
               <div className="relative z-10 flex flex-col items-center">
                 <Eye className="w-10 h-10 text-pink-400 mb-2 group-hover:scale-110 transition-transform" />
-                <span className="font-bold text-slate-300">HOLD TO FOCUS</span>
+                <span className="font-bold text-slate-300 pointer-events-none">HOLD TO FOCUS</span>
               </div>
             </div>
-            <p className="text-slate-400 mt-6 text-sm">Do not let go until the circle fills.</p>
+            <p className="text-slate-400 mt-6 text-sm pointer-events-none">Do not let go until the circle fills.</p>
           </div>
         )}
 
@@ -136,7 +158,7 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
               <Trophy className="w-8 h-8 mr-2" /> Vibration Aligned!
             </div>
             <p className="text-slate-400 mb-8 max-w-md mx-auto">
-              You held a pure thought for 17 seconds. The manifestation process has begun.
+              You held a pure thought for the target duration. The manifestation process has begun.
             </p>
             
             <button 
@@ -153,7 +175,7 @@ const Focus17 = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (sco
             <div className="text-red-400 text-2xl font-bold mb-4 flex items-center justify-center">
               <XCircle className="w-8 h-8 mr-2" /> Focus Broken
             </div>
-            <p className="text-slate-400 mb-8">You let go before 17 seconds. Your vibration was interrupted.</p>
+            <p className="text-slate-400 mb-8">You let go before the target duration. Your vibration was interrupted.</p>
             
             <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8 max-w-sm mx-auto">
               <div className="flex items-center justify-center mb-2">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, RotateCcw, Activity, XCircle, HeartHandshake } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
@@ -6,32 +6,32 @@ const REFRAMES = [
   { 
     negative: "I am always broke.", 
     positive: "Wealth flows to me abundantly and effortlessly.",
-    fakes: ["I hope I get some money soon.", "I need to work harder for pennies.", "Money is evil anyway."]
+    fakes: ["I hope I get some money soon.", "I need to work harder for pennies.", "Money is evil anyway.", "If I win the lottery I will be happy.", "I will try to save more."]
   },
   { 
     negative: "I will never get the job.", 
     positive: "I am perfectly aligned with my dream career.",
-    fakes: ["Other people are just luckier than me.", "I guess I'll settle for less.", "I'm underqualified for everything."]
+    fakes: ["Other people are just luckier than me.", "I guess I'll settle for less.", "I'm underqualified for everything.", "The interviewers always hate me.", "I will just keep applying to random jobs."]
   },
   { 
     negative: "Nobody understands me.", 
     positive: "I attract loving, like-minded people into my life.",
-    fakes: ["I'm meant to be alone forever.", "People are just selfish.", "I need to change who I am."]
+    fakes: ["I'm meant to be alone forever.", "People are just selfish.", "I need to change who I am.", "It's safer to not trust anyone.", "Everyone leaves eventually."]
   },
   { 
     negative: "I don't have enough time.", 
     positive: "I am in complete control of my schedule and time flows abundantly.",
-    fakes: ["I'm always running late.", "There are never enough hours.", "I'm constantly overwhelmed."]
+    fakes: ["I'm always running late.", "There are never enough hours.", "I'm constantly overwhelmed.", "I will sleep less to get more done.", "I have to do everything myself."]
   },
   { 
     negative: "I always fail at this.", 
     positive: "Every experience is a stepping stone to my inevitable success.",
-    fakes: ["I should just give up now.", "Some people have it, I don't.", "Failure is my destiny."]
+    fakes: ["I should just give up now.", "Some people have it, I don't.", "Failure is my destiny.", "I will never learn.", "It is probably rigged against me."]
   },
   { 
     negative: "I am not attractive enough.", 
     positive: "I radiate confidence and inner beauty that attracts positivity.",
-    fakes: ["I need to fix my appearance.", "If only I looked like them.", "Nobody looks at me."]
+    fakes: ["I need to fix my appearance.", "If only I looked like them.", "Nobody looks at me.", "I should buy more expensive clothes.", "It's all about genetics anyway."]
   }
 ];
 
@@ -42,17 +42,43 @@ const PositiveReframing = ({ onBack, onGameOver }: { onBack: () => void, onGameO
   const [score, setScore] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
 
+  const historyRef = useRef<string[]>([]);
+
+  const getOptionsCount = () => {
+    switch(difficulty) {
+      case 1: return 3; // 1 correct, 2 fake
+      case 2: return 4; // 1 correct, 3 fake
+      case 3: return 6; // 1 correct, 5 fake
+      default: return 3;
+    }
+  };
+
   const startGame = () => {
     setScore(0);
+    historyRef.current = [];
     generateReframe();
   };
 
   const generateReframe = () => {
-    const randomSet = REFRAMES[Math.floor(Math.random() * REFRAMES.length)];
+    let randomSet: any = null;
+    let attempts = 0;
+    
+    do {
+      randomSet = REFRAMES[Math.floor(Math.random() * REFRAMES.length)];
+      attempts++;
+    } while (historyRef.current.includes(randomSet.negative) && attempts < 10);
+    
+    historyRef.current.push(randomSet.negative);
+    if (historyRef.current.length > Math.floor(REFRAMES.length / 2)) {
+      historyRef.current.shift();
+    }
+
     setCurrentSet(randomSet);
     
-    // Mix the correct positive with the fakes
-    const opts = [randomSet.positive, ...randomSet.fakes];
+    const count = getOptionsCount();
+    const shuffledFakes = [...randomSet.fakes].sort(() => Math.random() - 0.5).slice(0, count - 1);
+    
+    const opts = [randomSet.positive, ...shuffledFakes];
     setOptions(opts.sort(() => Math.random() - 0.5));
     setGameState('PLAYING');
   };
@@ -92,9 +118,9 @@ const PositiveReframing = ({ onBack, onGameOver }: { onBack: () => void, onGameO
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
             </div>
 
             <button 
@@ -118,12 +144,13 @@ const PositiveReframing = ({ onBack, onGameOver }: { onBack: () => void, onGameO
               <HeartHandshake className="w-5 h-5 mr-2" /> Choose the Manifestation Reframe
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            <div className={`grid gap-4 max-w-3xl mx-auto ${difficulty === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
               {options.map((opt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleGuess(opt)}
-                  className="py-6 px-4 bg-slate-800/80 hover:bg-slate-700 hover:bg-pink-900/20 border border-slate-700 hover:border-pink-500/50 text-white font-bold rounded-xl text-lg transition-all shadow-md flex items-center justify-center text-center leading-tight min-h-[100px]"
+                  onClick={(e) => { e.preventDefault(); handleGuess(opt); }}
+                  onPointerDown={(e) => { e.preventDefault(); handleGuess(opt); }}
+                  className="py-6 px-4 bg-slate-800/80 hover:bg-slate-700 hover:bg-pink-900/20 border border-slate-700 hover:border-pink-500/50 text-white font-bold rounded-xl text-sm sm:text-base transition-all shadow-md flex items-center justify-center text-center leading-tight min-h-[100px] active:scale-95 touch-manipulation"
                 >
                   {opt}
                 </button>

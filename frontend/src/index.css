@@ -24,6 +24,12 @@
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
   }
+  
+  /* Fix mobile tap delay and highlights for all games */
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 @layer utilities {

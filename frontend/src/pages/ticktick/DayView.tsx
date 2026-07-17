@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Check, Calendar, Tag, Undo2, Bookmark, Pencil, Trash2, Bell } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import CreateTaskModal from './CreateTaskModal';
@@ -7,9 +7,21 @@ import { getLocalDateString } from '../../utils/dateUtils';
 export default function DayView({ currentDate, tasks, onCreateTask, onUpdateTask, onDeleteTask }: any) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<any>(null);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // update every minute
+    return () => clearInterval(interval);
+  }, []);
 
   const dateStr = getLocalDateString(currentDate);
   const dayOfWeek = currentDate.getDay();
+  const isToday = dateStr === getLocalDateString(new Date());
+  
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentTopPercentage = (currentMinutes / (24 * 60)) * 100;
 
   const isTaskCompletedOnDate = (t: any) => {
     if (t.recurrence?.type && t.recurrence.type !== 'none') {
@@ -364,6 +376,15 @@ export default function DayView({ currentDate, tasks, onCreateTask, onUpdateTask
             {/* Absolutely Positioned Tasks */}
             <div className="absolute top-0 left-[72px] lg:left-[80px] right-4 bottom-0 pointer-events-none">
               <div className="relative w-full h-full">
+                {isToday && (
+                  <div 
+                    className="absolute left-0 right-0 z-30 pointer-events-none flex items-center"
+                    style={{ top: `${currentTopPercentage}%` }}
+                  >
+                    <div className="w-2 h-2 bg-red-500 rounded-full -ml-1"></div>
+                    <div className="flex-1 h-[2px] bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                  </div>
+                )}
                 <AnimatePresence mode="popLayout">
                   {positionedTasks.map(task => {
                     const topPercentage = (task.startMinutes / (24 * 60)) * 100;

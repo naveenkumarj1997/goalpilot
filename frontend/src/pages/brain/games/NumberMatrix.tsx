@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, RotateCcw, XCircle, Activity } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, RotateCcw, XCircle, Activity, Timer } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
+
+type MatrixRule = 'rowSum' | 'colSum' | 'rowAdd' | 'colMult' | 'rowSub' | 'colSub' | 'diagSum';
 
 const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
@@ -9,22 +11,45 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
   const [correctAnswer, setCorrectAnswer] = useState(0);
   const [score, setScore] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(100);
+
+  const timerRef = useRef<any>(null);
+  const historyRef = useRef<MatrixRule[]>([]);
+
+  const getGameParams = () => {
+    switch(difficulty) {
+      case 1: return { timeMs: 30000, rules: ['rowSum', 'colSum'] as MatrixRule[], maxNum: 15 };
+      case 2: return { timeMs: 25000, rules: ['rowSum', 'colSum', 'rowAdd', 'colMult'] as MatrixRule[], maxNum: 25 };
+      case 3: return { timeMs: 20000, rules: ['rowAdd', 'colMult', 'rowSub', 'colSub', 'diagSum'] as MatrixRule[], maxNum: 40 };
+      default: return { timeMs: 30000, rules: ['rowSum'] as MatrixRule[], maxNum: 15 };
+    }
+  };
 
   const startGame = () => {
     setScore(0);
+    historyRef.current = [];
     setGameState('PLAYING');
     generateMatrix();
   };
 
   const generateMatrix = () => {
-    const rules = ['rowSum', 'colSum', 'rowAdd', 'colMult'];
-    const rule = rules[Math.floor(Math.random() * rules.length)];
+    const params = getGameParams();
+    let rule: MatrixRule;
+    let attempts = 0;
     
+    do {
+      rule = params.rules[Math.floor(Math.random() * params.rules.length)];
+      attempts++;
+    } while (historyRef.current.includes(rule) && attempts < 10);
+    
+    historyRef.current.push(rule);
+    if (historyRef.current.length > 2) historyRef.current.shift(); // keep last 2 rules
+
     let grid = new Array(9).fill(0);
     let ans = 0;
 
     if (rule === 'rowSum') {
-      const sum = Math.floor(Math.random() * 20) + 15;
+      const sum = Math.floor(Math.random() * (params.maxNum - 10)) + 15;
       for (let r = 0; r < 3; r++) {
         const a = Math.floor(Math.random() * (sum - 2)) + 1;
         const b = Math.floor(Math.random() * (sum - a - 1)) + 1;
@@ -34,7 +59,7 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
       ans = grid[8];
     } 
     else if (rule === 'colSum') {
-      const sum = Math.floor(Math.random() * 20) + 15;
+      const sum = Math.floor(Math.random() * (params.maxNum - 10)) + 15;
       for (let c = 0; c < 3; c++) {
         const a = Math.floor(Math.random() * (sum - 2)) + 1;
         const b = Math.floor(Math.random() * (sum - a - 1)) + 1;
@@ -44,21 +69,48 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
       ans = grid[8];
     }
     else if (rule === 'rowAdd') {
-      // Row3 = Row1 + Row2
       for (let c = 0; c < 3; c++) {
-        grid[c] = Math.floor(Math.random() * 10) + 1;
-        grid[3+c] = Math.floor(Math.random() * 10) + 1;
+        grid[c] = Math.floor(Math.random() * (params.maxNum / 2)) + 1;
+        grid[3+c] = Math.floor(Math.random() * (params.maxNum / 2)) + 1;
         grid[6+c] = grid[c] + grid[3+c];
       }
       ans = grid[8];
     }
     else if (rule === 'colMult') {
-      // Col3 = Col1 * Col2
       for (let r = 0; r < 3; r++) {
         grid[r*3] = Math.floor(Math.random() * 5) + 2;
         grid[r*3+1] = Math.floor(Math.random() * 5) + 2;
         grid[r*3+2] = grid[r*3] * grid[r*3+1];
       }
+      ans = grid[8];
+    }
+    else if (rule === 'rowSub') {
+      for (let c = 0; c < 3; c++) {
+        const a = Math.floor(Math.random() * params.maxNum) + 15;
+        const b = Math.floor(Math.random() * (a - 2)) + 1;
+        grid[c] = a;
+        grid[3+c] = b;
+        grid[6+c] = a - b;
+      }
+      ans = grid[8];
+    }
+    else if (rule === 'colSub') {
+      for (let r = 0; r < 3; r++) {
+        const a = Math.floor(Math.random() * params.maxNum) + 15;
+        const b = Math.floor(Math.random() * (a - 2)) + 1;
+        grid[r*3] = a;
+        grid[r*3+1] = b;
+        grid[r*3+2] = a - b;
+      }
+      ans = grid[8];
+    }
+    else if (rule === 'diagSum') {
+      // Magic square like logic where diagonals matter
+      const sum = Math.floor(Math.random() * params.maxNum) + 20;
+      for (let i = 0; i < 9; i++) grid[i] = Math.floor(Math.random() * 15) + 1;
+      grid[0] = Math.floor(Math.random() * (sum - 2)) + 1;
+      grid[4] = Math.floor(Math.random() * (sum - grid[0] - 1)) + 1;
+      grid[8] = sum - grid[0] - grid[4];
       ans = grid[8];
     }
 
@@ -68,14 +120,36 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
     // Generate 3 wrong options
     const opts = [ans];
     while (opts.length < 4) {
-      const offset = (Math.floor(Math.random() * 11) - 5) * (Math.floor(Math.random() * 3) + 1);
+      const maxOffset = Math.max(5, Math.floor(ans * 0.3));
+      const offset = (Math.floor(Math.random() * maxOffset) + 1) * (Math.random() > 0.5 ? 1 : -1);
       const wrong = ans + offset;
       if (!opts.includes(wrong) && wrong > 0) {
         opts.push(wrong);
       }
     }
     setOptions(opts.sort(() => Math.random() - 0.5));
+    setTimeLeft(100);
   };
+
+  useEffect(() => {
+    if (gameState === 'PLAYING') {
+      const { timeMs } = getGameParams();
+      const tickRate = 50; 
+      const decreaseAmount = 100 / (timeMs / tickRate);
+      
+      timerRef.current = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= decreaseAmount) {
+            clearInterval(timerRef.current);
+            setGameState('GAMEOVER');
+            return 0;
+          }
+          return t - decreaseAmount;
+        });
+      }, tickRate);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [gameState, score, difficulty]);
 
   const handleGuess = (guess: number) => {
     if (gameState !== 'PLAYING') return;
@@ -84,6 +158,7 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
       setScore(s => s + (150 * difficulty));
       generateMatrix();
     } else {
+      clearInterval(timerRef.current);
       setGameState('GAMEOVER');
     }
   };
@@ -108,13 +183,13 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
           <div className="animate-slide-up-fade">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Number Matrix</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-              Deduce the mathematical relationship in the 3x3 grid to find the missing number.
+              Deduce the mathematical relationship in the 3x3 grid to find the missing number before time runs out.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
             </div>
 
             <button 
@@ -128,9 +203,19 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
 
         {gameState === 'PLAYING' && (
           <div className="animate-slide-up-fade w-full">
+            <div className="flex items-center justify-center mb-8">
+              <Timer className="w-5 h-5 text-slate-400 mr-2" />
+              <div className="w-64 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-75 linear ${timeLeft > 50 ? 'bg-blue-500' : timeLeft > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${Math.max(0, timeLeft)}%` }}
+                ></div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-2 md:gap-4 max-w-xs mx-auto mb-12">
               {matrix.map((num, idx) => (
-                <div key={idx} className={`w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-2xl text-3xl md:text-4xl font-black ${idx === 8 ? 'bg-blue-500/20 border-2 border-dashed border-blue-500 text-blue-400' : 'bg-slate-800 border border-slate-700 text-white'}`}>
+                <div key={idx} className={`w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-2xl text-3xl md:text-4xl font-black shadow-[0_0_15px_rgba(0,0,0,0.5)] ${idx === 8 ? 'bg-blue-500/20 border-2 border-dashed border-blue-500 text-blue-400 animate-pulse' : 'bg-slate-800 border border-slate-700 text-white'}`}>
                   {idx === 8 ? '?' : num}
                 </div>
               ))}
@@ -141,7 +226,7 @@ const NumberMatrix = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?:
                 <button
                   key={idx}
                   onClick={() => handleGuess(opt)}
-                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500/50 text-white font-bold rounded-xl text-xl transition-all"
+                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500/50 text-white font-bold rounded-xl text-xl transition-all shadow-md"
                 >
                   {opt}
                 </button>

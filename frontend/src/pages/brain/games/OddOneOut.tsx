@@ -1,23 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Target, RotateCcw, XCircle, Activity } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Target, RotateCcw, XCircle, Activity, Timer } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const ODD_BANKS = [
-  { items: ['Apple', 'Banana', 'Carrot', 'Orange'], odd: 'Carrot', reason: 'Carrot is a vegetable, others are fruits.' },
-  { items: ['React', 'Angular', 'Vue', 'Express'], odd: 'Express', reason: 'Express is a backend framework, others are frontend.' },
-  { items: ['Dog', 'Cat', 'Lion', 'Wolf'], odd: 'Cat', reason: 'Cat is a domestic feline, others are canines/wild (wait: Dog/Wolf are canine, Lion is feline. Cat is feline. Let\'s make it clearer: Dog, Wolf, Fox, Cat)' }, // Wait, let me fix that offline bank.
-];
-
-const REFINED_BANKS = [
-  { items: ['Dog', 'Wolf', 'Fox', 'Cat'], odd: 'Cat', reason: 'Cat is feline, others are canine.' },
-  { items: ['React', 'Angular', 'Vue', 'Express'], odd: 'Express', reason: 'Express is a backend framework, others are frontend libraries/frameworks.' },
-  { items: ['Mars', 'Venus', 'Jupiter', 'Pluto'], odd: 'Pluto', reason: 'Pluto is a dwarf planet, others are major planets.' },
-  { items: ['16', '25', '36', '40'], odd: '40', reason: '40 is not a perfect square (16=4², 25=5², 36=6²).' },
-  { items: ['Oxygen', 'Hydrogen', 'Water', 'Carbon'], odd: 'Water', reason: 'Water is a compound, others are elements.' },
-  { items: ['Triangle', 'Square', 'Pentagon', 'Circle'], odd: 'Circle', reason: 'Circle has no straight edges.' },
-  { items: ['Guitar', 'Violin', 'Piano', 'Cello'], odd: 'Piano', reason: 'Piano is a percussion/keyboard instrument, others are strictly string/bowed.' },
-  { items: ['Tokyo', 'Paris', 'New York', 'London'], odd: 'New York', reason: 'New York is not a capital city.' }
-];
+const BANKS = {
+  EASY: [
+    { items: ['Dog', 'Wolf', 'Fox', 'Cat'], odd: 'Cat', reason: 'Cat is feline, others are canine.' },
+    { items: ['Apple', 'Banana', 'Carrot', 'Orange'], odd: 'Carrot', reason: 'Carrot is a vegetable, others are fruits.' },
+    { items: ['Triangle', 'Square', 'Pentagon', 'Circle'], odd: 'Circle', reason: 'Circle has no straight edges.' },
+    { items: ['Red', 'Blue', 'Green', 'Loud'], odd: 'Loud', reason: 'Loud is a sound property, others are colors.' },
+    { items: ['Car', 'Bus', 'Train', 'Airplane'], odd: 'Airplane', reason: 'Airplane flies, others are ground transport.' }
+  ],
+  MEDIUM: [
+    { items: ['React', 'Angular', 'Vue', 'Express'], odd: 'Express', reason: 'Express is a backend framework, others are frontend.' },
+    { items: ['Mars', 'Venus', 'Jupiter', 'Pluto'], odd: 'Pluto', reason: 'Pluto is a dwarf planet, others are major planets.' },
+    { items: ['Guitar', 'Violin', 'Piano', 'Cello'], odd: 'Piano', reason: 'Piano is a percussion/keyboard instrument, others are strictly string/bowed.' },
+    { items: ['Tokyo', 'Paris', 'New York', 'London'], odd: 'New York', reason: 'New York is not a capital city.' },
+    { items: ['Oxygen', 'Hydrogen', 'Water', 'Carbon'], odd: 'Water', reason: 'Water is a compound, others are elements.' }
+  ],
+  HARD: [
+    { items: ['16', '25', '36', '40'], odd: '40', reason: '40 is not a perfect square (16=4², 25=5², 36=6²).' },
+    { items: ['Spider', 'Ant', 'Beetle', 'Fly'], odd: 'Spider', reason: 'Spider is an arachnid (8 legs), others are insects (6 legs).' },
+    { items: ['Whale', 'Shark', 'Dolphin', 'Seal'], odd: 'Shark', reason: 'Shark is a fish, others are mammals.' },
+    { items: ['31', '41', '51', '61'], odd: '51', reason: '51 is not a prime number (17 * 3).' },
+    { items: ['Helium', 'Neon', 'Argon', 'Oxygen'], odd: 'Oxygen', reason: 'Oxygen is highly reactive, others are noble gases.' }
+  ]
+};
 
 const OddOneOut = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
@@ -25,21 +32,68 @@ const OddOneOut = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
   const [options, setOptions] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(100);
+
+  const timerRef = useRef<any>(null);
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch(difficulty) {
+      case 1: return { timeMs: 20000, bank: BANKS.EASY };
+      case 2: return { timeMs: 15000, bank: BANKS.MEDIUM };
+      case 3: return { timeMs: 10000, bank: BANKS.HARD };
+      default: return { timeMs: 20000, bank: BANKS.EASY };
+    }
+  };
 
   const startGame = () => {
     setScore(0);
+    historyRef.current = [];
     setGameState('PLAYING');
     generateQuestion();
   };
 
   const generateQuestion = () => {
-    const randomSet = REFINED_BANKS[Math.floor(Math.random() * REFINED_BANKS.length)];
+    const params = getGameParams();
+    
+    let randomSet;
+    let attempts = 0;
+    
+    do {
+      randomSet = params.bank[Math.floor(Math.random() * params.bank.length)];
+      attempts++;
+    } while (historyRef.current.includes(randomSet.odd) && attempts < 10);
+    
+    historyRef.current.push(randomSet.odd);
+    if (historyRef.current.length > 2) historyRef.current.shift(); // keep last 2
+
     setCurrentSet(randomSet);
     
     // Shuffle options
     const shuffled = [...randomSet.items].sort(() => Math.random() - 0.5);
     setOptions(shuffled);
+    setTimeLeft(100);
   };
+
+  useEffect(() => {
+    if (gameState === 'PLAYING') {
+      const { timeMs } = getGameParams();
+      const tickRate = 50; 
+      const decreaseAmount = 100 / (timeMs / tickRate);
+      
+      timerRef.current = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= decreaseAmount) {
+            clearInterval(timerRef.current);
+            setGameState('GAMEOVER');
+            return 0;
+          }
+          return t - decreaseAmount;
+        });
+      }, tickRate);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [gameState, score, difficulty]);
 
   const handleGuess = (guess: string) => {
     if (gameState !== 'PLAYING') return;
@@ -48,6 +102,7 @@ const OddOneOut = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
       setScore(s => s + (100 * difficulty));
       generateQuestion();
     } else {
+      clearInterval(timerRef.current);
       setGameState('GAMEOVER');
     }
   };
@@ -72,13 +127,13 @@ const OddOneOut = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
           <div className="animate-slide-up-fade">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Odd One Out</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-              Three items follow a logical rule. One does not. Find the imposter.
+              Three items follow a logical rule. One does not. Find the imposter before time runs out.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
             </div>
 
             <button 
@@ -92,6 +147,16 @@ const OddOneOut = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
 
         {gameState === 'PLAYING' && currentSet && (
           <div className="animate-slide-up-fade w-full">
+            <div className="flex items-center justify-center mb-8">
+              <Timer className="w-5 h-5 text-slate-400 mr-2" />
+              <div className="w-64 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-75 linear ${timeLeft > 50 ? 'bg-emerald-500' : timeLeft > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${Math.max(0, timeLeft)}%` }}
+                ></div>
+              </div>
+            </div>
+
             <h3 className="text-xl font-medium text-white mb-8">Which item does not belong?</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
               {options.map((opt, idx) => (

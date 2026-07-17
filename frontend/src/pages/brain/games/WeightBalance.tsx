@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, RotateCcw, Brain, Activity, Scale } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const SHAPES = ['●', '■', '▲', '★', '◆'];
+const SHAPES = ['●', '■', '▲', '★', '◆', '✚', '✿'];
 
 type Equation = {
   left: string[];
@@ -13,95 +13,116 @@ const WeightBalance = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
+  const [difficulty, setDifficulty] = useState(2);
   const [timeRemaining, setTimeRemaining] = useState(15);
   
   const [equations, setEquations] = useState<Equation[]>([]);
   const [heaviest, setHeaviest] = useState<string>('');
   const [options, setOptions] = useState<string[]>([]);
 
+  const historyRef = useRef<string[]>([]);
+  const timerRef = useRef<any>(null);
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { numShapes: 3, numEqs: 2, time: 20 };
+      case 2: return { numShapes: 4, numEqs: 3, time: 15 };
+      case 3: return { numShapes: 5, numEqs: 4, time: 10 };
+      default: return { numShapes: 4, numEqs: 3, time: 15 };
+    }
+  };
+
   const startGame = () => {
     setScore(0);
     setLevel(1);
+    historyRef.current = [];
     setGameState('PLAYING');
     generatePuzzle(1);
   };
 
   const generatePuzzle = (lvl: number) => {
-    // Select 3 random shapes
-    const shuffledShapes = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, 3);
-    setOptions(shuffledShapes);
+    const params = getGameParams();
     
-    // Assign weights 1, 2, 3 to the 3 shapes
-    const weights = [1, 2, 3];
-    const shapeWeights = new Map<string, number>();
-    shuffledShapes.forEach((shape, index) => {
-      shapeWeights.set(shape, weights[index]);
-    });
+    let shuffledShapes: string[] = [];
+    let attempts = 0;
     
-    setHeaviest(shuffledShapes[2]); // The one with weight 3
+    do {
+      shuffledShapes = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, params.numShapes);
+      attempts++;
+    } while (historyRef.current.includes(shuffledShapes.join(',')) && attempts < 10);
+    
+    historyRef.current.push(shuffledShapes.join(','));
+    if (historyRef.current.length > 5) historyRef.current.shift();
 
-    // Generate valid equations
-    // For weights 1, 2, 3:
-    // Equation 1: 3 = 1 + 2 (Shape3 = Shape1 + Shape2)
-    // Equation 2: 2 = 1 + 1 (Shape2 = Shape1 + Shape1)
+    setOptions([...shuffledShapes].sort(() => Math.random() - 0.5));
     
-    const s1 = shuffledShapes[0]; // weight 1
-    const s2 = shuffledShapes[1]; // weight 2
-    const s3 = shuffledShapes[2]; // weight 3
-
+    // Weights are 1 to N
+    // To make valid equations easily, we assign powers of 2? No, simple addition is better.
+    // Actually, generating generic equations that have unique solutions is hard.
+    // Let's use predefined patterns based on numShapes.
+    
     const eqs: Equation[] = [];
+    const sortedByWeight = shuffledShapes; // index 0 is weight 1, index N-1 is highest
     
-    // Eq 1: s3 = s1 + s2
-    if (Math.random() > 0.5) {
-      eqs.push({ left: [s3], right: [s1, s2] });
-    } else {
-      eqs.push({ left: [s1, s2], right: [s3] });
-    }
+    setHeaviest(sortedByWeight[sortedByWeight.length - 1]);
+    
+    const s1 = sortedByWeight[0];
+    const s2 = sortedByWeight[1];
+    const s3 = sortedByWeight[2];
+    const s4 = sortedByWeight[3];
+    const s5 = sortedByWeight[4];
 
-    // Eq 2: s2 = s1 + s1
-    if (Math.random() > 0.5) {
-      eqs.push({ left: [s2], right: [s1, s1] });
-    } else {
-      eqs.push({ left: [s1, s1], right: [s2] });
+    // Build standard equations based on difficulty
+    if (params.numShapes >= 3) {
+      // 3 = 1 + 2
+      eqs.push(Math.random() > 0.5 ? { left: [s3], right: [s1, s2] } : { left: [s1, s2], right: [s3] });
+      // 2 = 1 + 1
+      eqs.push(Math.random() > 0.5 ? { left: [s2], right: [s1, s1] } : { left: [s1, s1], right: [s2] });
     }
-
-    // Add a 3rd equation for higher levels to add noise/complexity
-    if (lvl > 5) {
+    
+    if (params.numShapes >= 4) {
+      // 4 = 3 + 1
+      eqs.push(Math.random() > 0.5 ? { left: [s4], right: [s3, s1] } : { left: [s3, s1], right: [s4] });
+    }
+    
+    if (params.numShapes >= 5) {
+      // 5 = 4 + 1
+      eqs.push(Math.random() > 0.5 ? { left: [s5], right: [s4, s1] } : { left: [s4, s1], right: [s5] });
+    }
+    
+    // Add noise for high levels
+    if (lvl > 5 && params.numShapes >= 3) {
       // 3 + 1 = 2 + 2
-      if (Math.random() > 0.5) {
-        eqs.push({ left: [s3, s1], right: [s2, s2] });
-      } else {
-        eqs.push({ left: [s2, s2], right: [s3, s1] });
-      }
+      eqs.push(Math.random() > 0.5 ? { left: [s3, s1], right: [s2, s2] } : { left: [s2, s2], right: [s3, s1] });
     }
 
-    // Shuffle equations
-    setEquations(eqs.sort(() => Math.random() - 0.5));
+    setEquations(eqs.sort(() => Math.random() - 0.5).slice(0, params.numEqs));
     
-    // Time per level decreases slightly or stays fixed
-    setTimeRemaining(Math.max(5, 15 - Math.floor(lvl / 2)));
+    // Time per level decreases slightly based on level, bounded by difficulty base
+    setTimeRemaining(Math.max(5, params.time - Math.floor(lvl / 3)));
   };
 
   useEffect(() => {
-    let timer: any;
     if (gameState === 'PLAYING') {
-      timer = setInterval(() => {
+      timerRef.current = setInterval(() => {
         setTimeRemaining(t => {
           if (t <= 1) {
             setGameState('GAMEOVER');
-            clearInterval(timer);
+            clearInterval(timerRef.current);
             return 0;
           }
           return t - 1;
         });
       }, 1000);
     }
-    return () => clearInterval(timer);
+    return () => clearInterval(timerRef.current);
   }, [gameState]);
 
   const handleGuess = (shape: string) => {
+    if (gameState !== 'PLAYING') return;
+
     if (shape === heaviest) {
-      setScore(s => s + (level * 100));
+      setScore(s => s + (level * 100 * difficulty));
       setLevel(l => l + 1);
       generatePuzzle(level + 1);
     } else {
@@ -135,6 +156,13 @@ const WeightBalance = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
               Analyze the scales to determine which shape is the heaviest.
             </p>
+            
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (3 Shapes)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (4 Shapes)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (5 Shapes)</button>
+            </div>
+
             <button 
               onClick={startGame}
               className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xl transition-all shadow-lg hover:scale-105"
@@ -147,7 +175,7 @@ const WeightBalance = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
         {gameState === 'PLAYING' && (
           <div className="animate-slide-up-fade w-full flex flex-col items-center">
             <div className="flex justify-between w-full max-w-md mb-8">
-              <span className="text-slate-400 font-mono">Time: {timeRemaining}s</span>
+              <span className={`font-mono font-bold ${timeRemaining <= 5 ? 'text-red-400 animate-pulse' : 'text-slate-400'}`}>Time: {timeRemaining}s</span>
               <span className="text-emerald-400 font-bold">Which is heaviest?</span>
             </div>
 
@@ -165,12 +193,13 @@ const WeightBalance = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
               ))}
             </div>
 
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               {options.map((shape, i) => (
                 <button
                   key={i}
-                  onClick={() => handleGuess(shape)}
-                  className="w-16 h-16 flex items-center justify-center text-4xl bg-slate-800 hover:bg-emerald-600/30 hover:border-emerald-500 border border-transparent rounded-xl transition-all"
+                  onClick={(e) => { e.preventDefault(); handleGuess(shape); }}
+                  onPointerDown={(e) => { e.preventDefault(); handleGuess(shape); }}
+                  className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center text-4xl bg-slate-800 hover:bg-emerald-600/30 hover:border-emerald-500 border border-transparent rounded-xl transition-all touch-manipulation active:scale-95 shadow-lg"
                 >
                   {shape}
                 </button>

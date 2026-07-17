@@ -7,7 +7,7 @@ const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'K', 'L', 'O', 'P', 'R', 'S'
 const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
-  const [nBack, setNBack] = useState(1);
+  const [difficulty, setDifficulty] = useState(1);
   const [sequence, setSequence] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [currentLetter, setCurrentLetter] = useState<string | null>(null);
@@ -16,23 +16,34 @@ const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
   
   const timerRef = useRef<any>(null);
 
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { nBack: 1, speedMs: 2500 };
+      case 2: return { nBack: 2, speedMs: 1500 };
+      case 3: return { nBack: 3, speedMs: 800 };
+      default: return { nBack: 1, speedMs: 2500 };
+    }
+  };
+
   const startGame = () => {
+    const params = getGameParams();
     setScore(0);
     setSequence([]);
     setCurrentIndex(-1);
     setCurrentLetter(null);
-    setTimeRemaining(20 + nBack); // Total trials
+    setTimeRemaining(20 + params.nBack); // Total trials
     setGameState('PLAYING');
     nextTurn([]);
   };
 
   const nextTurn = (currentSeq: string[]) => {
     setIsMatch(null);
+    const params = getGameParams();
     
     // 30% chance to be a match if we are past nBack
     let nextLtr = LETTERS[Math.floor(Math.random() * LETTERS.length)];
-    if (currentSeq.length >= nBack && Math.random() < 0.3) {
-      nextLtr = currentSeq[currentSeq.length - nBack];
+    if (currentSeq.length >= params.nBack && Math.random() < 0.3) {
+      nextLtr = currentSeq[currentSeq.length - params.nBack];
     }
     
     const newSeq = [...currentSeq, nextLtr];
@@ -49,18 +60,19 @@ const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
       } else {
         setGameState('GAMEOVER');
       }
-    }, 2000);
+    }, params.speedMs);
   };
 
   const handleChoice = (userSaysMatch: boolean) => {
     if (gameState !== 'PLAYING' || !timerRef.current) return;
     
     clearTimeout(timerRef.current);
+    const params = getGameParams();
     
-    const actualMatch = sequence.length > nBack && sequence[sequence.length - 1] === sequence[sequence.length - 1 - nBack];
+    const actualMatch = sequence.length > params.nBack && sequence[sequence.length - 1] === sequence[sequence.length - 1 - params.nBack];
     
     if (userSaysMatch === actualMatch) {
-      setScore(s => s + (nBack * 100));
+      setScore(s => s + (params.nBack * 100));
       setIsMatch(true);
     } else {
       setScore(s => Math.max(0, s - 50));
@@ -98,7 +110,7 @@ const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
         </div>
         <div className="flex items-center">
           <Brain className="w-5 h-5 text-purple-400 mr-2" />
-          <span className="font-bold">{nBack}-Back Mode</span>
+          <span className="font-bold">{getGameParams().nBack}-Back Mode</span>
         </div>
       </div>
 
@@ -111,15 +123,9 @@ const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              {[1, 2, 3].map(n => (
-                <button 
-                  key={n}
-                  onClick={() => setNBack(n)} 
-                  className={`py-2 px-6 rounded-xl font-bold transition-all ${nBack === n ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 text-slate-400'}`}
-                >
-                  {n}-Back
-                </button>
-              ))}
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1-Back)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2-Back)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3-Back)</button>
             </div>
 
             <button 
@@ -145,22 +151,24 @@ const NBackTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full max-w-sm">
               <button 
-                onClick={() => handleChoice(false)}
-                className="flex-1 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors"
-                disabled={currentIndex < nBack}
+                onClick={(e) => { e.preventDefault(); handleChoice(false); }}
+                onPointerDown={(e) => { e.preventDefault(); handleChoice(false); }}
+                className="flex-1 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors active:scale-95 touch-manipulation"
+                disabled={currentIndex < getGameParams().nBack}
               >
                 No Match
               </button>
               <button 
-                onClick={() => handleChoice(true)}
-                className="flex-1 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors"
-                disabled={currentIndex < nBack}
+                onClick={(e) => { e.preventDefault(); handleChoice(true); }}
+                onPointerDown={(e) => { e.preventDefault(); handleChoice(true); }}
+                className="flex-1 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors active:scale-95 touch-manipulation"
+                disabled={currentIndex < getGameParams().nBack}
               >
                 Match
               </button>
             </div>
-            {currentIndex < nBack && (
-              <p className="text-slate-400 mt-4 text-sm animate-pulse">Wait for {nBack} letters...</p>
+            {currentIndex < getGameParams().nBack && (
+              <p className="text-slate-400 mt-4 text-sm animate-pulse">Wait for {getGameParams().nBack} letters...</p>
             )}
           </div>
         )}

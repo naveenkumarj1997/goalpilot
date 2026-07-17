@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, RotateCcw, Timer, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
@@ -12,56 +12,83 @@ const LogicEquations = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
   const [timeLeft, setTimeLeft] = useState(100);
   const [difficulty, setDifficulty] = useState(1);
 
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { timeLimitSec: 15 };
+      case 2: return { timeLimitSec: 10 };
+      case 3: return { timeLimitSec: 6 };
+      default: return { timeLimitSec: 10 };
+    }
+  };
+
   const startGame = () => {
     setScore(0);
+    historyRef.current = [];
     setGameState('PLAYING');
     generateLogic();
   };
 
   const generateLogic = () => {
     const vars = ['A', 'B', 'C', 'X', 'Y', 'Z'];
-    const v1 = vars[Math.floor(Math.random() * vars.length)];
-    let v2 = vars[Math.floor(Math.random() * vars.length)];
-    while (v2 === v1) v2 = vars[Math.floor(Math.random() * vars.length)];
-    let v3 = vars[Math.floor(Math.random() * vars.length)];
-    while (v3 === v1 || v3 === v2) v3 = vars[Math.floor(Math.random() * vars.length)];
+    let v1, v2, v3, template, text;
+    let correctAnswerIsTrue = true;
+    let attempts = 0;
 
-    const templates = [
-      {
-        text: `If ${v1} > ${v2} and ${v2} > ${v3}`,
-        qTrue: `Is ${v1} > ${v3}?`,
-        qFalse: `Is ${v3} > ${v1}?`
-      },
-      {
-        text: `If ${v1} is heavier than ${v2}, and ${v2} is heavier than ${v3}`,
-        qTrue: `Is ${v1} the heaviest?`,
-        qFalse: `Is ${v3} heavier than ${v1}?`
-      },
-      {
-        text: `If ${v1} = ${v2} and ${v2} > ${v3}`,
-        qTrue: `Is ${v1} > ${v3}?`,
-        qFalse: `Is ${v3} > ${v1}?`
-      },
-      {
-        text: `If ${v1} is faster than ${v2}, but slower than ${v3}`,
-        qTrue: `Is ${v3} faster than ${v2}?`,
-        qFalse: `Is ${v2} faster than ${v3}?`
-      }
-    ];
+    do {
+      v1 = vars[Math.floor(Math.random() * vars.length)];
+      v2 = vars[Math.floor(Math.random() * vars.length)];
+      while (v2 === v1) v2 = vars[Math.floor(Math.random() * vars.length)];
+      v3 = vars[Math.floor(Math.random() * vars.length)];
+      while (v3 === v1 || v3 === v2) v3 = vars[Math.floor(Math.random() * vars.length)];
 
-    const template = templates[Math.floor(Math.random() * templates.length)];
-    const correctAnswerIsTrue = Math.random() > 0.5;
+      const templates = [
+        {
+          text: `If ${v1} > ${v2} and ${v2} > ${v3}`,
+          qTrue: `Is ${v1} > ${v3}?`,
+          qFalse: `Is ${v3} > ${v1}?`
+        },
+        {
+          text: `If ${v1} is heavier than ${v2}, and ${v2} is heavier than ${v3}`,
+          qTrue: `Is ${v1} the heaviest?`,
+          qFalse: `Is ${v3} heavier than ${v1}?`
+        },
+        {
+          text: `If ${v1} = ${v2} and ${v2} > ${v3}`,
+          qTrue: `Is ${v1} > ${v3}?`,
+          qFalse: `Is ${v3} > ${v1}?`
+        },
+        {
+          text: `If ${v1} is faster than ${v2}, but slower than ${v3}`,
+          qTrue: `Is ${v3} faster than ${v2}?`,
+          qFalse: `Is ${v2} faster than ${v3}?`
+        }
+      ];
+
+      template = templates[Math.floor(Math.random() * templates.length)];
+      text = template.text;
+      attempts++;
+    } while (historyRef.current.includes(text) && attempts < 10);
+
+    historyRef.current.push(text);
+    if (historyRef.current.length > 3) historyRef.current.shift();
+
+    correctAnswerIsTrue = Math.random() > 0.5;
 
     setStatement(template.text);
     setQuestion(correctAnswerIsTrue ? template.qTrue : template.qFalse);
     setIsTrue(correctAnswerIsTrue);
-    setTimeLeft(100); // Reset timer to 10 seconds (100%)
+    setTimeLeft(100); // Reset timer to 100%
   };
 
   useEffect(() => {
     let timer: number | ReturnType<typeof setTimeout>;
     if (gameState === 'PLAYING') {
-      // 10 seconds total. 100% / 100 steps = 1 step per 100ms
+      const params = getGameParams();
+      // timeLimitSec * 10 = time per 1% in ms
+      const msPerStep = (params.timeLimitSec * 1000) / 100;
+      
       timer = setInterval(() => {
         setTimeLeft(t => {
           if (t <= 1) {
@@ -71,10 +98,10 @@ const LogicEquations = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
           }
           return t - 1;
         });
-      }, 100);
+      }, msPerStep);
     }
     return () => clearInterval(timer);
-  }, [gameState]);
+  }, [gameState, score]);
 
   const handleAnswer = (answer: boolean) => {
     if (gameState !== 'PLAYING') return;
@@ -111,9 +138,9 @@ const LogicEquations = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (15s)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (10s)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (6s)</button>
             </div>
 
             <button 
@@ -146,14 +173,16 @@ const LogicEquations = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
 
             <div className="flex gap-4 justify-center">
               <button 
-                onClick={() => handleAnswer(false)}
-                className="flex-1 max-w-[150px] py-4 bg-red-600/20 hover:bg-red-500/40 border border-red-500/50 text-red-400 font-bold rounded-2xl text-2xl transition-all"
+                onClick={(e) => { e.preventDefault(); handleAnswer(false); }}
+                onPointerDown={(e) => { e.preventDefault(); handleAnswer(false); }}
+                className="flex-1 max-w-[150px] py-4 bg-red-600/20 hover:bg-red-500/40 border border-red-500/50 text-red-400 font-bold rounded-2xl text-2xl transition-all active:scale-95 touch-manipulation"
               >
                 FALSE
               </button>
               <button 
-                onClick={() => handleAnswer(true)}
-                className="flex-1 max-w-[150px] py-4 bg-emerald-600/20 hover:bg-emerald-500/40 border border-emerald-500/50 text-emerald-400 font-bold rounded-2xl text-2xl transition-all"
+                onClick={(e) => { e.preventDefault(); handleAnswer(true); }}
+                onPointerDown={(e) => { e.preventDefault(); handleAnswer(true); }}
+                className="flex-1 max-w-[150px] py-4 bg-emerald-600/20 hover:bg-emerald-500/40 border border-emerald-500/50 text-emerald-400 font-bold rounded-2xl text-2xl transition-all active:scale-95 touch-manipulation"
               >
                 TRUE
               </button>

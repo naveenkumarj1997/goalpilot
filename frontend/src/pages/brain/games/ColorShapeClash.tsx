@@ -2,12 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, RotateCcw, Brain, Activity, SplitSquareVertical } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const SHAPES = ['●', '■', '▲'];
-const SHAPE_NAMES = ['Circle', 'Square', 'Triangle'];
-const COLORS = [
+const ALL_SHAPES = ['●', '■', '▲', '★', '◆', '⬢', '✚', '♥'];
+const ALL_SHAPE_NAMES = ['Circle', 'Square', 'Triangle', 'Star', 'Diamond', 'Hexagon', 'Cross', 'Heart'];
+const ALL_COLORS = [
   { name: 'Red', class: 'text-red-500' },
   { name: 'Blue', class: 'text-blue-500' },
-  { name: 'Green', class: 'text-green-500' }
+  { name: 'Green', class: 'text-green-500' },
+  { name: 'Yellow', class: 'text-yellow-500' },
+  { name: 'Purple', class: 'text-purple-500' },
+  { name: 'Orange', class: 'text-orange-500' },
+  { name: 'Pink', class: 'text-pink-500' },
+  { name: 'Cyan', class: 'text-cyan-500' }
 ];
 
 type TargetType = 'COLOR' | 'SHAPE';
@@ -16,80 +21,111 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(30);
+  const [difficulty, setDifficulty] = useState(1);
   
-  const [prompt, setPrompt] = useState<{ type: TargetType, value: string }>({ type: 'COLOR', value: 'Red' });
+  const [prompt, setPrompt] = useState<{ type: TargetType, value: string, isNot: boolean }>({ type: 'COLOR', value: 'Red', isNot: false });
   const [leftSide, setLeftSide] = useState<{ shape: string, colorClass: string }>({ shape: '●', colorClass: 'text-red-500' });
   const [rightSide, setRightSide] = useState<{ text: string, colorClass: string }>({ text: 'Blue', colorClass: 'text-green-500' });
   const [correctSide, setCorrectSide] = useState<'LEFT' | 'RIGHT'>('LEFT');
 
   const gameTimer = useRef<any>(null);
+  const historyRef = useRef<string>('');
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { time: 45, numShapes: 3, numColors: 3, allowNot: false };
+      case 2: return { time: 30, numShapes: 5, numColors: 5, allowNot: false };
+      case 3: return { time: 20, numShapes: 8, numColors: 8, allowNot: true };
+      default: return { time: 30, numShapes: 3, numColors: 3, allowNot: false };
+    }
+  };
 
   const startGame = () => {
+    const params = getGameParams();
     setScore(0);
-    setTimeRemaining(30);
+    setTimeRemaining(params.time);
+    historyRef.current = '';
     setGameState('PLAYING');
     generateRound();
   };
 
   const generateRound = () => {
+    const params = getGameParams();
+    const shapes = ALL_SHAPES.slice(0, params.numShapes);
+    const shapeNames = ALL_SHAPE_NAMES.slice(0, params.numShapes);
+    const colors = ALL_COLORS.slice(0, params.numColors);
+
     // Determine the answer side randomly
     const answerSide = Math.random() > 0.5 ? 'LEFT' : 'RIGHT';
     setCorrectSide(answerSide);
 
     // Pick a random target
     const isColorTarget = Math.random() > 0.5;
+    const isNot = params.allowNot && Math.random() > 0.7; // 30% chance of NOT logic on hard mode
     let targetValue = '';
     
+    // Prevent repetition
+    let attempts = 0;
+    do {
+      if (isColorTarget) {
+        targetValue = colors[Math.floor(Math.random() * colors.length)].name;
+      } else {
+        targetValue = shapeNames[Math.floor(Math.random() * shapeNames.length)];
+      }
+      attempts++;
+    } while (targetValue === historyRef.current && attempts < 10);
+    historyRef.current = targetValue;
+
     if (isColorTarget) {
-      targetValue = COLORS[Math.floor(Math.random() * COLORS.length)].name;
-      setPrompt({ type: 'COLOR', value: targetValue });
+      setPrompt({ type: 'COLOR', value: targetValue, isNot });
     } else {
-      targetValue = SHAPE_NAMES[Math.floor(Math.random() * SHAPE_NAMES.length)];
-      setPrompt({ type: 'SHAPE', value: targetValue });
+      setPrompt({ type: 'SHAPE', value: targetValue, isNot });
     }
+
+    // Logic for generating sides based on NOT condition
+    // If NOT condition, the "correct" side is actually the one that DOES NOT have the target
+    // To make it simple, we just generate standard logic, but invert the assignment of correctSide.
+    const logicalTargetSide = isNot ? (answerSide === 'LEFT' ? 'RIGHT' : 'LEFT') : answerSide;
 
     // Generate Left Side (Visual Shape)
-    let leftShapeIdx = Math.floor(Math.random() * SHAPES.length);
-    let leftColorIdx = Math.floor(Math.random() * COLORS.length);
+    let leftShapeIdx = Math.floor(Math.random() * shapes.length);
+    let leftColorIdx = Math.floor(Math.random() * colors.length);
     
     // Generate Right Side (Linguistic Text)
-    // The text on the right will be EITHER a color name or a shape name
     const rightIsColorName = Math.random() > 0.5;
     let rightText = '';
-    let rightColorIdx = Math.floor(Math.random() * COLORS.length); // The font color of the text (Stroop effect!)
+    let rightColorIdx = Math.floor(Math.random() * colors.length);
 
     if (rightIsColorName) {
-      rightText = COLORS[Math.floor(Math.random() * COLORS.length)].name;
+      rightText = colors[Math.floor(Math.random() * colors.length)].name;
     } else {
-      rightText = SHAPE_NAMES[Math.floor(Math.random() * SHAPE_NAMES.length)];
+      rightText = shapeNames[Math.floor(Math.random() * shapeNames.length)];
     }
 
-    // Now, force the correct side to actually contain the target, and force the wrong side NOT to contain it.
-    if (answerSide === 'LEFT') {
-      // Make Left Side correct
+    if (logicalTargetSide === 'LEFT') {
+      // Make Left Side logically match the target
       if (isColorTarget) {
-        leftColorIdx = COLORS.findIndex(c => c.name === targetValue);
+        leftColorIdx = colors.findIndex(c => c.name === targetValue);
       } else {
-        leftShapeIdx = SHAPE_NAMES.findIndex(s => s === targetValue);
+        leftShapeIdx = shapeNames.findIndex(s => s === targetValue);
       }
-      // Make Right Side wrong
+      // Make Right Side logically WRONG
       while (rightText === targetValue) {
-        rightText = rightIsColorName ? COLORS[Math.floor(Math.random() * COLORS.length)].name : SHAPE_NAMES[Math.floor(Math.random() * SHAPE_NAMES.length)];
+        rightText = rightIsColorName ? colors[Math.floor(Math.random() * colors.length)].name : shapeNames[Math.floor(Math.random() * shapeNames.length)];
       }
     } else {
-      // Make Right Side correct
+      // Make Right Side logically match the target
       rightText = targetValue;
-      
-      // Make Left Side wrong
+      // Make Left Side logically WRONG
       if (isColorTarget) {
-        while (COLORS[leftColorIdx].name === targetValue) leftColorIdx = Math.floor(Math.random() * COLORS.length);
+        while (colors[leftColorIdx].name === targetValue) leftColorIdx = Math.floor(Math.random() * colors.length);
       } else {
-        while (SHAPE_NAMES[leftShapeIdx] === targetValue) leftShapeIdx = Math.floor(Math.random() * SHAPES.length);
+        while (shapeNames[leftShapeIdx] === targetValue) leftShapeIdx = Math.floor(Math.random() * shapes.length);
       }
     }
 
-    setLeftSide({ shape: SHAPES[leftShapeIdx], colorClass: COLORS[leftColorIdx].class });
-    setRightSide({ text: rightText, colorClass: COLORS[rightColorIdx].class });
+    setLeftSide({ shape: shapes[leftShapeIdx], colorClass: colors[leftColorIdx].class });
+    setRightSide({ text: rightText, colorClass: colors[rightColorIdx].class });
   };
 
   useEffect(() => {
@@ -113,11 +149,10 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
     if (gameState !== 'PLAYING') return;
     
     if (side === correctSide) {
-      setScore(s => s + 100);
+      setScore(s => s + (100 * difficulty));
       generateRound();
     } else {
-      setScore(s => Math.max(0, s - 50));
-      // Optionally penalize time or just generate new round
+      setScore(s => Math.max(0, s - (50 * difficulty)));
       generateRound();
     }
   };
@@ -150,11 +185,18 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
               Click the <span className="text-fuchsia-400 font-bold">Left Panel</span> if the physical shape matches the target.<br/>
               Click the <span className="text-emerald-400 font-bold">Right Panel</span> if the written text matches the target.
             </p>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-fuchsia-500 text-white shadow-[0_0_15px_rgba(217,70,239,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (45s)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (30s)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (20s)</button>
+            </div>
+
             <button 
               onClick={startGame}
               className="px-8 py-4 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-2xl text-xl transition-all shadow-lg hover:scale-105"
             >
-              Start 30s Clash
+              Start Clash
             </button>
           </div>
         )}
@@ -165,7 +207,7 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
             <div className="mb-6 flex flex-col items-center">
               <span className="text-slate-400 uppercase tracking-widest text-sm font-bold mb-1">Target</span>
               <div className="px-6 py-2 bg-fuchsia-500/20 text-fuchsia-300 font-bold text-2xl rounded-xl border border-fuchsia-500/50">
-                Find {prompt.value}
+                {prompt.isNot ? 'Find NOT ' : 'Find '}{prompt.value}
               </div>
               <p className="text-slate-500 font-mono mt-4">Time: {timeRemaining}s</p>
             </div>
@@ -173,11 +215,12 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
             <div className="flex flex-col sm:flex-row w-full max-w-3xl gap-4 sm:h-64 h-auto">
               {/* Left Panel - Visual/Spatial */}
               <button 
-                onClick={() => handleChoice('LEFT')}
-                className="flex-1 py-8 sm:py-0 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-fuchsia-500/50 rounded-2xl flex items-center justify-center transition-all group"
+                onClick={(e) => { e.preventDefault(); handleChoice('LEFT'); }}
+                onPointerDown={(e) => { e.preventDefault(); handleChoice('LEFT'); }}
+                className="flex-1 py-8 sm:py-0 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-fuchsia-500/50 rounded-2xl flex items-center justify-center transition-all group active:scale-95"
               >
                 <div className="flex flex-col items-center">
-                  <span className={`text-9xl ${leftSide.colorClass} drop-shadow-lg group-active:scale-95 transition-transform`}>
+                  <span className={`text-9xl ${leftSide.colorClass} drop-shadow-lg transition-transform`}>
                     {leftSide.shape}
                   </span>
                   <span className="text-slate-500 font-bold mt-4 opacity-50 group-hover:opacity-100 uppercase tracking-widest">Visual</span>
@@ -186,11 +229,12 @@ const ColorShapeClash = ({ onBack, onGameOver }: { onBack: () => void, onGameOve
 
               {/* Right Panel - Linguistic */}
               <button 
-                onClick={() => handleChoice('RIGHT')}
-                className="flex-1 py-8 sm:py-0 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-fuchsia-500/50 rounded-2xl flex items-center justify-center transition-all group"
+                onClick={(e) => { e.preventDefault(); handleChoice('RIGHT'); }}
+                onPointerDown={(e) => { e.preventDefault(); handleChoice('RIGHT'); }}
+                className="flex-1 py-8 sm:py-0 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-fuchsia-500/50 rounded-2xl flex items-center justify-center transition-all group active:scale-95"
               >
                 <div className="flex flex-col items-center">
-                  <span className={`text-5xl font-black ${rightSide.colorClass} drop-shadow-lg group-active:scale-95 transition-transform`}>
+                  <span className={`text-4xl sm:text-5xl font-black ${rightSide.colorClass} drop-shadow-lg transition-transform`}>
                     {rightSide.text}
                   </span>
                   <span className="text-slate-500 font-bold mt-8 opacity-50 group-hover:opacity-100 uppercase tracking-widest">Text</span>

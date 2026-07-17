@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, RotateCcw, Activity, XCircle, Users } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const NAMES = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Quinn', 'Avery', 'Skyler', 'Cameron', 'Dakota', 'Peyton', 'Reese', 'Drew', 'Blake'];
+const NAMES = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Quinn', 'Avery', 'Skyler', 'Cameron', 'Dakota', 'Peyton', 'Reese', 'Drew', 'Blake', 'Sam', 'Chris', 'Robin', 'Jessie'];
 const AVATAR_COLORS = ['bg-red-500', 'bg-blue-500', 'bg-emerald-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-orange-500'];
 
 type Person = {
@@ -19,18 +19,30 @@ const FaceNameRecall = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
   const [difficulty, setDifficulty] = useState(1);
   const [timeLeft, setTimeLeft] = useState(100);
 
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { numFaces: 3, timeLimitMs: 7000, numOptions: 4 };
+      case 2: return { numFaces: 5, timeLimitMs: 5000, numOptions: 4 };
+      case 3: return { numFaces: 8, timeLimitMs: 4000, numOptions: 6 };
+      default: return { numFaces: 3, timeLimitMs: 7000, numOptions: 4 };
+    }
+  };
+
   const startGame = () => {
     setScore(0);
+    historyRef.current = [];
     generatePeople();
   };
 
   const generatePeople = () => {
-    const numPeople = difficulty === 1 ? 3 : difficulty === 2 ? 5 : 8;
+    const params = getGameParams();
     const shuffledNames = [...NAMES].sort(() => Math.random() - 0.5);
     const shuffledColors = [...AVATAR_COLORS].sort(() => Math.random() - 0.5);
     
     const newPeople: Person[] = [];
-    for (let i = 0; i < numPeople; i++) {
+    for (let i = 0; i < params.numFaces; i++) {
       newPeople.push({
         name: shuffledNames[i],
         color: shuffledColors[i % AVATAR_COLORS.length]
@@ -41,7 +53,7 @@ const FaceNameRecall = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
     setGameState('MEMORIZE');
     setTimeLeft(100);
 
-    // Memorize time: Easy 5s, Med 5s, Hard 5s (but more people)
+    const stepMs = params.timeLimitMs / 50; // 50 steps of 2%
     let timer = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 2) {
@@ -49,25 +61,42 @@ const FaceNameRecall = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
           askQuestion(newPeople);
           return 0;
         }
-        return t - 2; // 50 steps of 2% = 50 * 100ms = 5 seconds
+        return t - 2;
       });
-    }, 100);
+    }, stepMs);
   };
 
   const askQuestion = (currentPeople: Person[]) => {
-    const target = currentPeople[Math.floor(Math.random() * currentPeople.length)];
+    const params = getGameParams();
+    
+    // Pick target person, avoiding recent history if possible
+    let target = currentPeople[Math.floor(Math.random() * currentPeople.length)];
+    let attempts = 0;
+    while (historyRef.current.includes(target.name) && attempts < 10) {
+      target = currentPeople[Math.floor(Math.random() * currentPeople.length)];
+      attempts++;
+    }
+
+    historyRef.current.push(target.name);
+    if (historyRef.current.length > 5) historyRef.current.shift();
+
     setTargetPerson(target);
 
+    // Generate options
     let opts = currentPeople.map(p => p.name).sort(() => Math.random() - 0.5);
-    // If easy, we only have 3 names, add a random fake one to make 4 options
-    while (opts.length < 4) {
+    
+    // Add fake names until we reach numOptions
+    while (opts.length < params.numOptions) {
       const fakeName = NAMES[Math.floor(Math.random() * NAMES.length)];
       if (!opts.includes(fakeName)) opts.push(fakeName);
     }
-    opts = opts.slice(0, 4);
+    opts = opts.slice(0, params.numOptions);
+    
+    // Ensure target is in options
     if (!opts.includes(target.name)) {
       opts[0] = target.name;
     }
+    
     setOptions(opts.sort(() => Math.random() - 0.5));
     setGameState('QUESTION');
   };
@@ -155,12 +184,13 @@ const FaceNameRecall = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+            <div className={`grid gap-4 max-w-sm mx-auto ${difficulty === 3 ? 'grid-cols-2 sm:grid-cols-3 max-w-lg' : 'grid-cols-2'}`}>
               {options.map((opt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleGuess(opt)}
-                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/50 text-white font-bold rounded-xl text-xl transition-all"
+                  onClick={(e) => { e.preventDefault(); handleGuess(opt); }}
+                  onPointerDown={(e) => { e.preventDefault(); handleGuess(opt); }}
+                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/50 text-white font-bold rounded-xl text-xl transition-all active:scale-95"
                 >
                   {opt}
                 </button>

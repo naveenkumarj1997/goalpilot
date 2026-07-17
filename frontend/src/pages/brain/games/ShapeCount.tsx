@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, RotateCcw, Brain, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
@@ -23,19 +23,32 @@ type RenderedShape = {
 const ShapeCount = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'FLASHING' | 'ASKING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
-  const [level, setLevel] = useState(1);
+  const [difficulty, setDifficulty] = useState(1);
   const [shapes, setShapes] = useState<RenderedShape[]>([]);
   const [question, setQuestion] = useState<{ colorIdx: number, shapeIdx: number, answer: number } | null>(null);
   const [userInput, setUserInput] = useState('');
 
-  const startGame = () => {
-    setLevel(1);
-    setScore(0);
-    generateRound(1);
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch(difficulty) {
+      case 1: return { baseShapes: 5, flashTime: 2500 };
+      case 2: return { baseShapes: 15, flashTime: 1500 };
+      case 3: return { baseShapes: 30, flashTime: 800 };
+      default: return { baseShapes: 15, flashTime: 1500 };
+    }
   };
 
-  const generateRound = (lvl: number) => {
-    const numShapes = Math.min(5 + lvl * 3, 30); // 8 up to 30 shapes
+  const startGame = () => {
+    setScore(0);
+    historyRef.current = [];
+    generateRound();
+  };
+
+  const generateRound = () => {
+    const params = getGameParams();
+    // increase shapes slightly based on score to keep it engaging within difficulty
+    const numShapes = Math.min(params.baseShapes + Math.floor(score / 200), 50); 
     const newShapes: RenderedShape[] = [];
     
     const countMap = new Map<string, number>();
@@ -58,19 +71,26 @@ const ShapeCount = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
 
     setShapes(newShapes);
     
-    // Pick a random shape/color combo that exists (or maybe doesn't!)
-    // Let's pick one that actually exists to make it fair, but sometimes 0.
     const keys = Array.from(countMap.keys());
+    let selectedKey = keys[0];
+    let attempts = 0;
+
     if (keys.length > 0) {
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      const [c, s] = randomKey.split('-').map(Number);
+      do {
+        selectedKey = keys[Math.floor(Math.random() * keys.length)];
+        attempts++;
+      } while (historyRef.current.includes(selectedKey) && attempts < 10);
+      
+      historyRef.current.push(selectedKey);
+      if (historyRef.current.length > 5) historyRef.current.shift();
+
+      const [c, s] = selectedKey.split('-').map(Number);
       setQuestion({
         colorIdx: c,
         shapeIdx: s,
-        answer: countMap.get(randomKey) || 0
+        answer: countMap.get(selectedKey) || 0
       });
     } else {
-      // Fallback
       setQuestion({ colorIdx: 0, shapeIdx: 0, answer: 0 });
     }
 
@@ -79,7 +99,7 @@ const ShapeCount = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
 
     setTimeout(() => {
       setGameState('ASKING');
-    }, 1500); // Flash for 1.5s
+    }, params.flashTime);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -88,9 +108,8 @@ const ShapeCount = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
 
     const guess = parseInt(userInput);
     if (guess === question.answer) {
-      setScore(s => s + (level * 100));
-      setLevel(l => l + 1);
-      generateRound(level + 1);
+      setScore(s => s + (difficulty * 100));
+      generateRound();
     } else {
       setGameState('GAMEOVER');
     }
@@ -109,10 +128,6 @@ const ShapeCount = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
           <Trophy className="w-5 h-5 text-yellow-500 mr-2" /> 
           <span className="font-bold">Score: {score}</span>
         </div>
-        <div className="flex items-center">
-          <Brain className="w-5 h-5 text-cyan-400 mr-2" />
-          <span className="font-bold">Level {level}</span>
-        </div>
       </div>
 
       <div className="min-h-[500px] flex flex-col justify-center items-center">
@@ -122,6 +137,13 @@ const ShapeCount = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
               A jumble of colored shapes will flash for a split second. Memorize them quickly and answer the question.
             </p>
+            
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
+            </div>
+
             <button 
               onClick={startGame}
               className="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-2xl text-xl transition-all shadow-lg hover:scale-105"

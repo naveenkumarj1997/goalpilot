@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Target, RotateCcw, CheckCircle2, XCircle, Activity } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Target, RotateCcw, XCircle, Activity, Timer } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-type PatternType = 'add' | 'multiply' | 'fibonacci' | 'square';
+type PatternType = 'add' | 'multiply' | 'fibonacci' | 'square' | 'cube' | 'alternating' | 'subtract';
 
 const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
@@ -12,44 +12,93 @@ const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(100);
+
+  const timerRef = useRef<any>(null);
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch(difficulty) {
+      case 1: return { timeMs: 15000, types: ['add', 'subtract', 'square'] as PatternType[], maxStart: 10 };
+      case 2: return { timeMs: 10000, types: ['add', 'multiply', 'square', 'fibonacci'] as PatternType[], maxStart: 20 };
+      case 3: return { timeMs: 7000, types: ['multiply', 'fibonacci', 'cube', 'alternating'] as PatternType[], maxStart: 15 };
+      default: return { timeMs: 10000, types: ['add'] as PatternType[], maxStart: 10 };
+    }
+  };
 
   const startGame = () => {
     setScore(0);
     setStreak(0);
+    historyRef.current = [];
     setGameState('PLAYING');
     generatePattern();
   };
 
   const generatePattern = () => {
-    const types: PatternType[] = ['add', 'multiply', 'fibonacci', 'square'];
-    const type = types[Math.floor(Math.random() * types.length)];
-    
+    const params = getGameParams();
+    let type: PatternType;
+    let seqKey = '';
     let seq: number[] = [];
     let nextNum = 0;
+    let attempts = 0;
 
-    if (type === 'add') {
-      const step = Math.floor(Math.random() * 10) + 2;
-      const start = Math.floor(Math.random() * 20);
-      seq = [start, start + step, start + step * 2, start + step * 3];
-      nextNum = start + step * 4;
-    } 
-    else if (type === 'multiply') {
-      const step = Math.floor(Math.random() * 3) + 2; // 2 or 3 or 4
-      const start = Math.floor(Math.random() * 5) + 1;
-      seq = [start, start * step, start * step * step, start * step * step * step];
-      nextNum = start * step * step * step * step;
-    }
-    else if (type === 'fibonacci') {
-      const a = Math.floor(Math.random() * 5) + 1;
-      const b = Math.floor(Math.random() * 5) + a;
-      seq = [a, b, a + b, a + 2 * b]; // a, b, a+b, a+2b, 2a+3b
-      nextNum = 2 * a + 3 * b;
-    }
-    else if (type === 'square') {
-      const start = Math.floor(Math.random() * 5) + 2;
-      seq = [start * start, (start + 1) * (start + 1), (start + 2) * (start + 2), (start + 3) * (start + 3)];
-      nextNum = (start + 4) * (start + 4);
-    }
+    do {
+      type = params.types[Math.floor(Math.random() * params.types.length)];
+      
+      if (type === 'add') {
+        const step = Math.floor(Math.random() * 10) + 2;
+        const start = Math.floor(Math.random() * params.maxStart);
+        seq = [start, start + step, start + step * 2, start + step * 3];
+        nextNum = start + step * 4;
+        seqKey = `add-${step}`;
+      }
+      else if (type === 'subtract') {
+        const step = Math.floor(Math.random() * 8) + 2;
+        const start = Math.floor(Math.random() * 20) + 40; // High start
+        seq = [start, start - step, start - step * 2, start - step * 3];
+        nextNum = start - step * 4;
+        seqKey = `sub-${step}`;
+      }
+      else if (type === 'multiply') {
+        const step = Math.floor(Math.random() * 3) + 2; // 2 or 3 or 4
+        const start = Math.floor(Math.random() * 5) + 1;
+        seq = [start, start * step, start * step * step, start * step * step * step];
+        nextNum = start * step * step * step * step;
+        seqKey = `mul-${step}`;
+      }
+      else if (type === 'fibonacci') {
+        const a = Math.floor(Math.random() * 5) + 1;
+        const b = Math.floor(Math.random() * 5) + a;
+        seq = [a, b, a + b, a + 2 * b]; 
+        nextNum = 2 * a + 3 * b;
+        seqKey = `fib-${a}-${b}`;
+      }
+      else if (type === 'square') {
+        const start = Math.floor(Math.random() * (params.maxStart / 2)) + 2;
+        seq = [start * start, (start + 1) * (start + 1), (start + 2) * (start + 2), (start + 3) * (start + 3)];
+        nextNum = (start + 4) * (start + 4);
+        seqKey = `sq-${start}`;
+      }
+      else if (type === 'cube') {
+        const start = Math.floor(Math.random() * 4) + 1;
+        seq = [start ** 3, (start + 1) ** 3, (start + 2) ** 3, (start + 3) ** 3];
+        nextNum = (start + 4) ** 3;
+        seqKey = `cu-${start}`;
+      }
+      else if (type === 'alternating') {
+        const start = Math.floor(Math.random() * 10) + 5;
+        const step1 = Math.floor(Math.random() * 5) + 2;
+        const step2 = Math.floor(Math.random() * 3) + 1;
+        // +step1, -step2
+        seq = [start, start + step1, start + step1 - step2, start + step1 * 2 - step2];
+        nextNum = start + step1 * 2 - step2 * 2;
+        seqKey = `alt-${step1}-${step2}`;
+      }
+      attempts++;
+    } while (historyRef.current.includes(seqKey) && attempts < 15);
+
+    historyRef.current.push(seqKey);
+    if (historyRef.current.length > 3) historyRef.current.shift();
 
     setSequence(seq);
     setCorrectAnswer(nextNum);
@@ -57,16 +106,39 @@ const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
     // Generate 3 wrong options close to the real answer
     const opts = [nextNum];
     while (opts.length < 4) {
-      const offset = (Math.floor(Math.random() * 11) - 5) * (Math.floor(Math.random() * 5) + 1);
+      // +/- up to 10 depending on answer size
+      const maxOffset = Math.max(5, Math.floor(nextNum * 0.2)); 
+      const offset = (Math.floor(Math.random() * maxOffset) + 1) * (Math.random() > 0.5 ? 1 : -1);
       const wrong = nextNum + offset;
-      if (!opts.includes(wrong) && wrong > 0) {
+      if (!opts.includes(wrong)) {
         opts.push(wrong);
       }
     }
     
     // Shuffle options
     setOptions(opts.sort(() => Math.random() - 0.5));
+    setTimeLeft(100);
   };
+
+  useEffect(() => {
+    if (gameState === 'PLAYING') {
+      const { timeMs } = getGameParams();
+      const tickRate = 50; 
+      const decreaseAmount = 100 / (timeMs / tickRate);
+      
+      timerRef.current = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= decreaseAmount) {
+            clearInterval(timerRef.current);
+            setGameState('GAMEOVER');
+            return 0;
+          }
+          return t - decreaseAmount;
+        });
+      }, tickRate);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [gameState, streak, difficulty]);
 
   const handleGuess = (guess: number) => {
     if (gameState !== 'PLAYING') return;
@@ -76,6 +148,7 @@ const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
       setStreak(s => s + 1);
       generatePattern();
     } else {
+      clearInterval(timerRef.current);
       setGameState('GAMEOVER');
     }
   };
@@ -101,13 +174,13 @@ const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
           <div className="animate-slide-up-fade">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Pattern Matcher</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-              Deduce the mathematical rule of the sequence and identify the next number.
+              Deduce the mathematical rule of the sequence and identify the next number before time runs out.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
             </div>
 
             <button 
@@ -121,13 +194,23 @@ const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
 
         {gameState === 'PLAYING' && (
           <div className="animate-slide-up-fade w-full">
+            <div className="flex items-center justify-center mb-8">
+              <Timer className="w-5 h-5 text-slate-400 mr-2" />
+              <div className="w-64 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-75 linear ${timeLeft > 50 ? 'bg-emerald-500' : timeLeft > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${Math.max(0, timeLeft)}%` }}
+                ></div>
+              </div>
+            </div>
+
             <div className="flex justify-center items-center gap-4 mb-12 flex-wrap">
               {sequence.map((num, idx) => (
-                <div key={idx} className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700 text-2xl md:text-3xl font-black text-white">
+                <div key={idx} className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-slate-800 rounded-2xl border border-slate-700 text-2xl md:text-3xl font-black text-white shadow-[0_0_15px_rgba(0,0,0,0.5)]">
                   {num}
                 </div>
               ))}
-              <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-emerald-500/20 rounded-2xl border-2 border-dashed border-emerald-500 text-3xl font-black text-emerald-400">
+              <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-emerald-500/20 rounded-2xl border-2 border-dashed border-emerald-500 text-3xl font-black text-emerald-400 animate-pulse">
                 ?
               </div>
             </div>
@@ -137,7 +220,7 @@ const PatternMatcher = ({ onBack, onGameOver }: { onBack: () => void, onGameOver
                 <button
                   key={idx}
                   onClick={() => handleGuess(opt)}
-                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500/50 text-white font-bold rounded-xl text-xl transition-all"
+                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500/50 text-white font-bold rounded-xl text-xl transition-all shadow-md"
                 >
                   {opt}
                 </button>

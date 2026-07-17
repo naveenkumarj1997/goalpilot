@@ -2,35 +2,82 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, RotateCcw, Brain, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const SHAPES = ['●', '■', '▲', '★', '◆', '♥'];
+const SHAPES = ['●', '■', '▲', '★', '◆', '♥', '✿', '✦', '⬟', '❖'];
+const COLORS = ['text-white', 'text-blue-500', 'text-emerald-500', 'text-yellow-500', 'text-purple-500'];
+
+interface ShapeItem {
+  symbol: string;
+  colorClass: string;
+}
 
 const SpeedMatch = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
+  const [difficulty, setDifficulty] = useState(1);
   const [score, setScore] = useState(0);
-  const [previousShape, setPreviousShape] = useState<string | null>(null);
-  const [currentShape, setCurrentShape] = useState<string | null>(null);
+  
+  const [previousShape, setPreviousShape] = useState<ShapeItem | null>(null);
+  const [currentShape, setCurrentShape] = useState<ShapeItem | null>(null);
+  
   const [isMatchStatus, setIsMatchStatus] = useState<boolean | null>(null); 
   const [timeRemaining, setTimeRemaining] = useState(30); 
   
   const timerRef = useRef<any>(null);
   const roundTimerRef = useRef<any>(null);
 
+  const getGameParams = () => {
+    switch(difficulty) {
+      case 1: return { totalTime: 40, timePerShape: 1500, shapeCount: 6, useColors: false };
+      case 2: return { totalTime: 30, timePerShape: 1200, shapeCount: 10, useColors: false };
+      case 3: return { totalTime: 20, timePerShape: 1000, shapeCount: 8, useColors: true };
+      default: return { totalTime: 30, timePerShape: 1500, shapeCount: 6, useColors: false };
+    }
+  };
+
   const startGame = () => {
+    const params = getGameParams();
     setScore(0);
     setPreviousShape(null);
     setCurrentShape(null);
-    setTimeRemaining(30); 
+    setTimeRemaining(params.totalTime); 
     setGameState('PLAYING');
     nextTurn(null);
   };
 
-  const nextTurn = (prev: string | null) => {
-    setIsMatchStatus(null);
+  const getRandomShape = (params: any, excludeShape?: ShapeItem | null): ShapeItem => {
+    const availableShapes = SHAPES.slice(0, params.shapeCount);
+    let symbol = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+    let colorClass = params.useColors ? COLORS[Math.floor(Math.random() * COLORS.length)] : 'text-white';
     
-    // 40% chance to be a match if there is a previous shape
-    let nextShp = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-    if (prev && Math.random() < 0.4) {
-      nextShp = prev;
+    // Prevent accidental match if we are forcing a non-match
+    if (excludeShape) {
+      while (symbol === excludeShape.symbol && (!params.useColors || colorClass === excludeShape.colorClass)) {
+        symbol = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+        colorClass = params.useColors ? COLORS[Math.floor(Math.random() * COLORS.length)] : 'text-white';
+      }
+    }
+    
+    return { symbol, colorClass };
+  };
+
+  const checkMatch = (shape1: ShapeItem, shape2: ShapeItem, useColors: boolean) => {
+    if (useColors) {
+      return shape1.symbol === shape2.symbol && shape1.colorClass === shape2.colorClass;
+    }
+    return shape1.symbol === shape2.symbol;
+  };
+
+  const nextTurn = (prev: ShapeItem | null) => {
+    setIsMatchStatus(null);
+    const params = getGameParams();
+    
+    let nextShp: ShapeItem;
+    const forceMatch = Math.random() < 0.4;
+    
+    if (prev && forceMatch) {
+      nextShp = { ...prev }; // It's a match
+    } else {
+      // Force it to NOT be a match by passing prev to exclude
+      nextShp = getRandomShape(params, prev);
     }
     
     setPreviousShape(prev);
@@ -39,25 +86,26 @@ const SpeedMatch = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
     if (timerRef.current) clearTimeout(timerRef.current);
     
     timerRef.current = setTimeout(() => {
-      // User didn't click anything
+      // User didn't click anything, move to next
       nextTurn(nextShp);
-    }, 1500); // 1.5 seconds per shape max
+    }, params.timePerShape);
   };
 
   const handleChoice = (userSaysMatch: boolean) => {
-    if (gameState !== 'PLAYING' || !timerRef.current) return;
-    
+    if (gameState !== 'PLAYING' || !timerRef.current || !currentShape) return;
     if (!previousShape) return; // First shape, can't guess yet
+    if (isMatchStatus !== null) return; // Prevent double clicking
 
     clearTimeout(timerRef.current);
     
-    const actualMatch = previousShape === currentShape;
+    const params = getGameParams();
+    const actualMatch = checkMatch(previousShape, currentShape, params.useColors);
     
     if (userSaysMatch === actualMatch) {
-      setScore(s => s + 100);
+      setScore(s => s + (100 * difficulty));
       setIsMatchStatus(true);
     } else {
-      setScore(s => Math.max(0, s - 50));
+      setScore(s => Math.max(0, s - (50 * difficulty)));
       setIsMatchStatus(false);
     }
     
@@ -110,49 +158,60 @@ const SpeedMatch = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (
           <div className="animate-slide-up-fade">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Speed Match</h2>
             <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-              Does the current symbol match the one immediately before it? Answer as fast as possible!
+              {difficulty === 3 ? "Does the current symbol AND color match the one immediately before it?" : "Does the current symbol match the one immediately before it?"} Answer as fast as possible!
             </p>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+            </div>
 
             <button 
               onClick={startGame}
               className="px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-2xl text-xl transition-all shadow-lg hover:scale-105"
             >
-              Start 30s Timer
+              Start Timer
             </button>
           </div>
         )}
 
-        {gameState === 'PLAYING' && (
+        {gameState === 'PLAYING' && currentShape && (
           <div className="animate-slide-up-fade w-full flex flex-col items-center">
             <p className="text-slate-400 mb-4 font-mono text-xl">Time: <span className="text-white">{timeRemaining}s</span></p>
             
             <div className={`w-32 h-32 flex items-center justify-center rounded-2xl mb-8 transition-colors duration-150 ${
               isMatchStatus === true ? 'bg-green-500/20 text-green-400 border border-green-500/50' :
               isMatchStatus === false ? 'bg-red-500/20 text-red-400 border border-red-500/50' :
-              'bg-slate-800 text-white border border-slate-700'
+              'bg-slate-800 border border-slate-700'
             }`}>
-              <span className="text-7xl">{currentShape}</span>
+              <span className={`text-7xl ${currentShape.colorClass}`}>{currentShape.symbol}</span>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full max-w-sm">
-              <button 
-                onClick={() => handleChoice(false)}
-                className="flex-1 py-6 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors text-lg"
-                disabled={!previousShape}
-              >
-                No Match
-              </button>
-              <button 
-                onClick={() => handleChoice(true)}
-                className="flex-1 py-6 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl transition-colors text-lg"
-                disabled={!previousShape}
-              >
-                Match
-              </button>
+              {!previousShape ? (
+                <div className="w-full py-6 flex items-center justify-center">
+                  <p className="text-yellow-400 font-bold text-xl animate-pulse">Memorize this shape!</p>
+                </div>
+              ) : (
+                <>
+                  <button 
+                    onClick={(e) => { e.preventDefault(); handleChoice(false); }}
+                    onPointerDown={(e) => { e.preventDefault(); handleChoice(false); }}
+                    className="flex-1 py-6 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors text-lg active:scale-95"
+                  >
+                    No Match
+                  </button>
+                  <button 
+                    onClick={(e) => { e.preventDefault(); handleChoice(true); }}
+                    onPointerDown={(e) => { e.preventDefault(); handleChoice(true); }}
+                    className="flex-1 py-6 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl transition-colors text-lg active:scale-95"
+                  >
+                    Match
+                  </button>
+                </>
+              )}
             </div>
-            {!previousShape && (
-              <p className="text-slate-400 mt-4 text-sm animate-pulse">Memorize the first shape...</p>
-            )}
           </div>
         )}
 

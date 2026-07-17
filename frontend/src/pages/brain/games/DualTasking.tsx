@@ -6,6 +6,7 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(45);
+  const [difficulty, setDifficulty] = useState(1);
   
   // Math Task State
   const [equation, setEquation] = useState({ q: '', a: 0 });
@@ -17,47 +18,70 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
 
   const targetInterval = useRef<any>(null);
   const gameTimer = useRef<any>(null);
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { moveInterval: 2000, ops: ['+'], maxNum: 20 };
+      case 2: return { moveInterval: 1200, ops: ['+', '-'], maxNum: 50 };
+      case 3: return { moveInterval: 700, ops: ['+', '-', '*'], maxNum: 80 };
+      default: return { moveInterval: 1500, ops: ['+', '-'], maxNum: 30 };
+    }
+  };
 
   const startGame = () => {
     setScore(0);
     setTimeRemaining(45);
+    historyRef.current = [];
     setGameState('PLAYING');
     generateMath();
     moveTarget();
   };
 
   const generateMath = () => {
-    const operations = ['+', '-', '*'];
-    const op = operations[Math.floor(Math.random() * operations.length)];
-    let n1, n2, ans;
-    
-    if (op === '+') {
-      n1 = Math.floor(Math.random() * 50);
-      n2 = Math.floor(Math.random() * 50);
-      ans = n1 + n2;
-    } else if (op === '-') {
-      n1 = Math.floor(Math.random() * 50) + 20;
-      n2 = Math.floor(Math.random() * n1);
-      ans = n1 - n2;
-    } else {
-      n1 = Math.floor(Math.random() * 12);
-      n2 = Math.floor(Math.random() * 12);
-      ans = n1 * n2;
-    }
-    
-    setEquation({ q: `${n1} ${op} ${n2}`, a: ans });
+    const params = getGameParams();
+    let q = '';
+    let a = 0;
+    let attempts = 0;
+
+    do {
+      const op = params.ops[Math.floor(Math.random() * params.ops.length)];
+      let n1, n2;
+      
+      if (op === '+') {
+        n1 = Math.floor(Math.random() * params.maxNum);
+        n2 = Math.floor(Math.random() * params.maxNum);
+        a = n1 + n2;
+      } else if (op === '-') {
+        n1 = Math.floor(Math.random() * params.maxNum) + 20;
+        n2 = Math.floor(Math.random() * n1); // Avoid negatives for standard play
+        a = n1 - n2;
+      } else {
+        n1 = Math.floor(Math.random() * 12) + 2;
+        n2 = Math.floor(Math.random() * 12) + 2;
+        a = n1 * n2;
+      }
+      q = `${n1} ${op} ${n2}`;
+      attempts++;
+    } while (historyRef.current.includes(q) && attempts < 15);
+
+    historyRef.current.push(q);
+    if (historyRef.current.length > 5) historyRef.current.shift();
+
+    setEquation({ q, a });
     setMathInput('');
   };
 
   const moveTarget = () => {
     if (targetInterval.current) clearInterval(targetInterval.current);
     
+    const params = getGameParams();
     targetInterval.current = setInterval(() => {
       setTargetPos({
         x: 10 + Math.random() * 80, // 10% to 90%
         y: 10 + Math.random() * 80,
       });
-    }, 1500); // Moves every 1.5 seconds
+    }, params.moveInterval);
   };
 
   useEffect(() => {
@@ -84,9 +108,10 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
     if (!isHovering) return; // Must be hovering to submit!
     
     if (parseInt(mathInput) === equation.a) {
-      setScore(s => s + 150);
+      setScore(s => s + (150 * difficulty));
       generateMath();
     } else {
+      setScore(s => Math.max(0, s - (50 * difficulty)));
       setMathInput('');
     }
   };
@@ -115,8 +140,15 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
           <div className="animate-slide-up-fade">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Neural Splitter</h2>
             <p className="text-slate-400 mb-8 max-w-md mx-auto">
-              Forge new pathways by splitting your attention. You must keep your mouse hovering over the moving <span className="text-indigo-400 font-bold">Target</span> on the left in order to submit answers to the <span className="text-emerald-400 font-bold">Math Equations</span> on the right.
+              Forge new pathways by splitting your attention. You must keep your mouse/finger hovering over the moving <span className="text-indigo-400 font-bold">Target</span> on the left in order to submit answers to the <span className="text-emerald-400 font-bold">Math Equations</span> on the right.
             </p>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
+            </div>
+
             <button 
               onClick={startGame}
               className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl text-xl transition-all shadow-lg hover:scale-105"
@@ -132,18 +164,20 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
             
             <div className="flex flex-col sm:flex-row w-full gap-6">
               {/* Left Task: Tracking */}
-              <div className="flex-1 h-[200px] sm:h-[300px] bg-slate-900 border-2 border-slate-700 rounded-2xl relative overflow-hidden flex items-center justify-center">
-                {!isHovering && <div className="absolute top-4 text-red-400 font-bold animate-pulse">HOVER THE TARGET!</div>}
+              <div className="flex-1 h-[200px] sm:h-[300px] bg-slate-900 border-2 border-slate-700 rounded-2xl relative overflow-hidden flex items-center justify-center touch-none">
+                {!isHovering && <div className="absolute top-4 text-red-400 font-bold animate-pulse">HOLD THE TARGET!</div>}
                 
                 <div 
-                  className={`absolute w-16 h-16 rounded-full transition-all duration-1000 ease-in-out cursor-crosshair
+                  className={`absolute w-20 h-20 sm:w-16 sm:h-16 rounded-full transition-all duration-700 ease-in-out cursor-crosshair touch-none
                     ${isHovering ? 'bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.8)]' : 'bg-slate-700 border-2 border-indigo-500/50'}
                   `}
                   style={{ top: `${targetPos.y}%`, left: `${targetPos.x}%`, transform: 'translate(-50%, -50%)' }}
                   onMouseEnter={() => setIsHovering(true)}
                   onMouseLeave={() => setIsHovering(false)}
-                  onTouchStart={() => setIsHovering(true)}
-                  onTouchEnd={() => setIsHovering(false)}
+                  onPointerDown={() => setIsHovering(true)}
+                  onPointerUp={() => setIsHovering(false)}
+                  onPointerCancel={() => setIsHovering(false)}
+                  onPointerLeave={() => setIsHovering(false)}
                 ></div>
               </div>
 
@@ -158,6 +192,7 @@ const DualTasking = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
                     className="w-full text-center text-3xl bg-slate-800 border-2 border-emerald-500/50 rounded-xl p-3 text-white focus:border-emerald-400 focus:outline-none mb-4"
                     disabled={!isHovering}
                     placeholder="?"
+                    autoFocus
                   />
                   <button 
                     type="submit"

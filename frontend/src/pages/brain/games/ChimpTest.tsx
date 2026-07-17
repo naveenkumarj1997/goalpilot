@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, AlertTriangle, RotateCcw, Brain, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
@@ -11,27 +11,54 @@ const ChimpTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
   const [timeLeft, setTimeLeft] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
 
+  const historyRef = useRef<string[]>([]);
+  const initialTimeRef = useRef<number>(100);
+
+  const getGameParams = (currentLevel: number) => {
+    switch(difficulty) {
+      case 1: return { length: Math.min(3 + currentLevel, 10), timeMultiplier: 1.2 };
+      case 2: return { length: Math.min(4 + currentLevel, 12), timeMultiplier: 0.8 };
+      case 3: return { length: Math.min(5 + (currentLevel * 2), 15), timeMultiplier: 0.5 };
+      default: return { length: Math.min(3 + currentLevel, 10), timeMultiplier: 1.0 };
+    }
+  };
+
   const startGame = () => {
     setLevel(1);
     setScore(0);
+    historyRef.current = [];
     generateSequence(1);
   };
 
   const generateSequence = (currentLevel: number) => {
-    const length = Math.min(3 + (currentLevel * difficulty), 12);
-    const newSeq = Array.from({ length }, () => Math.floor(Math.random() * 10));
+    const params = getGameParams(currentLevel);
+    let newSeq: number[] = [];
+    let attempts = 0;
+    let seqPrefix = '';
+
+    do {
+      newSeq = Array.from({ length: params.length }, () => Math.floor(Math.random() * 10));
+      seqPrefix = newSeq.slice(0, 3).join('');
+      attempts++;
+    } while (historyRef.current.includes(seqPrefix) && attempts < 15);
+
+    historyRef.current.push(seqPrefix);
+    if (historyRef.current.length > 3) historyRef.current.shift();
+
     setSequence(newSeq);
     setGameState('MEMORIZE');
     
-    const timeToMemorize = Math.max(3, Math.floor(length * 0.8));
+    // Time to memorize based on length and difficulty
+    const timeToMemorize = Math.max(3, Math.floor(params.length * params.timeMultiplier));
     setTimeLeft(timeToMemorize);
+    initialTimeRef.current = timeToMemorize;
   };
 
   useEffect(() => {
     let timer: number | ReturnType<typeof setTimeout>;
     if (gameState === 'MEMORIZE' && timeLeft > 0) {
       timer = setTimeout(() => setTimeLeft(t => t - 1), 1000);
-    } else if (gameState === 'MEMORIZE' && timeLeft === 0) {
+    } else if (gameState === 'MEMORIZE' && timeLeft <= 0) {
       setGameState('RECALL');
       setUserInput('');
     }
@@ -80,9 +107,9 @@ const ChimpTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard</button>
             </div>
 
             <button 
@@ -96,7 +123,7 @@ const ChimpTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
 
         {gameState === 'MEMORIZE' && (
           <div className="animate-slide-up-fade w-full">
-            <div className="text-6xl font-black text-white tracking-widest mb-8 break-words">
+            <div className="text-6xl font-black text-white tracking-widest mb-8 break-words leading-tight">
               {sequence.join(' ')}
             </div>
             <div className="text-purple-400 font-bold flex items-center justify-center">
@@ -105,7 +132,7 @@ const ChimpTest = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (s
             <div className="w-64 h-2 bg-slate-800 rounded-full mt-4 mx-auto overflow-hidden">
               <div 
                 className="h-full bg-purple-500 transition-all duration-1000 linear" 
-                style={{ width: `${(timeLeft / Math.max(3, Math.floor(sequence.length * 0.8))) * 100}%` }}
+                style={{ width: `${(timeLeft / Math.max(1, initialTimeRef.current)) * 100}%` }}
               ></div>
             </div>
           </div>

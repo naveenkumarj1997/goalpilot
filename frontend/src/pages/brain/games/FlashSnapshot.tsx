@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Camera, RotateCcw, Activity, XCircle } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
 
-const COLORS = ['bg-red-500', 'bg-blue-500', 'bg-emerald-500', 'bg-yellow-500', 'bg-purple-500'];
-const COLOR_NAMES = ['Red', 'Blue', 'Green', 'Yellow', 'Purple'];
+const COLORS = ['bg-red-500', 'bg-blue-500', 'bg-emerald-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500', 'bg-orange-500'];
+const COLOR_NAMES = ['Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Pink', 'Cyan', 'Orange'];
 
 type Shape = {
   color: string;
@@ -20,61 +20,77 @@ const FlashSnapshot = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
   const [score, setScore] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
 
+  const historyRef = useRef<string[]>([]);
+
+  const getGameParams = () => {
+    switch (difficulty) {
+      case 1: return { gridSize: 2, totalCells: 4, flashTime: 1500, numColors: 3 };
+      case 2: return { gridSize: 3, totalCells: 9, flashTime: 800, numColors: 5 };
+      case 3: return { gridSize: 4, totalCells: 16, flashTime: 400, numColors: 8 };
+      default: return { gridSize: 3, totalCells: 9, flashTime: 800, numColors: 5 };
+    }
+  };
+
   const startGame = () => {
     setScore(0);
+    historyRef.current = [];
     generateSnapshot();
   };
 
   const generateSnapshot = () => {
-    // Generate 3x3 grid
+    const params = getGameParams();
     const newGrid: Shape[] = [];
-    for (let i = 0; i < 9; i++) {
-      const colIdx = Math.floor(Math.random() * COLORS.length);
+    for (let i = 0; i < params.totalCells; i++) {
+      const colIdx = Math.floor(Math.random() * params.numColors);
       newGrid.push({ color: COLORS[colIdx], name: COLOR_NAMES[colIdx], pos: i });
     }
     setGrid(newGrid);
     setGameState('FLASH');
 
-    // Display duration depends on difficulty (Hard = 0.3s, Med = 0.6s, Easy = 1s)
-    const flashTime = difficulty === 1 ? 1000 : difficulty === 2 ? 600 : 300;
-
     setTimeout(() => {
-      generateQuestion(newGrid);
+      generateQuestion(newGrid, params);
       setGameState('QUESTION');
-    }, flashTime);
+    }, params.flashTime);
   };
 
-  const generateQuestion = (currentGrid: Shape[]) => {
-    // Two types of questions: 
-    // 1. What color was at position X?
-    // 2. How many items were color Y?
+  const generateQuestion = (currentGrid: Shape[], params: { gridSize: number, totalCells: number, numColors: number }) => {
+    // Determine possible question types based on grid
     const type = Math.random() > 0.5 ? 'position' : 'count';
-
+    
     let qText = '';
     let ans = '';
     let opts: string[] = [];
-
-    if (type === 'position') {
-      const pos = Math.floor(Math.random() * 9);
-      const positions = ['top-left', 'top-center', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right'];
-      qText = `What color was in the ${positions[pos]}?`;
-      ans = currentGrid[pos].name;
-      opts = [...COLOR_NAMES].sort(() => Math.random() - 0.5).slice(0, 4);
-      if (!opts.includes(ans)) {
-        opts[0] = ans;
+    
+    let attempts = 0;
+    do {
+      if (type === 'position') {
+        const pos = Math.floor(Math.random() * params.totalCells);
+        // Map 1D pos to 2D
+        const row = Math.floor(pos / params.gridSize) + 1;
+        const col = (pos % params.gridSize) + 1;
+        qText = `What color was in Row ${row}, Column ${col}?`;
+        ans = currentGrid[pos].name;
+        opts = [...COLOR_NAMES].slice(0, params.numColors).sort(() => Math.random() - 0.5).slice(0, 4);
+        if (!opts.includes(ans)) {
+          opts[0] = ans;
+          opts.sort(() => Math.random() - 0.5);
+        }
+      } else {
+        const colorType = COLOR_NAMES[Math.floor(Math.random() * params.numColors)];
+        qText = `How many ${colorType} blocks were there?`;
+        ans = currentGrid.filter(s => s.name === colorType).length.toString();
+        opts = [ans];
+        while (opts.length < 4) {
+          const randNum = Math.floor(Math.random() * (params.totalCells / 2 + 2)).toString();
+          if (!opts.includes(randNum)) opts.push(randNum);
+        }
         opts.sort(() => Math.random() - 0.5);
       }
-    } else {
-      const colorType = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
-      qText = `How many ${colorType} blocks were there?`;
-      ans = currentGrid.filter(s => s.name === colorType).length.toString();
-      opts = [ans];
-      while (opts.length < 4) {
-        const randNum = Math.floor(Math.random() * 6).toString();
-        if (!opts.includes(randNum)) opts.push(randNum);
-      }
-      opts.sort(() => Math.random() - 0.5);
-    }
+      attempts++;
+    } while (historyRef.current.includes(qText) && attempts < 10);
+
+    historyRef.current.push(qText);
+    if (historyRef.current.length > 5) historyRef.current.shift();
 
     setQuestion(qText);
     setCorrectAnswer(ans);
@@ -116,9 +132,9 @@ const FlashSnapshot = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
             </p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-fuchsia-500 text-white shadow-[0_0_15px_rgba(217,70,239,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1s)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (0.6s)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (0.3s)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-fuchsia-500 text-white shadow-[0_0_15px_rgba(217,70,239,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (2x2)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (3x3)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (4x4)</button>
             </div>
 
             <button 
@@ -131,9 +147,19 @@ const FlashSnapshot = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
         )}
 
         {gameState === 'FLASH' && (
-          <div className="grid grid-cols-3 gap-2 md:gap-4 max-w-xs mx-auto">
+          <div 
+            className="grid gap-2 md:gap-4 mx-auto" 
+            style={{ gridTemplateColumns: `repeat(${getGameParams().gridSize}, minmax(0, 1fr))` }}
+          >
             {grid.map((shape, idx) => (
-              <div key={idx} className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl ${shape.color} shadow-lg shadow-black/20`} />
+              <div 
+                key={idx} 
+                className={`rounded-2xl ${shape.color} shadow-lg shadow-black/20`} 
+                style={{ 
+                  width: getGameParams().gridSize === 4 ? '3.5rem' : getGameParams().gridSize === 3 ? '4.5rem' : '6rem',
+                  height: getGameParams().gridSize === 4 ? '3.5rem' : getGameParams().gridSize === 3 ? '4.5rem' : '6rem'
+                }}
+              />
             ))}
           </div>
         )}
@@ -141,15 +167,16 @@ const FlashSnapshot = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?
         {gameState === 'QUESTION' && (
           <div className="animate-slide-up-fade w-full">
             <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8 max-w-md mx-auto">
-              <h3 className="text-2xl md:text-2xl sm:text-3xl font-bold text-white leading-relaxed">{question}</h3>
+              <h3 className="text-xl md:text-2xl sm:text-3xl font-bold text-white leading-relaxed">{question}</h3>
             </div>
 
             <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
               {options.map((opt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleGuess(opt)}
-                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-fuchsia-500/50 text-white font-bold rounded-xl text-xl transition-all"
+                  onClick={(e) => { e.preventDefault(); handleGuess(opt); }}
+                  onPointerDown={(e) => { e.preventDefault(); handleGuess(opt); }}
+                  className="py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-fuchsia-500/50 text-white font-bold rounded-xl text-xl transition-all active:scale-95 touch-manipulation"
                 >
                   {opt}
                 </button>

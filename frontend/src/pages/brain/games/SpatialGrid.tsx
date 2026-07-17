@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, Brain, RotateCcw, Activity } from 'lucide-react';
 import { getIQRank } from '../../../utils/iqScorer';
-
-const GRID_SIZE = 25; // 5x5 grid
 
 const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: (score: number) => void }) => {
   const [gameState, setGameState] = useState<'START' | 'MEMORIZE' | 'RECALL' | 'GAMEOVER'>('START');
@@ -12,32 +10,54 @@ const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
   const [score, setScore] = useState(0);
   const [difficulty, setDifficulty] = useState(1);
 
+  const historyRef = useRef<string[]>([]);
+
+  const getGridParams = () => {
+    switch (difficulty) {
+      case 1: return { gridSize: 9, cols: 3, flashTime: 2500, maxTiles: 6 };
+      case 2: return { gridSize: 16, cols: 4, flashTime: 2000, maxTiles: 9 };
+      case 3: return { gridSize: 25, cols: 5, flashTime: 1200, maxTiles: 12 };
+      default: return { gridSize: 16, cols: 4, flashTime: 2000, maxTiles: 9 };
+    }
+  };
+
   const startGame = () => {
     setLevel(1);
     setScore(0);
+    historyRef.current = [];
     generateGrid(1);
   };
 
   const generateGrid = (currentLevel: number) => {
+    const params = getGridParams();
     // Number of tiles to remember increases with level
-    const tilesCount = Math.min(2 + currentLevel, 12);
+    const tilesCount = Math.min(2 + currentLevel, params.maxTiles);
     
-    const newTiles: number[] = [];
-    while (newTiles.length < tilesCount) {
-      const r = Math.floor(Math.random() * GRID_SIZE);
-      if (!newTiles.includes(r)) {
-        newTiles.push(r);
+    let newTiles: number[] = [];
+    let attempts = 0;
+    
+    do {
+      newTiles = [];
+      while (newTiles.length < tilesCount) {
+        const r = Math.floor(Math.random() * params.gridSize);
+        if (!newTiles.includes(r)) {
+          newTiles.push(r);
+        }
       }
-    }
+      newTiles.sort((a, b) => a - b);
+      attempts++;
+    } while (historyRef.current.includes(newTiles.join(',')) && attempts < 10);
     
+    historyRef.current.push(newTiles.join(','));
+    if (historyRef.current.length > 5) historyRef.current.shift();
+
     setActiveTiles(newTiles);
     setSelectedTiles([]);
     setGameState('MEMORIZE');
     
-    // Hide after 2 seconds
     setTimeout(() => {
       setGameState('RECALL');
-    }, 2000);
+    }, params.flashTime);
   };
 
   const handleTileClick = (index: number) => {
@@ -59,7 +79,7 @@ const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
       setLevel(l => l + 1);
       setTimeout(() => {
         generateGrid(level + 1);
-      }, 1000);
+      }, 500);
     }
   };
 
@@ -68,6 +88,8 @@ const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
       onGameOver?.(score);
     }
   }, [gameState]);
+
+  const params = getGridParams();
 
   return (
     <div className="glass max-w-2xl mx-auto w-full rounded-3xl p-4 sm:p-8 border border-purple-500/30 shadow-[0_0_40px_rgba(168,85,247,0.15)] text-center">
@@ -89,9 +111,9 @@ const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
             <p className="text-slate-400 mb-8">Memorize the highlighted tiles. Click them after they hide.</p>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-8">
-              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (1x)</button>
-              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (2x)</button>
-              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (3x)</button>
+              <button onClick={() => setDifficulty(1)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 1 ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Easy (3x3)</button>
+              <button onClick={() => setDifficulty(2)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 2 ? 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Med (4x4)</button>
+              <button onClick={() => setDifficulty(3)} className={`py-2 px-6 rounded-xl font-bold transition-all ${difficulty === 3 ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-slate-800 text-slate-400'}`}>Hard (5x5)</button>
             </div>
 
             <button 
@@ -105,12 +127,15 @@ const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
 
         {(gameState === 'MEMORIZE' || gameState === 'RECALL' || gameState === 'GAMEOVER') && (
           <div className="animate-slide-up-fade">
-            <div className="grid grid-cols-5 gap-2 md:gap-4 mb-8 bg-slate-900/50 p-4 rounded-2xl">
-              {Array.from({ length: GRID_SIZE }).map((_, idx) => {
+            <div 
+              className="grid gap-2 md:gap-4 mb-8 bg-slate-900/50 p-4 rounded-2xl mx-auto"
+              style={{ gridTemplateColumns: `repeat(${params.cols}, minmax(0, 1fr))` }}
+            >
+              {Array.from({ length: params.gridSize }).map((_, idx) => {
                 const isActive = activeTiles.includes(idx);
                 const isSelected = selectedTiles.includes(idx);
                 
-                let tileClass = "w-12 h-12 md:w-16 md:h-16 rounded-xl transition-all duration-300 ";
+                let tileClass = "w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl transition-all duration-300 touch-manipulation active:scale-95 ";
                 
                 if (gameState === 'MEMORIZE') {
                   tileClass += isActive ? "bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] scale-105" : "bg-slate-800";
@@ -128,7 +153,8 @@ const SpatialGrid = ({ onBack, onGameOver }: { onBack: () => void, onGameOver?: 
                   <div 
                     key={idx} 
                     className={tileClass}
-                    onClick={() => handleTileClick(idx)}
+                    onClick={(e) => { e.preventDefault(); handleTileClick(idx); }}
+                    onPointerDown={(e) => { e.preventDefault(); handleTileClick(idx); }}
                   />
                 );
               })}
