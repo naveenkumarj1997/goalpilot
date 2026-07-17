@@ -271,14 +271,7 @@ function App() {
                 <Route path="/brain/interview" element={<InterviewRecall />} />
                 <Route path="/brain/planner" element={<StudyPlanner />} />
                 <Route path="/brain/games" element={<BrainGames />} />
-                {/* Remaining routes pointing to Dashboard as placeholders for future expansions */}
-                <Route path="/brain/memory" element={<BrainDashboard />} />
-                <Route path="/brain/focus" element={<BrainDashboard />} />
-                <Route path="/brain/spaced-repetition" element={<Flashcards />} />
-                <Route path="/brain/memory-palace" element={<BrainDashboard />} />
-                <Route path="/brain/progress" element={<BrainDashboard />} />
-                <Route path="/brain/analytics" element={<BrainDashboard />} />
-                <Route path="/brain/achievements" element={<BrainDashboard />} />
+                {/* Future expansions will be added here */}
               </Route>
 
               {/* Vocabulary Builder (Free & Unlocked) */}

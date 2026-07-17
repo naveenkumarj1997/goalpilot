@@ -238,19 +238,12 @@ export default function DashboardLayout() {
       icon: Brain,
       subMenus: [
         { name: 'Dashboard', href: '/brain/dashboard' },
-        { name: 'Memory Training', href: '/brain/memory' },
-        { name: 'Focus Training', href: '/brain/focus' },
         { name: 'Active Recall', href: '/brain/active-recall' },
-        { name: 'Spaced Repetition', href: '/brain/spaced-repetition' },
-        { name: 'Memory Palace', href: '/brain/memory-palace' },
+        { name: 'Flashcards', href: '/brain/flashcards' },
         { name: 'Study Planner', href: '/brain/planner' },
         { name: 'Interview Recall', href: '/brain/interview' },
         { name: 'Brain Games', href: '/brain/games' },
-        { name: 'Flashcards', href: '/brain/flashcards' },
-        { name: 'AI Memory Coach', href: '/brain/coach' },
-        { name: 'Progress Tracker', href: '/brain/progress' },
-        { name: 'Analytics', href: '/brain/analytics' },
-        { name: 'Achievements', href: '/brain/achievements' },
+        { name: 'AI Memory Coach', href: '/brain/coach' }
       ]
     },
     { name: 'Vocabulary Builder', href: '/brain/vocabulary', icon: BookA },
