@@ -52,9 +52,18 @@ export const useTaskNotifications = (tasks: any[]) => {
           if (!notifiedTaskIds.current.has(notificationKey)) {
             notifiedTaskIds.current.add(notificationKey);
 
-            const title = `Task starting now: ${task.title}`;
+            const formatTimeDisplay = (timeStr?: string | null) => {
+              if (!timeStr) return '';
+              const [h, m] = timeStr.split(':');
+              const hour = parseInt(h, 10);
+              const ampm = hour >= 12 ? 'PM' : 'AM';
+              const hour12 = hour % 12 || 12;
+              return `${hour12}:${m} ${ampm}`;
+            };
+
+            const title = task.title;
             const options = {
-              body: task.folder && task.folder !== 'Inbox' ? `Folder: ${task.folder}` : 'Time to get started!',
+              body: task.endTime ? `${formatTimeDisplay(task.time)} - ${formatTimeDisplay(task.endTime)}` : formatTimeDisplay(task.time),
               icon: '/favicon.svg'
             };
 

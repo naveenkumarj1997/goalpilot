@@ -71,8 +71,8 @@ export const checkAndSendUpcomingTaskNotifications = async () => {
         const upcomingTasks = plan.tasks.filter((t: any) => t.startTime === formattedTargetTime && !t.completed);
         for (const task of upcomingTasks) {
           notificationsToSend.push({
-            title: `Mission Starts Now!`,
-            body: `"${task.title}" is scheduled for ${formatTimeDisplay(task.startTime)}.`
+            title: task.title,
+            body: task.endTime ? `${formatTimeDisplay(task.startTime)} - ${formatTimeDisplay(task.endTime)}` : formatTimeDisplay(task.startTime)
           });
         }
       }
@@ -101,8 +101,8 @@ export const checkAndSendUpcomingTaskNotifications = async () => {
 
         if (!isCompletedToday) {
           notificationsToSend.push({
-            title: `Task Reminder: ${task.title}`,
-            body: task.folder && task.folder !== 'Inbox' ? `Folder: ${task.folder}` : 'Time to get started!'
+            title: task.title,
+            body: task.endTime ? `${formatTimeDisplay(task.time)} - ${formatTimeDisplay(task.endTime)}` : formatTimeDisplay(task.time)
           });
         }
       }
