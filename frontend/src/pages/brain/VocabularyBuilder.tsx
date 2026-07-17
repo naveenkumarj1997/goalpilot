@@ -149,6 +149,7 @@ const WordCard = ({ word, isSaved, onToggleSave, onSpeak, compact = false }: { w
           <div className="w-full sm:w-auto">
             <h2 className={`${compact ? 'text-3xl' : 'text-4xl sm:text-5xl'} font-black text-white mb-2 flex items-center flex-wrap gap-2`}>
               <span className="break-all">{word.word}</span>
+              <span className="text-cyan-400 opacity-80 text-xl sm:text-2xl font-medium ml-2">- {word.tamilWord}</span>
               <button 
                 type="button"
                 onClick={onSpeak} 

@@ -1,6 +1,7 @@
 export interface VocabularyWord {
   id: string;
   word: string;
+  tamilWord: string;
   pronunciation: string;
   partOfSpeech: string;
   meaningEnglish: string;
@@ -13,6 +14,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v1',
     word: 'Ephemeral',
+    tamilWord: 'தற்காலிகமான',
     pronunciation: '/ɪˈfem.ər.əl/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Lasting for a very short time.',
@@ -26,6 +28,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v2',
     word: 'Resilience',
+    tamilWord: 'மன உறுதி',
     pronunciation: '/rɪˈzɪl.i.əns/',
     partOfSpeech: 'noun',
     meaningEnglish: 'The capacity to recover quickly from difficulties; toughness.',
@@ -39,6 +42,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v3',
     word: 'Meticulous',
+    tamilWord: 'மிகவும் கவனமான',
     pronunciation: '/məˈtɪk.jə.ləs/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Showing great attention to detail; very careful and precise.',
@@ -52,6 +56,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v4',
     word: 'Serendipity',
+    tamilWord: 'தற்செயலான அதிர்ஷ்டம்',
     pronunciation: '/ˌser.ənˈdɪp.ə.t̬i/',
     partOfSpeech: 'noun',
     meaningEnglish: 'The occurrence and development of events by chance in a happy or beneficial way.',
@@ -65,6 +70,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v5',
     word: 'Procrastinate',
+    tamilWord: 'தள்ளிப்போடுதல்',
     pronunciation: '/proʊˈkræs.tə.neɪt/',
     partOfSpeech: 'verb',
     meaningEnglish: 'To delay or postpone action; put off doing something.',
@@ -78,6 +84,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v6',
     word: 'Ubiquitous',
+    tamilWord: 'எங்கும் நிறைந்திருக்கிற',
     pronunciation: '/juːˈbɪk.wə.t̬əs/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Present, appearing, or found everywhere.',
@@ -91,6 +98,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v7',
     word: 'Eloquent',
+    tamilWord: 'சொல்லாற்றல் மிக்க',
     pronunciation: '/ˈel.ə.kwənt/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Fluent or persuasive in speaking or writing.',
@@ -104,6 +112,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v8',
     word: 'Ambiguous',
+    tamilWord: 'தெளிவற்ற',
     pronunciation: '/æmˈbɪɡ.ju.əs/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Open to more than one interpretation; having a double meaning.',
@@ -117,6 +126,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v9',
     word: 'Nostalgia',
+    tamilWord: 'பழங்கால ஏக்கம்',
     pronunciation: '/nɑːˈstæl.dʒə/',
     partOfSpeech: 'noun',
     meaningEnglish: 'A sentimental longing or wistful affection for the past.',
@@ -130,6 +140,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v10',
     word: 'Pragmatic',
+    tamilWord: 'நடைமுறைக்கு ஏற்ற',
     pronunciation: '/præɡˈmæt̬.ɪk/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Dealing with things sensibly and realistically in a way that is based on practical rather than theoretical considerations.',
@@ -143,6 +154,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v11',
     word: 'Tenacious',
+    tamilWord: 'விடாப்பிடியான',
     pronunciation: '/təˈneɪ.ʃəs/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Tending to keep a firm hold of something; clinging or adhering closely. Not easily stopped.',
@@ -156,6 +168,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v12',
     word: 'Inevitable',
+    tamilWord: 'தவிர்க்க முடியாத',
     pronunciation: '/ˌɪnˈev.ə.t̬ə.bəl/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Certain to happen; unavoidable.',
@@ -169,6 +182,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v13',
     word: 'Lethargic',
+    tamilWord: 'சோர்வான',
     pronunciation: '/ləˈθɑːr.dʒɪk/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Affected by lethargy; sluggish and apathetic.',
@@ -182,6 +196,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v14',
     word: 'Lucid',
+    tamilWord: 'தெளிவான',
     pronunciation: '/ˈluː.sɪd/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Expressed clearly; easy to understand.',
@@ -195,6 +210,7 @@ export const VOCABULARY_LIST: VocabularyWord[] = [
   {
     id: 'v15',
     word: 'Candid',
+    tamilWord: 'வெளிப்படையான',
     pronunciation: '/ˈkæn.dɪd/',
     partOfSpeech: 'adjective',
     meaningEnglish: 'Truthful and straightforward; frank.',
