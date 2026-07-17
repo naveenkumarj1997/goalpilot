@@ -175,7 +175,8 @@ const VocabularyBuilder = () => {
                   <p className="text-slate-500 mt-2">Start saving words from the 'Word of the Day' tab!</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto bg-slate-900/50 rounded-2xl border border-slate-700/50 p-1">
+                <>
+                  <div className="overflow-x-auto bg-slate-900/50 rounded-2xl border border-slate-700/50 p-1">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-slate-700/50 bg-slate-800/30">
@@ -257,6 +258,8 @@ const VocabularyBuilder = () => {
                   </div>
                 )}
               </>
+            )}
+            </>
           )}
         </div>
       )}
