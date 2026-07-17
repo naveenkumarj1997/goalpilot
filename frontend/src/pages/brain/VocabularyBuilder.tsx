@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookA, Bookmark, BookmarkPlus, Search, Volume2, Languages, Sparkles } from 'lucide-react';
+import { BookA, Bookmark, BookmarkPlus, Search, Volume2, Languages, Sparkles, Eye, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getBrainProfile, toggleSavedWord } from '../../api/brain';
 import { VOCABULARY_LIST } from '../../data/vocabulary';
@@ -10,6 +10,7 @@ const VocabularyBuilder = () => {
   const [profile, setProfile] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'daily' | 'saved'>('daily');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedWord, setSelectedWord] = useState<VocabularyWord | null>(null);
   
   // Calculate today's word deterministically
   // Get days since epoch to avoid repeating words
@@ -72,13 +73,19 @@ const VocabularyBuilder = () => {
       <div className="flex justify-center mb-8">
         <div className="bg-slate-900 p-1 rounded-xl flex border border-slate-800">
           <button 
-            onClick={() => setActiveTab('daily')}
+            onClick={() => {
+              setActiveTab('daily');
+              setSelectedWord(null);
+            }}
             className={`px-6 py-3 rounded-lg font-bold text-sm transition-all flex items-center ${activeTab === 'daily' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
           >
             <Sparkles className="w-4 h-4 mr-2" /> Word of the Day
           </button>
           <button 
-            onClick={() => setActiveTab('saved')}
+            onClick={() => {
+              setActiveTab('saved');
+              setSelectedWord(null);
+            }}
             className={`px-6 py-3 rounded-lg font-bold text-sm transition-all flex items-center ${activeTab === 'saved' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
           >
             <Bookmark className="w-4 h-4 mr-2" /> Saved Words ({savedWordIds.length})
@@ -100,74 +107,105 @@ const VocabularyBuilder = () => {
 
       {activeTab === 'saved' && (
         <div className="space-y-6">
-          <div className="relative max-w-md mx-auto">
-            <input 
-              type="text" 
-              placeholder="Search saved words in English or Tamil..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
-            />
-            <Search className="w-6 h-6 text-slate-500 absolute left-4 top-4" />
-          </div>
-
-          {filteredSavedWords.length === 0 ? (
-            <div className="text-center py-12 glass rounded-3xl border border-slate-800">
-              <Bookmark className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-400">No saved words found.</h3>
-              <p className="text-slate-500 mt-2">Start saving words from the 'Word of the Day' tab!</p>
+          {selectedWord ? (
+            <div className="max-w-3xl mx-auto">
+              <button 
+                onClick={() => setSelectedWord(null)}
+                className="mb-6 flex items-center text-slate-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Saved Words
+              </button>
+              <WordCard 
+                word={selectedWord} 
+                isSaved={true} 
+                onToggleSave={() => {
+                  handleToggleSave(selectedWord.id);
+                  if (savedWordIds.includes(selectedWord.id)) {
+                    // It was saved, now we unsaved it. If we want, we could go back to list, but staying is fine.
+                  }
+                }} 
+                onSpeak={() => speak(selectedWord.word)}
+              />
             </div>
           ) : (
-            <div className="overflow-x-auto bg-slate-900/50 rounded-2xl border border-slate-700/50 p-1">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-700/50 bg-slate-800/30">
-                    <th className="p-4 text-sm font-bold text-slate-300">Word</th>
-                    <th className="p-4 text-sm font-bold text-slate-300 hidden sm:table-cell">Meaning (English)</th>
-                    <th className="p-4 text-sm font-bold text-cyan-400">Meaning (Tamil)</th>
-                    <th className="p-4 text-sm font-bold text-slate-300 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredSavedWords.map(word => (
-                    <tr key={word.id} className="border-b border-slate-700/30 hover:bg-slate-800/20 transition-colors group">
-                      <td className="p-4">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-white text-lg">{word.word}</span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-cyan-500 font-mono text-[10px] sm:text-xs bg-cyan-900/20 px-1.5 py-0.5 rounded">{word.pronunciation}</span>
-                            <span className="text-slate-500 italic text-xs">{word.partOfSpeech}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-sm text-slate-300 hidden sm:table-cell align-top max-w-[200px] truncate group-hover:whitespace-normal group-hover:bg-slate-800/50 transition-all z-10 hover:shadow-xl">
-                        {word.meaningEnglish}
-                      </td>
-                      <td className="p-4 text-sm text-cyan-100 align-top max-w-[200px] font-medium">
-                        <span className="block">{word.tamilWord}</span>
-                        <span className="text-xs text-cyan-500/70 mt-1 block truncate group-hover:whitespace-normal group-hover:bg-slate-800/50 transition-all relative z-10">{word.meaningTamil}</span>
-                      </td>
-                      <td className="p-4 align-top text-right whitespace-nowrap">
-                        <button 
-                          onClick={() => speak(word.word)} 
-                          className="p-2 text-slate-400 hover:text-cyan-400 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg mr-2 transition-colors"
-                          title="Listen"
-                        >
-                          <Volume2 className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleToggleSave(word.id)}
-                          className="p-2 text-cyan-500 hover:text-red-400 bg-slate-800/50 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Remove from saved"
-                        >
-                          <Bookmark className="w-4 h-4 fill-current" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className="relative max-w-md mx-auto mb-6">
+                <input 
+                  type="text" 
+                  placeholder="Search saved words in English or Tamil..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-4 pl-12 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                />
+                <Search className="w-6 h-6 text-slate-500 absolute left-4 top-4" />
+              </div>
+
+              {filteredSavedWords.length === 0 ? (
+                <div className="text-center py-12 glass rounded-3xl border border-slate-800">
+                  <Bookmark className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-400">No saved words found.</h3>
+                  <p className="text-slate-500 mt-2">Start saving words from the 'Word of the Day' tab!</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto bg-slate-900/50 rounded-2xl border border-slate-700/50 p-1">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-700/50 bg-slate-800/30">
+                        <th className="p-4 text-sm font-bold text-slate-300">Word</th>
+                        <th className="p-4 text-sm font-bold text-slate-300 hidden sm:table-cell">Meaning (English)</th>
+                        <th className="p-4 text-sm font-bold text-cyan-400">Meaning (Tamil)</th>
+                        <th className="p-4 text-sm font-bold text-slate-300 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredSavedWords.map(word => (
+                        <tr key={word.id} className="border-b border-slate-700/30 hover:bg-slate-800/20 transition-colors group">
+                          <td className="p-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-white text-lg">{word.word}</span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-cyan-500 font-mono text-[10px] sm:text-xs bg-cyan-900/20 px-1.5 py-0.5 rounded">{word.pronunciation}</span>
+                                <span className="text-slate-500 italic text-xs">{word.partOfSpeech}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4 text-sm text-slate-300 hidden sm:table-cell align-top max-w-[200px] truncate group-hover:whitespace-normal group-hover:bg-slate-800/50 transition-all z-10 hover:shadow-xl">
+                            {word.meaningEnglish}
+                          </td>
+                          <td className="p-4 text-sm text-cyan-100 align-top max-w-[200px] font-medium">
+                            <span className="block">{word.tamilWord}</span>
+                            <span className="text-xs text-cyan-500/70 mt-1 block truncate group-hover:whitespace-normal group-hover:bg-slate-800/50 transition-all relative z-10">{word.meaningTamil}</span>
+                          </td>
+                          <td className="p-4 align-top text-right whitespace-nowrap">
+                            <button 
+                              onClick={() => setSelectedWord(word)} 
+                              className="p-2 text-slate-400 hover:text-cyan-400 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg mr-2 transition-colors"
+                              title="Full View"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => speak(word.word)} 
+                              className="p-2 text-slate-400 hover:text-cyan-400 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg mr-2 transition-colors"
+                              title="Listen"
+                            >
+                              <Volume2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleToggleSave(word.id)}
+                              className="p-2 text-cyan-500 hover:text-red-400 bg-slate-800/50 hover:bg-red-500/10 rounded-lg transition-colors"
+                              title="Remove from saved"
+                            >
+                              <Bookmark className="w-4 h-4 fill-current" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
