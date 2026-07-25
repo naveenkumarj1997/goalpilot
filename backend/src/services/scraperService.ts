@@ -57,8 +57,8 @@ export async function fetchTargetedJobs(companyName: string, companyUrl: string,
 
     if (companyName.toLowerCase().includes('infosys') || companyName.toLowerCase().includes('infosis')) {
       const url = `https://digitalcareers.infosys.com/infosys/global-careers?location=&keyword=${encodeURIComponent(role)}`;
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      await page.waitForTimeout(3000); // Wait for dynamic content
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(5000); // Wait a bit longer for dynamic content
       
       const links = await page.$$eval('a', anchors => {
         return anchors
@@ -144,8 +144,8 @@ export async function fetchTargetedJobs(companyName: string, companyUrl: string,
       // Generic fallback for any other company
       const searchUrl = `${companyUrl.replace(/\/$/, '')}/search?q=${encodeURIComponent(role)}`;
       try {
-        await page.goto(searchUrl, { waitUntil: 'networkidle', timeout: 15000 });
-        await page.waitForTimeout(2000);
+        await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(4000);
         const links = await page.$$eval('a', anchors => {
           return anchors
             .map(a => ({ text: a.textContent?.trim() || '', href: a.href }))

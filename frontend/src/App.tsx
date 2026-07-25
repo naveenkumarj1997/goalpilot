@@ -128,6 +128,20 @@ import FinancialForecast from './pages/wealth/FinancialForecast';
 
 import ModuleGuard from './components/layout/ModuleGuard';
 import DashboardLayout from './components/layout/DashboardLayout';
+
+import AstrologyLayout from './pages/astrology/AstrologyLayout';
+import AstrologyDashboard from './pages/astrology/AstrologyDashboard';
+import AstrologyRegistration from './pages/astrology/AstrologyRegistration';
+import AstrologyDasha from './pages/astrology/AstrologyDasha';
+import AstrologyNakshatra from './pages/astrology/AstrologyNakshatra';
+import AstrologyTransit from './pages/astrology/AstrologyTransit';
+import AstrologyMatch from './pages/astrology/AstrologyMatch';
+import AstrologyChartTab from './pages/astrology/AstrologyChartTab';
+import AstrologyPlanetsTab from './pages/astrology/AstrologyPlanetsTab';
+import AstrologyCurrentTab from './pages/astrology/AstrologyCurrentTab';
+import AstrologyOverallTab from './pages/astrology/AstrologyOverallTab';
+import AstrologyNotesTab from './pages/astrology/AstrologyNotesTab';
+
 import './App.css';
 
 function App() {
@@ -258,6 +272,24 @@ function App() {
                 <Route path="/combat/shadow-boxing" element={<ShadowBoxing />} />
                 <Route path="/combat/punches" element={<PunchLibrary />} />
                 <Route path="/combat/progress" element={<ProgressTracker />} />
+              </Route>
+
+              {/* Astrology Module */}
+              <Route element={<ModuleGuard moduleName="🔮 ஜோதிடம்" />}>
+                <Route element={<AstrologyLayout />}>
+                  <Route path="/astrology" element={<AstrologyDashboard />} />
+                  <Route path="/astrology/current" element={<AstrologyCurrentTab />} />
+                  <Route path="/astrology/overall" element={<AstrologyOverallTab />} />
+                  <Route path="/astrology/register" element={<AstrologyRegistration />} />
+                  <Route path="/astrology/chart" element={<AstrologyChartTab />} />
+                  <Route path="/astrology/planets" element={<AstrologyPlanetsTab />} />
+                  <Route path="/astrology/dasha" element={<AstrologyDasha />} />
+                  <Route path="/astrology/nakshatra" element={<AstrologyNakshatra />} />
+                  <Route path="/astrology/transit" element={<AstrologyTransit />} />
+                  <Route path="/astrology/match" element={<AstrologyMatch />} />
+                  <Route path="/astrology/notes" element={<AstrologyNotesTab />} />
+
+                </Route>
               </Route>
 
               {/* Brain Academy */}

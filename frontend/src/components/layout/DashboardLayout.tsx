@@ -39,7 +39,8 @@ import {
   Brain,
   Library,
   Landmark,
-  BookA
+  BookA,
+  Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DailyCheckInModal from '../DailyCheckInModal';
@@ -272,6 +273,20 @@ export default function DashboardLayout() {
         { name: 'AI Dream Advisor', href: '/wealth/advisor' }
       ]
     },
+    { 
+      name: '🔮 ஜோதிடம்', 
+      href: '/astrology', 
+      icon: Moon,
+      subMenus: [
+        { name: '🏠 இன்று (Today)', href: '/astrology' },
+        { name: '👤 பிறப்பு விவரம் (Profile)', href: '/astrology/register' },
+        { name: '🌙 நட்சத்திரம் (Nakshatra)', href: '/astrology/nakshatra' },
+        { name: '📆 தசா புக்தி (Dasha)', href: '/astrology/dasha' },
+        { name: '🌍 கோச்சாரம் (Transit)', href: '/astrology/transit' },
+        { name: '❤️ திருமண பொருத்தம் (Match)', href: '/astrology/match' },
+        { name: '📝 குறிப்புகள் (Notes)', href: '/astrology/notes' },
+      ]
+    },
     { name: 'Tools', href: '/tools/date-tracker', icon: Calculator },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
@@ -284,6 +299,7 @@ export default function DashboardLayout() {
   }
 
   const getThemeVars = (path: string) => {
+    if (path.includes('/astrology')) return { bg: '/images/space_bg.png', color: '#D946EF' }; // Fuchsia (Mystical)
     if (path.includes('/wealth')) return { bg: '/images/earth_bg.png', color: '#10B981' }; // Emerald Green
     if (path.includes('/combat')) return { bg: '/images/combat/combat_bg.png', color: '#EF4444' }; // Red for Combat
     if (path.includes('/goals') || path.includes('/workouts')) return { bg: '/images/fire_bg.png', color: '#EF4444' }; // Red

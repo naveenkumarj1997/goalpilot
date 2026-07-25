@@ -35,6 +35,7 @@ import brainRoutes from './routes/brainRoutes';
 import wisdomRoutes from './routes/wisdomRoutes';
 import wealthRoutes from './routes/wealthRoutes';
 import ticktickRoutes from './routes/ticktickRoutes';
+import astrologyRoutes from './routes/astrologyRoutes';
 import { blockCheck, checkModuleAccess } from './middleware/rbacMiddleware';
 import { protect } from './middleware/authMiddleware';
 
@@ -59,6 +60,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/astrology', astrologyRoutes);
 
 // Module Routes Protected by RBAC & Feature Flags
 app.use('/api/goals', checkModuleAccess('Goals'), goalRoutes);

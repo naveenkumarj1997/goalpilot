@@ -15,5 +15,6 @@ export const DEFAULT_UNLOCKED_MODULES = [
   'Brain Academy',
   'Wisdom Library',
   'Life Wealth & Dream OS',
-  'Vocabulary Builder'
+  'Vocabulary Builder',
+  '🔮 ஜோதிடம்'
 ];
