@@ -4,6 +4,7 @@ interface PlanetInfo {
   name: string; // Sun, Moon, etc.
   sign: number; // 1 to 12 (1 = Aries, 2 = Taurus)
   isRetrograde?: boolean;
+  status?: 'ucham' | 'neesam';
 }
 
 interface ChartProps {
@@ -74,11 +75,18 @@ const SouthIndianChart: React.FC<ChartProps> = ({ planets, ascendantSign, title 
                 {isAscendant && (
                   <span className="text-xs sm:text-sm font-black text-fuchsia-400">ல</span>
                 )}
-                {signPlanets.map((p, i) => (
-                  <span key={i} className={`text-xs sm:text-sm font-bold ${p.isRetrograde ? 'underline text-orange-300' : 'text-slate-200'}`}>
-                    {getPlanetNameTamil(p.name)}
-                  </span>
-                ))}
+                {signPlanets.map((p, i) => {
+                  let colorClass = 'text-slate-200';
+                  if (p.status === 'ucham') colorClass = 'text-emerald-400 drop-shadow-md';
+                  else if (p.status === 'neesam') colorClass = 'text-rose-400 drop-shadow-md';
+                  else if (p.isRetrograde) colorClass = 'text-orange-300 underline';
+
+                  return (
+                    <span key={i} className={`text-xs sm:text-sm font-bold ${colorClass}`}>
+                      {getPlanetNameTamil(p.name)}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           );

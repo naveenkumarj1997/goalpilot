@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Moon, Star, Calendar, Globe, Heart, Plus, Users, UserCircle, Clock, Sparkles } from 'lucide-react';
+import { Moon, Star, Calendar, Globe, Heart, Plus, Users, UserCircle, Clock, Sparkles, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getAstrologyProfile } from '../../api/astrology';
 
@@ -115,6 +115,15 @@ const AstrologyLayout = () => {
               </NavLink>
               <NavLink to={`/astrology/transit${navParams}`} className={({isActive}) => `flex items-center gap-2 px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${isActive ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' : 'text-slate-400 hover:text-white'}`}>
                 <Globe className="w-4 h-4" /> கோச்சாரம்
+              </NavLink>
+              <NavLink to={`/astrology/ucham-neesam${navParams}`} className={({isActive}) => `flex items-center gap-2 px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${isActive ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' : 'text-slate-400 hover:text-white'}`}>
+                <Star className="w-4 h-4" /> உச்சம்/நீசம்
+              </NavLink>
+              <NavLink to={`/astrology/lagnam-palangal${navParams}`} className={({isActive}) => `flex items-center gap-2 px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${isActive ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' : 'text-slate-400 hover:text-white'}`}>
+                <UserCircle className="w-4 h-4" /> லக்ன பலன்
+              </NavLink>
+              <NavLink to={`/astrology/houses${navParams}`} className={({isActive}) => `flex items-center gap-2 px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${isActive ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' : 'text-slate-400 hover:text-white'}`}>
+                <Home className="w-4 h-4" /> 12 வீடுகள்
               </NavLink>
               <NavLink to={`/astrology/match${navParams}`} className={({isActive}) => `flex items-center gap-2 px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${isActive ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' : 'text-slate-400 hover:text-white'}`}>
                 <Heart className="w-4 h-4" /> பொருத்தம்

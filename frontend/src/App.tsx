@@ -141,6 +141,9 @@ import AstrologyPlanetsTab from './pages/astrology/AstrologyPlanetsTab';
 import AstrologyCurrentTab from './pages/astrology/AstrologyCurrentTab';
 import AstrologyOverallTab from './pages/astrology/AstrologyOverallTab';
 import AstrologyNotesTab from './pages/astrology/AstrologyNotesTab';
+import AstrologyUchamNeesamTab from './pages/astrology/AstrologyUchamNeesamTab';
+import AstrologyLagnamPalangalTab from './pages/astrology/AstrologyLagnamPalangalTab';
+import AstrologyHousesTab from './pages/astrology/AstrologyHousesTab';
 
 import './App.css';
 
@@ -286,6 +289,9 @@ function App() {
                   <Route path="/astrology/dasha" element={<AstrologyDasha />} />
                   <Route path="/astrology/nakshatra" element={<AstrologyNakshatra />} />
                   <Route path="/astrology/transit" element={<AstrologyTransit />} />
+                  <Route path="/astrology/ucham-neesam" element={<AstrologyUchamNeesamTab />} />
+                  <Route path="/astrology/lagnam-palangal" element={<AstrologyLagnamPalangalTab />} />
+                  <Route path="/astrology/houses" element={<AstrologyHousesTab />} />
                   <Route path="/astrology/match" element={<AstrologyMatch />} />
                   <Route path="/astrology/notes" element={<AstrologyNotesTab />} />
 
